@@ -1,0 +1,1 @@
+# This directory will contain CRUD logic separated by entities
