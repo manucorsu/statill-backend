@@ -36,4 +36,4 @@ Repositorio de la API de Statill.
 6. Probar `fastapi dev main.py`
 
 ### Si algo no funciona:
-* Verificar que se esté usando el entorno virtual ejecutando `which python` (bash) o `Get-Command python` (PowerShell). Si el path que aparece a `python.exe` **NO ESTÁ EN EL DIRECTORIO `statill-backend/.venv`, o el entorno virtual no se creó y activó correctamente o no se estando la misma terminal que se usó para ejecutar el script. Repetir todo desde el paso 2.
+* Verificar que se esté usando el entorno virtual ejecutando `which python` (bash) o `Get-Command python` (PowerShell). Si el path que aparece a `python.exe` **NO ESTÁ EN EL DIRECTORIO `statill-backend/.venv`**, o el entorno virtual no se creó y activó correctamente o no se estando la misma terminal que se usó para ejecutar el script. Repetir todo desde el paso 2.
