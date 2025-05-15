@@ -1,4 +1,3 @@
-from lib2to3.pytree import Base
 from pydantic import BaseSettings
 from dotenv import load_dotenv
 from os import getenv
