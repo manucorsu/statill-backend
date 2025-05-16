@@ -18,6 +18,7 @@ Repositorio de la API de Statill.
 4. Ejecutar `. .\laburar.ps1` y esperar a que de termine de hacer sus cosas.
     * *Solo si* aparece un error terminado en **`UnauthorizedAccess`**, ejecutar `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass` aceptando la advertencia y luego repetir el paso 2 o alternativamente cambiar el perfil de la terminal a Git Bash y seguir los pasos para `bash`.
 5. ✅ Listo.
+    * Debería aparecer `(.venv)` en verde a la izquierda de `PS`
 
 
 
@@ -29,11 +30,13 @@ Repositorio de la API de Statill.
 
 4. Ejecutar `source ./laburar.sh` y esperar a que termine de hacer sus cosas.
 5. ✅ Listo.
+    * Debería aparecer `(.venv)` abajo del resultado de cada comando que se ejecute
 
 
 ### Luego:
 6. Poner el `.env` en el root del directorio del proyecto.
 7. Probar `fastapi dev main.py`
+8. (opcional pero altamente recomendado) Al abrir un archivo de Python, VSCode te va a preguntar si querés instalar las extensiones recomendadas para el lenguaje. Por tu salud mental, decile que **sí**, lo va hacer en el fondo sin interrumpirte. 
 
 ### Si algo no funciona:
 * Verificar que se esté usando el entorno virtual ejecutando `which python` (bash) o `Get-Command python` (PowerShell). Si el path que aparece a `python.exe` **NO ESTÁ EN EL DIRECTORIO `statill-backend/.venv`**, o el entorno virtual no se creó y activó correctamente o no se estando la misma terminal que se usó para ejecutar el script. Repetir todo desde el paso 2.
