@@ -27,3 +27,7 @@ class User(Base):
     is_admin = Column(Boolean, nullable=False)
     store_id = Column(BigInteger)
     store_role = Column(Enum(StoreRoleEnum, name="store_role_enum"), nullable=False)
+
+    #Relationships
+    orders = relationship("Order", back_populates="user")
+

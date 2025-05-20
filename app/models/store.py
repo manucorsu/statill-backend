@@ -15,6 +15,11 @@ class Store(Base):
     closing_times = Column(ARRAY(TIME(timezone=True)), nullable=False)
     payment_methods = Column(ARRAY(BOOLEAN), nullable=False)
 
+    #Relationships
+
+    #Relationships
+    orders = relationship("Order", back_populates="store")
+
     __table_args__ = (
         CheckConstraint(
             "array_length(days_open, 1) = 7", name="days_open_length_check"
