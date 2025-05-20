@@ -23,7 +23,7 @@ class Store(Base):
             "array_length(opening_times, 1) = 7", name="opening_times_length_check"
         ),
         CheckConstraint(
-            "array_length(closing_times, 1 = 7", name="closing_times_length_check"
+            "array_length(closing_times, 1) = 7", name="closing_times_length_check"
         ),
         CheckConstraint(
             "array_length(payment_methods, 1) = 4", name="payment_methods_length_check"
