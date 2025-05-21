@@ -1,6 +1,7 @@
 from app.database.base import Base
 from sqlalchemy import Column, String, BigInteger, Date, Enum, Boolean
 import enum
+from sqlalchemy.orm import relationship
 
 
 class GenderEnum(enum.Enum):

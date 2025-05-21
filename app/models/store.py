@@ -1,6 +1,7 @@
 from app.database.base import Base
 from sqlalchemy import Column, String, BigInteger, Boolean, CheckConstraint
 from sqlalchemy.dialects.postgresql import ARRAY, BOOLEAN, TIME
+from sqlalchemy.orm import relationship
 
 
 class Store(Base):
