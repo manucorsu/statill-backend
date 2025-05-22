@@ -1,1 +1,6 @@
-# FastAPI app instance and startup events
+from fastapi import FastAPI
+from app.api.v1 import router as api_router
+
+app = FastAPI(title="Statill API")
+
+app.include_router(api_router, prefix="/api/v1")
