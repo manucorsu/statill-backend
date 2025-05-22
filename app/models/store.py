@@ -17,10 +17,12 @@ class Store(Base):
     payment_methods = Column(ARRAY(BOOLEAN), nullable=False)
 
     #Relationships
+    order = relationship("Order", back_populates="store")
+    sale = relationship("Sale", back_populates="store")
+    review = relationship("Review", back_populates="store")
+    points = relationship("Points", back_populates="store")
 
-    #Relationships
-    orders = relationship("Order", back_populates="store")
-
+    #Constraints
     __table_args__ = (
         CheckConstraint(
             "array_length(days_open, 1) = 7", name="days_open_length_check"
