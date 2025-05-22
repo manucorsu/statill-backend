@@ -1,5 +1,6 @@
 from fastapi import APIRouter
+from . import status
 
 router = APIRouter()
 
-# `router.include_router()` s for each model will go here.
+router.include_router(status.router, prefix="/status", tags=["status"])

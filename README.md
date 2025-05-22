@@ -35,7 +35,7 @@ Repositorio de la API de Statill.
 
 ### Luego:
 6. Poner el `.env` en el root del directorio del proyecto.
-7. Probar `fastapi dev main.py`
+7. Probar `fastapi dev app/main.py`
 8. (opcional pero altamente recomendado) Al abrir un archivo de Python, VSCode te va a preguntar si querés instalar las extensiones recomendadas para el lenguaje. Por tu salud mental, decile que **sí**, lo va hacer en el fondo sin interrumpirte. 
 
 ### Si algo no funciona:
