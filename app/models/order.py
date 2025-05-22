@@ -22,6 +22,7 @@ class Order(Base):
     # Relationships
     user = relationship("User", back_populates="order")
     store = relationship("Store", back_populates="order")
+    orders_products = relationship("Orders_Products", back_populates="order")
 
     #Constraints
     __table_args__ = (

@@ -16,3 +16,6 @@ class Product(Base):
 
 # Relationships
     store = relationship("Store", back_populates="product")
+    products_sales = relationship("Products_Sales", back_populates="product")
+    discount = relationship("Discount", back_populates="product")
+    orders_products = relationship("Orders_Products", back_populates="product")
