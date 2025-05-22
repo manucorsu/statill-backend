@@ -21,6 +21,7 @@ class Store(Base):
     sale = relationship("Sale", back_populates="store")
     review = relationship("Review", back_populates="store")
     points = relationship("Points", back_populates="store")
+    product = relationship("Product", back_populates="store")
 
     #Constraints
     __table_args__ = (
