@@ -14,6 +14,7 @@ class Sale(Base):
     # Relationships
     user = relationship("User", back_populates="order")
     store = relationship("Store", back_populates="order")
+    products_sales = relationship("Products_Sales", back_populates="order")
 
     #Constraints
     __table_args__ = (
