@@ -1,6 +1,6 @@
 from app.database.base import Base
-from sqlalchemy import Column, String, BigInteger, Boolean, CheckConstraint, ForeignKey, Enum
-from sqlalchemy.dialects.postgresql import ARRAY, BOOLEAN, TIME
+from sqlalchemy import Column, Integer, BigInteger, CheckConstraint, ForeignKey, Enum
+from sqlalchemy.dialects.postgresql import TIME
 from sqlalchemy.orm import relationship
 import enum
 
@@ -10,16 +10,24 @@ class StatusEnum(enum.Enum):
     RECIEVED = "recieved"
 
 class Order(Base):
-    __tablename__: "orders"
+    __tablename__ = "orders"
     id = Column(BigInteger, primary_key=True)
     user_id = Column(BigInteger, ForeignKey('users.id'), nullable=False)
     store_id = Column(BigInteger, ForeignKey('stores.id'), nullable=False)
     created_at = Column(TIME(timezone=True), nullable=False)
     status = Column(Enum(StatusEnum, name="status_enum"), nullable=False)
     recieved_at = Column(TIME(timezone=True), nullable=False)
-    payement_method = Column()
+    payement_method = Column(Integer, nullable=False)
     
     # Relationships
-    user = relationship("User", back_populates="orders")
-    store = relationship("Store", back_populates="orders")
+    user = relationship("User", back_populates="order")
+    store = relationship("Store", back_populates="order")
+    orders_products = relationship("Orders_Products", back_populates="order")
+
+    #Constraints
+    __table_args__ = (
+        CheckConstraint(
+            "payement_method IN (0,1,2,3)", name = "payement_method_check"
+        ),
+    )
 

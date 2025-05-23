@@ -30,5 +30,8 @@ class User(Base):
     store_role = Column(Enum(StoreRoleEnum, name="store_role_enum"), nullable=False)
 
     #Relationships
-    orders = relationship("Order", back_populates="user")
+    order = relationship("Order", back_populates="user")
+    sale = relationship("Sale", back_populates="user")
+    review = relationship("Review", back_populates="user")
+    points = relationship("Points", back_populates="user")
 
