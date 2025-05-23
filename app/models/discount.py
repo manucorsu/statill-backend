@@ -4,6 +4,7 @@ from sqlalchemy.dialects.postgresql import ARRAY, BOOLEAN
 from sqlalchemy.orm import relationship
 
 class Discount(Base):
+    __tablename__ = "discounts"
     id = Column(BigInteger, primary_key=True)
     product_id = Column(BigInteger, ForeignKey('products.id'), nullable=False)
     type = Column(Integer, nullable=False)
@@ -22,6 +23,6 @@ class Discount(Base):
             "pct_off > 0 AND pct_off <= 100", name = "pct_off_check"
         ),
         CheckConstraint(
-            "array_length(days_usable, 1) = 7", name = "pct_off_check"
+            "array_length(days_usable, 1) = 7", name = "days_usable_check"
         ),
     )
