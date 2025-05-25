@@ -15,7 +15,7 @@ python -m pip install --upgrade pip
 echo
 
 echo "Instalando dependencias..."
-pip install -r requirements.txt
+python -m pip install -r requirements.txt
 echo
 
 echo "✅ Listo."
