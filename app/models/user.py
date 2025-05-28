@@ -2,7 +2,7 @@ from app.database.base import Base
 from sqlalchemy import Column, String, BigInteger, Date, Enum, Boolean
 import enum
 from sqlalchemy.orm import relationship
-
+from .sale import Sale
 
 class GenderEnum(enum.Enum):
     MALE = "M"

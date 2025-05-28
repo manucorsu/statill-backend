@@ -3,6 +3,7 @@ from sqlalchemy import Column, Integer, BigInteger, CheckConstraint, ForeignKey,
 from sqlalchemy.dialects.postgresql import TIME
 from sqlalchemy.orm import relationship
 import enum
+from .user import User
 
 class StatusEnum(enum.Enum):
     PENDING = "pending"

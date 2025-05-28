@@ -2,6 +2,7 @@ from app.database.base import Base
 from sqlalchemy import Column, Integer, BigInteger, CheckConstraint, ForeignKey
 from sqlalchemy.dialects.postgresql import TIME
 from sqlalchemy.orm import relationship
+from .products_sales import ProductsSales
 
 class Sale(Base):
     __tablename__ = "sales"
@@ -12,9 +13,9 @@ class Sale(Base):
     timestamp = Column(TIME(timezone=True), nullable=False)
 
     # Relationships
-    user = relationship("User", back_populates="order")
-    store = relationship("Store", back_populates="order")
-    products_sales = relationship("Products_Sales", back_populates="order")
+    user = relationship("User", back_populates="sale")
+    store = relationship("Store", back_populates="sale")
+    products_sales = relationship("ProductsSales", back_populates="sale")
 
     #Constraints
     __table_args__ = (
