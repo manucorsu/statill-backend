@@ -2,6 +2,8 @@ from app.database.base import Base
 from sqlalchemy import Column, String, Integer, BigInteger, Numeric, ForeignKey
 from sqlalchemy.orm import relationship
 from app.models.store import Store
+from .products_sales import ProductsSales
+from .discount import Discount
 
 class Product(Base):
     __tablename__ = "products"
@@ -17,6 +19,6 @@ class Product(Base):
 
 # Relationships
     store = relationship("Store", back_populates="product")
-    products_sales = relationship("Products_Sales", back_populates="product")
+    products_sales = relationship("ProductsSales", back_populates="product")
     discount = relationship("Discount", back_populates="product")
-    orders_products = relationship("Orders_Products", back_populates="product")
+    orders_products = relationship("OrdersProducts", back_populates="product")

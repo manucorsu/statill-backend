@@ -3,6 +3,8 @@ from sqlalchemy import Column, String, BigInteger, Date, Enum, Boolean
 import enum
 from sqlalchemy.orm import relationship
 from .sale import Sale
+from .review import Review
+from .points import Points
 
 class GenderEnum(enum.Enum):
     MALE = "M"
