@@ -20,6 +20,10 @@ def get_by_id(id: int, session: Session):
 
 
 def create(product: ProductCreate, session: Session):
+    # temporal: hasta que hagamos stores CRUD
+    values = product.dict()
+    values["store_id"] = 1
+    #
     stmt = insert(Product).values(**product.dict())
     result = session.execute(stmt)
     session.commit()

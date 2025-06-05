@@ -17,10 +17,10 @@ def get_products(db: Session = Depends(get_db)):
 @router.get("/id", response_model=ProductRead)
 def get_product_by_id(id: int, db: Session = Depends(get_db)):
     if id <= 0:
-        raise HTTPException(status_code="400", detail="Invalid id.")
+        raise HTTPException(status_code=400, detail="Invalid id.")
 
     return crud.get_by_id(id, db)
 
 @router.post("/")
-def create_product(product: ProductCreate):
-    return crud.create(product)
+def create_product(product: ProductCreate, db: Session = Depends(get_db)):
+    return crud.create(product, db)
