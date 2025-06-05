@@ -13,3 +13,14 @@ class ProductRead(BaseModel):
 
     class Config:
         from_attributes = True
+
+class ProductCreate(BaseModel):
+    name: str
+    brand: str
+    price: float
+    type: int
+    quantity: int
+    desc: str
+
+    class Config:
+        from_attributes = True
