@@ -1,9 +1,9 @@
-from email.policy import HTTP
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from app.dependencies.db import get_db
 
 from app.schemas.product import ProductRead, ProductCreate
+from app.schemas.general import Message
 from ...crud import product as crud
 
 router = APIRouter()
@@ -24,3 +24,10 @@ def get_product_by_id(id: int, db: Session = Depends(get_db)):
 @router.post("/")
 def create_product(product: ProductCreate, db: Session = Depends(get_db)):
     return crud.create(product, db)
+
+@router.delete("/", response_model=Message)
+def delete_product_by_id(id: int, db: Session = Depends(get_db)):
+    if id <= 0:
+        raise HTTPException(status_code="400", detail="Invalid id.")
+
+    return crud.delete_by_id(id, db)
