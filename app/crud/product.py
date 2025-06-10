@@ -21,11 +21,9 @@ def get_by_id(id: int, session: Session):
 
 
 def create(product: ProductCreate, session: Session):
-    # temporal: hasta que hagamos stores CRUD
-    values = product.dict()
-    values["store_id"] = 1
-    #
-    stmt = insert(Product).values(**product.dict())
+    stmt = insert(Product).values(
+        **product.dict(), store_id=2
+    )  # este store_id=2 es temporal, queda hasta que hagamos para crear locales
     result = session.execute(stmt)
     session.commit()
     return result
@@ -35,5 +33,4 @@ def delete_by_id(id: int, session: Session):
     item = get_by_id(id, session)
     session.execute(delete(Product).where(Product.id == item.id))
     session.commit()
-
     return Message(message=f"The item '{id}' was deleted.")
