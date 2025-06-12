@@ -25,6 +25,13 @@ def get_product_by_id(id: int, db: Session = Depends(get_db)):
 def create_product(product: ProductCreate, db: Session = Depends(get_db)):
     return crud.create(product, db)
 
+@router.put("/id", response_model=Message)
+def update_product(id: int, product: ProductCreate, db:Session = Depends(get_db)):
+    if id <= 0:
+        raise HTTPException(status_code=400, detail="Invalid id.")
+    
+    return crud.update_by_id(id, product, db)
+
 @router.delete("/", response_model=Message)
 def delete_product_by_id(id: int, db: Session = Depends(get_db)):
     if id <= 0:

@@ -1,5 +1,5 @@
 from fastapi import HTTPException
-from sqlalchemy import select, insert, delete
+from sqlalchemy import select, insert, delete, update
 from sqlalchemy.orm import Session
 
 from app.models.product import Product
@@ -9,7 +9,8 @@ from app.schemas.general import Message
 
 def get_all(session: Session):
     stmt = select(Product)
-    return session.execute(stmt)
+    result = session.execute(stmt).scalars().all()
+    return result
 
 
 def get_by_id(id: int, session: Session):
@@ -28,6 +29,20 @@ def create(product: ProductCreate, session: Session):
     session.commit()
     return result
 
+def update_by_id(id: int, product: ProductCreate, session: Session):
+    get_by_id(id, session)
+    stmt = (
+        update(Product)
+        .where(Product.id == id)  
+        .values(**{k: v for k, v in product.dict(exclude_unset=True).items()}) 
+        .execution_options(synchronize_session="fetch")
+    )
+
+    session.execute(stmt)
+    session.commit()
+
+    return Message(message=f"The item '{id}' was updated.")
+    
 
 def delete_by_id(id: int, session: Session):
     item = get_by_id(id, session)
