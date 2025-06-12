@@ -3,6 +3,7 @@ from sqlalchemy import select, insert, delete
 from sqlalchemy.orm import Session
 
 from app.models.product import Product
+from app.schemas.general import APIResponse
 from app.schemas.product import ProductCreate
 from app.schemas.general import Message
 

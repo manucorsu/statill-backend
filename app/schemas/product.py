@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from app.schemas.general import APIResponse
 
 
 class ProductRead(BaseModel):
@@ -14,6 +15,7 @@ class ProductRead(BaseModel):
     class Config:
         from_attributes = True
 
+
 class ProductCreate(BaseModel):
     name: str
     brand: str
@@ -24,3 +26,11 @@ class ProductCreate(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class GetAllProductsResponse(APIResponse):
+    data: list[ProductRead]
+
+
+class GetProductResponse(APIResponse):
+    data: ProductRead
