@@ -1,8 +1,9 @@
-from fastapi import FastAPI
-from app.api.v1 import router as api_router
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.exceptions import RequestValidationError
+from app.api.v1 import router as api_router
 from .config import settings
-
+from .exceptions import http_exception_handler, validation_exception_handler
 app = FastAPI(title="Statill API")
 
 app.add_middleware(
@@ -14,3 +15,6 @@ app.add_middleware(
 )
 
 app.include_router(api_router, prefix="/api/v1")
+
+app.add_exception_handler(HTTPException, http_exception_handler)
+app.add_exception_handler(RequestValidationError, validation_exception_handler)
