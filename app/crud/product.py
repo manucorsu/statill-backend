@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from app.models.product import Product
 from app.schemas.general import APIResponse
 from app.schemas.product import ProductCreate
-from app.schemas.general import Message
+from app.schemas.general import APIResponse
 
 
 def get_all(session: Session):
@@ -42,11 +42,11 @@ def update_by_id(id: int, product: ProductCreate, session: Session):
     session.execute(stmt)
     session.commit()
 
-    return Message(message=f"The item '{id}' was updated.")
+    return APIResponse(succesful=True, data=None,  message=f"The item '{id}' was updated.")
     
 
 def delete_by_id(id: int, session: Session):
     item = get_by_id(id, session)
     session.execute(delete(Product).where(Product.id == item.id))
     session.commit()
-    return Message(message=f"The item '{id}' was deleted.")
+    return APIResponse(succesful=True, data=None,  message=f"The item '{id}' was delete.")
