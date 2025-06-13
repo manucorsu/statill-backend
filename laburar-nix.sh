@@ -47,5 +47,5 @@ echo "Instalando dependencias..."
 "$python_cmd" -m pip install -r requirements.txt
 echo
 
-echo "✅ Listo."
+echo "✅ Listo. No te olvides de importar el .env"
 echo

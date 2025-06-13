@@ -1,52 +1,91 @@
 from fastapi import HTTPException
-from sqlalchemy import select, insert, delete, update
+
+from sqlalchemy import select, delete, update
 from sqlalchemy.orm import Session
 
 from app.models.product import Product
-from app.schemas.general import APIResponse
 from app.schemas.product import ProductCreate
-from app.schemas.general import APIResponse
 
 
 def get_all(session: Session):
-    stmt = select(Product)
-    result = session.execute(stmt).scalars().all()
-    return result
+    """
+    Retrieves all products from the database.
+    Args:
+        session (Session): The SQLAlchemy session to use for the query.
+    Returns:
+        list[Product]: A list of all products.
+    """
+    return session.query(Product).all()
 
 
 def get_by_id(id: int, session: Session):
-    stmt = select(Product).where(Product.id == id)
-    result = session.execute(stmt).scalar_one_or_none()
-    if result is None:
+    """
+    Retrieves a product by its ID.
+    Args:
+        id (int): The ID of the product to retrieve.
+        session (Session): The SQLAlchemy session to use for the query.
+    Returns:
+        Product: The product with the specified ID.
+    Raises:
+        HTTPException(404): If the product with the specified ID does not exist.
+    """
+    product = session.get(Product, id)
+    if product is None:
         raise HTTPException(status_code=404, detail="Product not found")
-    return result
+    return product
 
 
-def create(product: ProductCreate, session: Session):
-    stmt = insert(Product).values(
-        **product.dict(), store_id=2
+def create(product_data: ProductCreate, session: Session):
+    """
+    Creates a new product in the database.
+    Args:
+        product_data (ProductCreate): The product data to create.
+        session (Session): The SQLAlchemy session to use for the insert.
+    Returns:
+        int: The ID of the newly created product.
+    """
+    product = Product(
+        **product_data.model_dump(), store_id=2
     )  # este store_id=2 es temporal, queda hasta que hagamos para crear locales
-    result = session.execute(stmt)
+    session.add(product)
     session.commit()
-    return result
+    session.refresh(product)
+    return product.id
 
-def update_by_id(id: int, product: ProductCreate, session: Session):
-    get_by_id(id, session)
-    stmt = (
-        update(Product)
-        .where(Product.id == id)  
-        .values(**{k: v for k, v in product.dict(exclude_unset=True).items()}) 
-        .execution_options(synchronize_session="fetch")
-    )
 
-    session.execute(stmt)
-    session.commit()
-
-    return APIResponse(succesful=True, data=None,  message=f"The item '{id}' was updated.")
+def update_by_id(id: int, product_data: ProductCreate, session: Session):
+    """
+    Updates a product by its ID.
+    Args:
+        id (int): The ID of the product to update.
+        product_data (ProductCreate): The updated product data.
+        session (Session): The SQLAlchemy session to use for the update.
+    Returns:
+        None
+    Raises:
+        HTTPException(404): If the product with the specified ID does not exist.
+    """
+    product = get_by_id(id, session)
     
+    updates = product_data.model_dump(exclude_unset=True)
+
+    for field, value in updates.items():
+        setattr(product, field, value)
+
+    session.commit()
+
 
 def delete_by_id(id: int, session: Session):
+    """
+    Deletes a product by its ID.
+    Args:
+        id (int): The ID of the product to delete.
+        session (Session): The SQLAlchemy session to use for the delete.
+    Returns:
+        None
+    Raises:
+        HTTPException(404): If the product with the specified ID does not exist.
+    """
     item = get_by_id(id, session)
     session.execute(delete(Product).where(Product.id == item.id))
     session.commit()
-    return APIResponse(succesful=True, data=None,  message=f"The item '{id}' was delete.")

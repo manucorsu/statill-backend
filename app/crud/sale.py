@@ -7,6 +7,7 @@ from app.schemas.general import APIResponse
 from app.schemas.sale import SaleCreate
 from app.schemas.general import APIResponse
 
+# TODO: ORMizar y terminar
 
 def get_all(session: Session):
     stmt = select(Sale)

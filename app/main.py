@@ -4,6 +4,10 @@ from fastapi.exceptions import RequestValidationError
 from app.api.v1 import router as api_router
 from .config import settings
 from .exceptions import http_exception_handler, validation_exception_handler
+import warnings
+
+warnings.simplefilter("always", DeprecationWarning)
+
 app = FastAPI(title="Statill API")
 
 app.add_middleware(
