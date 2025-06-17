@@ -10,22 +10,35 @@ from app.schemas.general import APIResponse
 # TODO: ORMizar y terminar
 
 def get_all(session: Session):
-    stmt = select(Sale)
-    result = session.execute(stmt).scalars().all()
-    return result
+    return session.query(Sale).all()
 
 
 def get_by_id(id: int, session: Session):
-    stmt = select(Sale).where(Sale.id == id)
-    result = session.execute(stmt).scalar_one_or_none()
-    if result is None:
+    sale = session.get(Sale, id)
+    if product is None:
         raise HTTPException(status_code=404, detail="Sale not found")
-    return result
+    return product
 
-def create(sale: SaleCreate, session: Session):
-    stmt = insert(Sale).values(
-        **sale.dict(), user_id=1,store_id=2
+def create(sale_data: ProductCreate, session: Session):
+     sale = Sale(
+        **sale_data.model_dump(), store_id=2
     )  # este store_id=2 es temporal, queda hasta que hagamos para crear locales
-    result = session.execute(stmt)
+    session.add(sale)
     session.commit()
-    return result
+    session.refresh(sale)
+    return sale.id
+
+def update_by_id(id: int, sale_data: SaleCreate, session: Session):
+    sale = get_by_id(id, session)
+    
+    updates = sale_data.model_dump(exclude_unset=True)
+
+    for field, value in updates.items():
+        setattr(sale, field, value)
+
+    session.commit()
+
+def delete_by_id(id: int, session:Session):
+    item = get_by_id(id, session)
+    session.execute(delete(Sale).where(Sale.id == item.id))
+    session.commit()
