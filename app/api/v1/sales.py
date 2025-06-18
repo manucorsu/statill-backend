@@ -2,9 +2,10 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from app.dependencies.db import get_db
 
-from app.schemas.sale import SaleRead
+from app.schemas.general import APIResponse
+from app.schemas.sale import SaleRead, SaleCreate, GetAllSalesResponse, GetSaleResponse
 from app.schemas.general import Message
-from ...crud import product as crud
+from ...crud import sale as crud
 
 router = APIRouter()
 

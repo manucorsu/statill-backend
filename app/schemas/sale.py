@@ -19,3 +19,9 @@ class SaleCreate(BaseModel):
 
     class Config:
         from_attributes = True
+
+class GetAllSalesResponse(APIResponse):
+    data: list[SaleRead]
+
+class GetSaleResponse(APIResponse):
+    data: SaleRead

@@ -3,11 +3,7 @@ from sqlalchemy import select, insert, delete, update
 from sqlalchemy.orm import Session
 
 from app.models.sale import Sale
-from app.schemas.general import APIResponse
 from app.schemas.sale import SaleCreate
-from app.schemas.general import APIResponse
-
-# TODO: ORMizar y terminar
 
 def get_all(session: Session):
     return session.query(Sale).all()
@@ -19,8 +15,8 @@ def get_by_id(id: int, session: Session):
         raise HTTPException(status_code=404, detail="Sale not found")
     return product
 
-def create(sale_data: ProductCreate, session: Session):
-     sale = Sale(
+def create(sale_data: SaleCreate, session: Session):
+    sale = Sale(
         **sale_data.model_dump(), store_id=2
     )  # este store_id=2 es temporal, queda hasta que hagamos para crear locales
     session.add(sale)
