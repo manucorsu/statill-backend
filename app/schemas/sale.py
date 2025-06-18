@@ -12,10 +12,14 @@ class SaleRead(BaseModel):
     class Config:
         from_attributes = True
 
+class ProductSale(BaseModel):
+    product_id: int
+    quantity: int
+
 class SaleCreate(BaseModel):
     store_id: int
-    products: dict
-    payement_method: int
+    products: list[ProductSale]
+    payment_method: int
 
     class Config:
         from_attributes = True

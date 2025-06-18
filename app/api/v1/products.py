@@ -42,7 +42,7 @@ def get_product_by_id(id: int, db: Session = Depends(get_db)):
     (Will require auth in the future)
 
     Args:
-        **id (int): The ID of the product to retrieve.**
+        id (int): The ID of the product to retrieve.
         db (Session): The SQLAlchemy session to use for the query.
 
     Returns:
@@ -65,6 +65,15 @@ def get_product_by_id(id: int, db: Session = Depends(get_db)):
 
 @router.post("/", response_model=APIResponse, status_code=201)
 def create_product(product: ProductCreate, db: Session = Depends(get_db)):
+    """
+    Creates a product.
+
+    (Will require auth in the future)
+
+    Args:
+        product (ProductCreate): The product data.
+        db (Session): The SQLAlchemy session to use for the query.
+    """
     product_id = crud.create(product, db)
     return APIResponse(
         successful=True,
