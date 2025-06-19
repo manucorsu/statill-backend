@@ -31,8 +31,16 @@ def update_by_id(id: int, sale_data: SaleCreate, session: Session):
 
 def delete_by_id(id: int, session: Session):
     item = get_by_id(id, session)
+
+    sale = session.execute(select(Sale).where(Sale.id == id)).scalar_one_or_none()
+    if not sale:
+            raise HTTPException(status_code=404, detail="Sale not found")
+    
+    session.execute(delete(ProductsSales).where(ProductsSales.sale_id == id))
     session.execute(delete(Sale).where(Sale.id == item.id))
     session.commit()
+
+    
 
 
 def create_sale_with_products(sale_data: SaleCreate, session: Session):
