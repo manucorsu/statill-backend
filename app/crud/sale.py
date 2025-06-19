@@ -45,6 +45,7 @@ def delete_by_id(id: int, session: Session):
     session.execute(delete(Sale).where(Sale.id == item.id))
     session.commit()
 
+
 def create_sale_with_products(sale_data: SaleCreate, session: Session):
     sale = Sale(
         store_id=sale_data.store_id,
@@ -52,17 +53,15 @@ def create_sale_with_products(sale_data: SaleCreate, session: Session):
         payment_method=sale_data.payment_method,
         timestamp=datetime.now(),
     )
+    session.add(sale)
+    session.commit()
 
     for p in sale_data.products:
         ps = ProductsSales(
-            sale_id=sale.id,
-            product_id=p.product_id,
-            quantity=p.quantity
+            sale_id=sale.id, product_id=p.product_id, quantity=p.quantity
         )
         session.add(ps)
 
-    session.add(sale)
-    session.commit()
     session.refresh(sale)
     session.commit()
     return sale.id
