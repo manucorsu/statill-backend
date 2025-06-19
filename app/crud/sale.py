@@ -5,7 +5,9 @@ from sqlalchemy.orm import Session
 from app.models.products_sales import ProductsSales
 
 from app.models.sale import Sale
+from app.models.store import Store
 from app.schemas.sale import SaleCreate
+
 
 
 def get_all(session: Session):
@@ -17,17 +19,6 @@ def get_by_id(id: int, session: Session):
     if sale is None:
         raise HTTPException(status_code=404, detail="Sale not found")
     return sale
-
-
-def create(sale_data: SaleCreate, session: Session):
-    sale = Sale(
-        **sale_data.model_dump(), store_id=2
-    )  # este store_id=2 es temporal, queda hasta que hagamos para crear locales
-    session.add(sale)
-    session.commit()
-    session.refresh(sale)
-    return sale.id
-
 
 def update_by_id(id: int, sale_data: SaleCreate, session: Session):
     sale = get_by_id(id, session)
@@ -47,6 +38,9 @@ def delete_by_id(id: int, session: Session):
 
 
 def create_sale_with_products(sale_data: SaleCreate, session: Session):
+    store = session.get(Store, sale_data.store_id) # TODO: Cambiar por la función de crud.store cuando exista
+    if store is None:
+        raise HTTPException(status_code=404, detail="Store not found")
     sale = Sale(
         store_id=sale_data.store_id,
         user_id=1,
