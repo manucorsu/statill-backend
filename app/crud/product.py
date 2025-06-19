@@ -66,7 +66,7 @@ def update_by_id(id: int, product_data: ProductCreate, session: Session):
         HTTPException(404): If the product with the specified ID does not exist.
     """
     product = get_by_id(id, session)
-    
+
     updates = product_data.model_dump(exclude_unset=True)
 
     for field, value in updates.items():

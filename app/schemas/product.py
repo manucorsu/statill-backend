@@ -1,3 +1,4 @@
+from typing import Literal
 from pydantic import BaseModel
 from app.schemas.general import APIResponse
 
@@ -11,6 +12,7 @@ class ProductRead(BaseModel):
     type: int
     quantity: int
     desc: str
+    barcode: str | None
 
     class Config:
         from_attributes = True
@@ -23,12 +25,14 @@ class ProductCreate(BaseModel):
     type: int
     quantity: int
     desc: str
+    barcode: str | None
 
     class Config:
         from_attributes = True
 
 
 class GetAllProductsResponse(APIResponse):
+    successful: Literal[True ]
     data: list[ProductRead]
 
 
