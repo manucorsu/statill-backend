@@ -6,7 +6,7 @@ class SaleRead(BaseModel):
     id: int
     user_id: int
     store_id: int
-    payement_method: int
+    payment_method: int
     timestamp: str
 
     class Config:
