@@ -14,7 +14,7 @@ class SaleRead(BaseModel):
 
 class ProductSale(BaseModel):
     product_id: int
-    quantity: int
+    quantity: float
 
 class SaleCreate(BaseModel):
     store_id: int

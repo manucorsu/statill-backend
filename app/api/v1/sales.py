@@ -11,7 +11,7 @@ router = APIRouter()
 
 @router.get("/", response_model=GetAllSalesResponse)
 def get_sales(db: Session = Depends(get_db)):
-      """
+    """
     Retrieves all sales from the database.
 
     (Will require auth in the future)
@@ -29,7 +29,7 @@ def get_sales(db: Session = Depends(get_db)):
 
 @router.get("/id", response_model=GetSaleResponse)
 def get_sale_by_id(id: int, db: Session = Depends(get_db)):
-     """
+    """
     Retrieves a sale by its ID.
 
     (Will require auth in the future)
@@ -59,7 +59,7 @@ def get_sale_by_id(id: int, db: Session = Depends(get_db)):
 @router.post("/", response_model=APIResponse, status_code=201)
 def create_sale(sale: SaleCreate, db: Session = Depends(get_db)):
     
-    sale_id = crud.create(sale, db)
+    sale_id = crud.create_sale_with_products(sale, db)
     return APIResponse(
         successful=True,
         data={"id": sale_id},
@@ -67,8 +67,10 @@ def create_sale(sale: SaleCreate, db: Session = Depends(get_db)):
     )
 
 
+
+
 @router.put("/id", response_model=APIResponse)
-def update_sale(id: int, sale: SaleCreate, db: Session = Depends(get_db)):}
+def update_sale(id: int, sale: SaleCreate, db: Session = Depends(get_db)):
     """
     Updates a sale by its ID.
 
@@ -89,7 +91,7 @@ def update_sale(id: int, sale: SaleCreate, db: Session = Depends(get_db)):}
     if id <= 0:
         raise HTTPException(status_code=400, detail="Invalid id.")
 
-    crud.update_by_id(id, product, db)
+    crud.update_by_id(id, sale, db)
     return APIResponse(
         successful=True, data=None, message="Successfully updated the Sale."
     )

@@ -1,6 +1,8 @@
+from datetime import datetime
 from fastapi import HTTPException
 from sqlalchemy import select, insert, delete, update
 from sqlalchemy.orm import Session
+from app.models.products_sales import ProductsSales
 
 from app.models.sale import Sale
 from app.schemas.sale import SaleCreate
@@ -42,3 +44,25 @@ def delete_by_id(id: int, session: Session):
     item = get_by_id(id, session)
     session.execute(delete(Sale).where(Sale.id == item.id))
     session.commit()
+
+def create_sale_with_products(sale_data: SaleCreate, session: Session):
+    sale = Sale(
+        store_id=sale_data.store_id,
+        user_id=1,
+        payment_method=sale_data.payment_method,
+        timestamp=datetime.now(),
+    )
+
+    for p in sale_data.products:
+        ps = ProductsSales(
+            sale_id=sale.id,
+            product_id=p.product_id,
+            quantity=p.quantity
+        )
+        session.add(ps)
+
+    session.add(sale)
+    session.commit()
+    session.refresh(sale)
+    session.commit()
+    return sale.id

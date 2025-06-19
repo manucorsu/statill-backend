@@ -4,6 +4,7 @@ from sqlalchemy import select, delete, update
 from sqlalchemy.orm import Session
 
 from app.models.product import Product
+from app.models.sale import Sale
 from app.schemas.product import ProductCreate
 
 
