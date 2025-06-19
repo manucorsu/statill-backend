@@ -8,8 +8,6 @@ from app.models.sale import Sale
 from app.models.store import Store
 from app.schemas.sale import SaleCreate
 
-
-
 def get_all(session: Session):
     return session.query(Sale).all()
 

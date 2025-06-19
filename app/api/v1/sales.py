@@ -22,6 +22,7 @@ def get_sales(db: Session = Depends(get_db)):
         GetAllSalesResponse: A response containing a list of all sales.
     """
     result = crud.get_all(db)
+
     return GetAllSalesResponse(
         successful=True, data=result, message="Successfully retrieved all Sales."
     )
