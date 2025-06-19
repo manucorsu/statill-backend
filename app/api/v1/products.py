@@ -23,8 +23,10 @@ def get_products(db: Session = Depends(get_db)):
 
     (Will require auth in the future)
     (Will require admin role in the future)
+
     Args:
         db (Session): The SQLAlchemy session to use for the query.
+
     Returns:
         GetAllProductsResponse: A response containing a list of all products.
     """
@@ -34,7 +36,7 @@ def get_products(db: Session = Depends(get_db)):
     )
 
 
-@router.get("/id", response_model=GetProductResponse)
+@router.get("/{id}", response_model=GetProductResponse)
 def get_product_by_id(id: int, db: Session = Depends(get_db)):
     """
     Retrieves a product by its ID.
@@ -82,17 +84,21 @@ def create_product(product: ProductCreate, db: Session = Depends(get_db)):
     )
 
 
-@router.put("/id", response_model=APIResponse)
+@router.put("/{id}", response_model=APIResponse)
 def update_product(id: int, product: ProductCreate, db: Session = Depends(get_db)):
     """
     Updates a product by its ID.
+
     (Will require auth in the future)
+    
     Args:
         id (int): The ID of the product to update.
         product (ProductCreate): The updated product data.
         db (Session): The SQLAlchemy session to use for the update.
+    
     Returns:
         APIResponse: A response indicating the success of the update operation.
+    
     Raises:
         HTTPException(400): If the provided ID is invalid (less than or equal to 0).
         HTTPException(404): If the product with the specified ID does not exist.
@@ -106,16 +112,20 @@ def update_product(id: int, product: ProductCreate, db: Session = Depends(get_db
     )
 
 
-@router.delete("/", response_model=APIResponse)
+@router.delete("/{id}", response_model=APIResponse)
 def delete_product_by_id(id: int, db: Session = Depends(get_db)):
     """
     Deletes a product by its ID.
+    
     (Will require auth in the future)
+
     Args:
         id (int): The ID of the product to delete.
         db (Session): The SQLAlchemy session to use for the delete.
+    
     Returns:
         APIResponse: A response indicating the success of the delete operation.
+    
     Raises:
         HTTPException(400): If the provided ID is invalid (less than or equal to 0).
         HTTPException(404): If the product with the specified ID does not exist.

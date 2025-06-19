@@ -28,7 +28,7 @@ def get_sales(db: Session = Depends(get_db)):
     )
 
 
-@router.get("/id", response_model=GetSaleResponse)
+@router.get("/{id}", response_model=GetSaleResponse)
 def get_sale_by_id(id: int, db: Session = Depends(get_db)):
     """
     Retrieves a sale by its ID.
@@ -70,7 +70,7 @@ def create_sale(sale: SaleCreate, db: Session = Depends(get_db)):
 
 
 
-@router.put("/id", response_model=APIResponse)
+@router.put("/{id}", response_model=APIResponse)
 def update_sale(id: int, sale: SaleCreate, db: Session = Depends(get_db)):
     """
     Updates a sale by its ID.
@@ -98,7 +98,7 @@ def update_sale(id: int, sale: SaleCreate, db: Session = Depends(get_db)):
     )
 
 
-@router.delete("/", response_model=APIResponse)
+@router.delete("/{id}", response_model=APIResponse)
 def delete_sale_by_id(id: int, db: Session = Depends(get_db)):
     """
     Deletes a sale by its ID.
