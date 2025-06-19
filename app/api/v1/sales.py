@@ -117,7 +117,7 @@ def delete_sale_by_id(id: int, db: Session = Depends(get_db)):
     """
     if id <= 0:
         raise HTTPException(status_code=400, detail="Invalid id.")
-
+        
     crud.delete_by_id(id, db)
     return APIResponse(
         successful=True,
