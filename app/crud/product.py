@@ -88,5 +88,6 @@ def delete_by_id(id: int, session: Session):
         HTTPException(404): If the product with the specified ID does not exist.
     """
     item = get_by_id(id, session)
-    session.execute(delete(Product).where(Product.id == item.id))
+    session.delete(item)
+    
     session.commit()
