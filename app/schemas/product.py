@@ -32,7 +32,7 @@ class ProductCreate(BaseModel):
 
 
 class GetAllProductsResponse(APIResponse):
-    successful: Literal[True ]
+    successful: Literal[True]
     data: list[ProductRead]
 
 

@@ -1,1 +1,31 @@
-#from sqlalchemy.orm import 
+from sqlalchemy.orm import Session
+
+from ..models.user import User
+
+from fastapi import HTTPException
+
+def get_all(session: Session):
+    """
+    Retrieves all users from the database.
+    Args:
+        session (Session): The SQLAlchemy session to use for the query.
+    Returns:
+        list[User]: A list of all users.
+    """
+    return session.query(User).all()
+
+def get_by_id(id:int, session: Session):
+    """
+    Retrieves a user by its ID.
+    Args:
+        user (int): The ID of the product to retrieve.
+        session (Session): The SQLAlchemy session to use for the query.
+    Returns:
+        User: The user with the specified ID.
+    Raises:
+        HTTPException(404): If the product with the specified ID does not exist.
+    """
+    user = session.get(User, id)
+    if user is None:
+        raise HTTPException(404, detail="User not found")
+

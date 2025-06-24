@@ -1,10 +1,8 @@
 from fastapi import HTTPException
 
-from sqlalchemy import select, delete, update
 from sqlalchemy.orm import Session
 
 from app.models.product import Product
-from app.models.sale import Sale
 from app.schemas.product import ProductCreate
 
 
@@ -89,5 +87,5 @@ def delete_by_id(id: int, session: Session):
     """
     item = get_by_id(id, session)
     session.delete(item)
-    
+
     session.commit()
