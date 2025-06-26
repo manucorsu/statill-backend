@@ -8,7 +8,7 @@ class StoreRead(BaseModel):
     id: int
     name: str
     address: str
-    type: int
+    category: int
     preorder_enabled: bool
     ps_enabled: bool
     days_open: list[bool]
@@ -23,7 +23,7 @@ class StoreRead(BaseModel):
 class StoreCreate(BaseModel):
     name: str
     address: str
-    type: int
+    category: int
     preorder_enabled: bool
     ps_enabled: bool
     days_open: list[bool]

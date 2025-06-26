@@ -71,3 +71,19 @@ def update(id: int, store_data: StoreCreate, session: Session):
         setattr(store, field, value)
 
     session.commit()
+
+def delete(id: int, session: Session):
+    """
+    Deletes a store by its ID.
+    Args:
+        id (int): The ID of the store to delete.
+        session (Session): The SQLAlchemy session to use for the delete.
+    Returns:
+        None
+    Raises:
+        HTTPException(404): If the store with the specified ID does not exist.
+    """
+    item = get_by_id(id, session)
+    session.delete(item)
+
+    session.commit()
