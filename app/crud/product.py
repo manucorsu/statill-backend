@@ -49,7 +49,7 @@ def create(product_data: ProductCreate, session: Session):
     session.add(product)
     session.commit()
     session.refresh(product)
-    return product.id
+    return int(product.id)
 
 
 def update_by_id(id: int, product_data: ProductCreate, session: Session):

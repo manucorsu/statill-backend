@@ -19,10 +19,7 @@ def get_by_id(id: int, session: Session):
         raise HTTPException(status_code=404, detail="Sale not found")
     return sale
 
-    
-
-
-def create_sale_with_products(sale_data: SaleCreate, session: Session):
+def create(sale_data: SaleCreate, session: Session):
     store = session.get(Store, sale_data.store_id) # TODO: Cambiar por la función de crud.store cuando exista
     if store is None:
         raise HTTPException(status_code=404, detail="Store not found")
@@ -52,4 +49,4 @@ def create_sale_with_products(sale_data: SaleCreate, session: Session):
 
     session.refresh(sale)
     session.commit()
-    return sale.id
+    return int(sale.id)

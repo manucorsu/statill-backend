@@ -3,11 +3,12 @@ from sqlalchemy.orm import Session
 from app.dependencies.db import get_db
 
 from app.schemas.general import APIResponse
-from app.schemas.sale import SaleRead, SaleCreate, GetAllSalesResponse, GetSaleResponse
+from app.schemas.sale import SaleCreate, GetAllSalesResponse, GetSaleResponse
 from app.schemas.general import Message
 from ...crud import sale as crud
 
 router = APIRouter()
+
 
 @router.get("/", response_model=GetAllSalesResponse)
 def get_sales(db: Session = Depends(get_db)):
@@ -68,7 +69,7 @@ def create_sale(sale: SaleCreate, db: Session = Depends(get_db)):
         sale (SaleCreate): The sale data.
         db (Session): The SQLAlchemy session to use for the query.
     """
-    sale_id = crud.create_sale_with_products(sale, db)
+    sale_id = crud.create(sale, db)
     return APIResponse(
         successful=True,
         data={"id": sale_id},

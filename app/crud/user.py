@@ -36,11 +36,17 @@ def get_by_id(id: int, session: Session):
 
 def create(user_data: UserCreate, session: Session):
     """
-    Creates a new product in the database.
+    Creates a new user in the database.
     Args:
-        product_data (ProductCreate): The product data to create.
+        user_data (UserCreate): The user data to create.
         session (Session): The SQLAlchemy session to use for the insert.
     Returns:
-        int: The ID of the newly created product.
+        int: The ID of the newly created user.
     """
-    pass
+    user = User(**user_data.model_dump())
+
+    session.add(user)
+    session.commit()
+    session.refresh(user)
+
+    return int(user.id)

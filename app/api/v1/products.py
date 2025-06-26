@@ -11,7 +11,7 @@ from app.schemas.product import (
 )
 from app.schemas.general import APIResponse
 
-from ...crud import product as crud
+from app.crud import product as crud
 
 router = APIRouter()
 
