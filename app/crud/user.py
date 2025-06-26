@@ -1,4 +1,4 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, object_mapper
 
 from ..models.user import User
 
@@ -15,7 +15,11 @@ def get_all(session: Session):
     Returns:
         list[User]: A list of all users.
     """
-    return session.query(User).all()
+    users = session.query(User).all()
+    user_reads = []
+    for user in users:
+        new_ur = UserRead.from_orm(user)
+    return users
 
 
 def get_by_id(id: int, session: Session):
@@ -43,7 +47,7 @@ def create(user_data: UserCreate, session: Session):
     Returns:
         int: The ID of the newly created user.
     """
-    user = User(**user_data.model_dump())
+    user = User(**user_data.model_dump(), role="buyer")
 
     session.add(user)
     session.commit()
