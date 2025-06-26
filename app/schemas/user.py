@@ -1,8 +1,9 @@
 from pydantic import BaseModel
 from typing import Literal
+from .general import APIResponse
 
 
-class UserCreate:
+class UserCreate(BaseModel):
     first_names: str
     last_name: str
     email: str
@@ -13,3 +14,15 @@ class UserCreate:
     role: Literal["buyer", "seller", "admin"]
     store_id: int | None
     store_role: Literal["cashier", "owner"] | None
+
+
+class UserRead(UserCreate):
+    id: int
+
+
+class GetAllUsersResponse(APIResponse):
+    data: list[UserRead]
+
+
+class GetUserResponse(APIResponse):
+    data: UserRead

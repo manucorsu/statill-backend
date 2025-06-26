@@ -4,6 +4,9 @@ from ..models.user import User
 
 from fastapi import HTTPException
 
+from ..schemas.user import *
+
+
 def get_all(session: Session):
     """
     Retrieves all users from the database.
@@ -14,18 +17,30 @@ def get_all(session: Session):
     """
     return session.query(User).all()
 
-def get_by_id(id:int, session: Session):
+
+def get_by_id(id: int, session: Session):
     """
     Retrieves a user by its ID.
     Args:
-        user (int): The ID of the product to retrieve.
+        id (int): The ID of the user to retrieve.
         session (Session): The SQLAlchemy session to use for the query.
     Returns:
         User: The user with the specified ID.
     Raises:
-        HTTPException(404): If the product with the specified ID does not exist.
+        HTTPException(404): If the user with the specified ID does not exist.
     """
     user = session.get(User, id)
     if user is None:
         raise HTTPException(404, detail="User not found")
 
+
+def create(user_data: UserCreate, session: Session):
+    """
+    Creates a new product in the database.
+    Args:
+        product_data (ProductCreate): The product data to create.
+        session (Session): The SQLAlchemy session to use for the insert.
+    Returns:
+        int: The ID of the newly created product.
+    """
+    pass

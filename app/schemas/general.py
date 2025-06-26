@@ -2,6 +2,7 @@ from typing import Any, Optional
 from pydantic import BaseModel
 from typing_extensions import deprecated
 
+
 @deprecated("Please use APIResponse instead.")
 class Message(BaseModel):
     message: str
@@ -15,6 +16,7 @@ class APIResponse(BaseModel):
         data (Optional[Any]): The data returned by the API, if any (will mostly be `dict[str, any]`, `list[dict[str, any]]`, or `None`).
         message (str): A message providing additional information about the API call.
     """
+
     successful: bool
     data: Optional[Any]
     message: str
