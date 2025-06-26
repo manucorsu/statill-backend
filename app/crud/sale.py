@@ -10,10 +10,27 @@ from app.schemas.sale import SaleCreate
 from . import product as products_crud
 
 def get_all(session: Session):
+    """
+    Retrieves all sales from the database.
+    Args:
+        session (Session): The SQLAlchemy session to use for the query.
+    Returns:
+        list[Sale]: A list of all products.
+    """
     return session.query(Sale).all()
 
 
 def get_by_id(id: int, session: Session):
+    """
+    Retrieves a sale by its ID.
+    Args:
+        id (int): The ID of the sale to retrieve.
+        session (Session): The SQLAlchemy session to use for the query.
+    Returns:
+        Sale: The sale with the specified ID.
+    Raises:
+        HTTPException(404): If the sale with the specified ID does not exist.
+    """
     sale = session.get(Sale, id)
     if sale is None:
         raise HTTPException(status_code=404, detail="Sale not found")
@@ -23,6 +40,14 @@ def get_by_id(id: int, session: Session):
 
 
 def create_sale_with_products(sale_data: SaleCreate, session: Session):
+    """
+    Creates a new sale in the database.
+    Args:
+        sale_data (SaleCreate): The sale data to create.
+        session (Session): The SQLAlchemy session to use for the insert.
+    Returns:
+        int: The ID of the newly created sale.
+    """
     store = session.get(Store, sale_data.store_id) # TODO: Cambiar por la función de crud.store cuando exista
     if store is None:
         raise HTTPException(status_code=404, detail="Store not found")
