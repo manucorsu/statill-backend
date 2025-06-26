@@ -1,12 +1,13 @@
 from datetime import datetime
 from fastapi import HTTPException
-from sqlalchemy import select, insert, delete, update
 from sqlalchemy.orm import Session
 from app.models.products_sales import ProductsSales
 
 from app.models.sale import Sale
 from app.models.store import Store
 from app.schemas.sale import SaleCreate
+
+from . import product as products_crud
 
 def get_all(session: Session):
     return session.query(Sale).all()
@@ -17,28 +18,6 @@ def get_by_id(id: int, session: Session):
     if sale is None:
         raise HTTPException(status_code=404, detail="Sale not found")
     return sale
-
-def update_by_id(id: int, sale_data: SaleCreate, session: Session):
-    sale = get_by_id(id, session)
-
-    updates = sale_data.model_dump(exclude_unset=True)
-
-    for field, value in updates.items():
-        setattr(sale, field, value)
-
-    session.commit()
-
-
-def delete_by_id(id: int, session: Session):
-    item = get_by_id(id, session)
-
-    sale = session.execute(select(Sale).where(Sale.id == id)).scalar_one_or_none()
-    if not sale:
-            raise HTTPException(status_code=404, detail="Sale not found")
-    
-    session.execute(delete(ProductsSales).where(ProductsSales.sale_id == id))
-    session.execute(delete(Sale).where(Sale.id == item.id))
-    session.commit()
 
     
 
@@ -56,9 +35,18 @@ def create_sale_with_products(sale_data: SaleCreate, session: Session):
     session.add(sale)
     session.commit()
 
-    for p in sale_data.products:
+    for product_data in sale_data.products:
+        product = products_crud.get_by_id(product_data.product_id, session)
+        if (product.store_id != sale_data.store_id):
+            raise HTTPException(status_code=400, detail=f"Product with id {product_data.product_id} not found on this store")
+    
+        if ((product.quantity - product_data.quantity) < 0):
+            raise HTTPException(status_code=400, detail=f"Not enough {product.name} in stock")
+        else:
+            product.quantity -= product_data.quantity
+
         ps = ProductsSales(
-            sale_id=sale.id, product_id=p.product_id, quantity=p.quantity
+            sale_id=sale.id, product_id=product_data.product_id, quantity=product_data.quantity
         )
         session.add(ps)
 
