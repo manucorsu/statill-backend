@@ -52,7 +52,7 @@ def create(product_data: ProductCreate, session: Session):
     return int(product.id)
 
 
-def update_by_id(id: int, product_data: ProductCreate, session: Session):
+def update(id: int, product_data: ProductCreate, session: Session):
     """
     Updates a product by its ID.
     Args:
@@ -74,7 +74,7 @@ def update_by_id(id: int, product_data: ProductCreate, session: Session):
     session.commit()
 
 
-def delete_by_id(id: int, session: Session):
+def delete(id: int, session: Session):
     """
     Deletes a product by its ID.
     Args:

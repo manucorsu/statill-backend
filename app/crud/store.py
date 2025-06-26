@@ -50,3 +50,24 @@ def create(store_data: StoreCreate, session: Session):
     session.commit()
     session.refresh(store)
     return store.id
+
+def update(id: int, store_data: StoreCreate, session: Session):
+    """
+    Updates a store by its ID.
+    Args:
+        id (int): The ID of the store to update.
+        store_data (StoreCreate): The updated store data.
+        session (Session): The SQLAlchemy session to use for the update.
+    Returns:
+        None
+    Raises:
+        HTTPException(404): If the store with the specified ID does not exist.
+    """
+    store = get_by_id(id, session)
+
+    updates = store_data.model_dump(exclude_unset=True)
+
+    for field, value in updates.items():
+        setattr(store, field, value)
+
+    session.commit()

@@ -106,7 +106,7 @@ def update_product(id: int, product: ProductCreate, db: Session = Depends(get_db
     if id <= 0:
         raise HTTPException(status_code=400, detail="Invalid id.")
 
-    crud.update_by_id(id, product, db)
+    crud.update(id, product, db)
     return APIResponse(
         successful=True, data=None, message="Successfully updated the Product."
     )
@@ -133,7 +133,7 @@ def delete_product_by_id(id: int, db: Session = Depends(get_db)):
     if id <= 0:
         raise HTTPException(status_code=400, detail="Invalid id.")
 
-    crud.delete_by_id(id, db)
+    crud.delete(id, db)
     return APIResponse(
         successful=True,
         data=None,
