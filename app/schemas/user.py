@@ -11,14 +11,18 @@ class UserCreate(BaseModel):
     birthdate: str
     gender: Literal["X", "F", "M"]
     res_area: str
-    role: Literal["buyer", "seller", "admin"]
-    store_id: int | None
-    store_role: Literal["cashier", "owner"] | None
 
 
 class UserRead(UserCreate):
     id: int
+    role: Literal["buyer", "seller", "admin"]
+    store_id: int | None
+    store_role: Literal["cashier", "owner"] | None
 
+    # Esto se asignar después (role empieza en "buyer")
+    # role: Literal["buyer", "seller", "admin"]
+    # store_id: int | None
+    # store_role: Literal["cashier", "owner"] | None
 
 class GetAllUsersResponse(APIResponse):
     data: list[UserRead]
