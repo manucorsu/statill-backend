@@ -12,6 +12,9 @@ class UserCreate(BaseModel):
     gender: Literal["X", "F", "M"]
     res_area: str
 
+    class Config:
+        from_attributes = True
+
 
 class UserRead(UserCreate):
     id: int
@@ -23,6 +26,7 @@ class UserRead(UserCreate):
     # role: Literal["buyer", "seller", "admin"]
     # store_id: int | None
     # store_role: Literal["cashier", "owner"] | None
+
 
 class GetAllUsersResponse(APIResponse):
     data: list[UserRead]
