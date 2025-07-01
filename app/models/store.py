@@ -8,7 +8,7 @@ class Store(Base):
     __tablename__ = "stores"
     id = Column(BigInteger, primary_key=True)
     name = Column(String(60), nullable=False)
-    category = Column(BigInteger, nullable=True)
+    category = Column(BigInteger, nullable=False)
     address = Column(String, nullable=False)
     preorder_enabled = Column(Boolean, nullable=False)
     ps_enabled = Column(Boolean, nullable=False)
