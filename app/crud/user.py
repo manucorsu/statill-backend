@@ -16,9 +16,7 @@ def get_all(session: Session):
         list[User]: A list of all users.
     """
     users = session.query(User).all()
-    user_reads = []
-    for user in users:
-        new_ur = UserRead.from_orm(user)
+    print(users)
     return users
 
 
