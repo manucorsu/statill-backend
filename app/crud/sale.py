@@ -8,6 +8,7 @@ from app.models.store import Store
 from app.schemas.sale import SaleCreate
 
 from . import product as products_crud
+from . import store as stores_crud
 
 def get_all(session: Session):
     """
@@ -48,7 +49,7 @@ def create_sale_with_products(sale_data: SaleCreate, session: Session):
     Returns:
         int: The ID of the newly created sale.
     """
-    store = session.get(Store, sale_data.store_id) # TODO: Cambiar por la función de crud.store cuando exista
+    store = stores_crud.get_by_id(sale_data.store_id, session)
     if store is None:
         raise HTTPException(status_code=404, detail="Store not found")
     sale = Sale(
