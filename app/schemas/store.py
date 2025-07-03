@@ -2,7 +2,7 @@ from time import timezone
 from typing import Literal
 from pydantic import BaseModel
 from app.schemas.general import APIResponse
-
+from datetime import time
 
 class StoreRead(BaseModel):
     id: int
@@ -12,8 +12,8 @@ class StoreRead(BaseModel):
     preorder_enabled: bool
     ps_enabled: bool
     days_open: list[bool]
-    opening_times: list[str]
-    closing_times: list[str]
+    opening_times: list[time]
+    closing_times: list[time]
     payment_methods: list[bool]
 
     class Config:
@@ -27,8 +27,8 @@ class StoreCreate(BaseModel):
     preorder_enabled: bool
     ps_enabled: bool
     days_open: list[bool]
-    opening_times: list[str]
-    closing_times: list[str]
+    opening_times: list[time]
+    closing_times: list[time]
     payment_methods: list[bool]
     class Config:
         from_attributes = True

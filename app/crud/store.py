@@ -43,16 +43,6 @@ def create(store_data: StoreCreate, session: Session):
     Returns:
         int: The ID of the newly created store.
     """
-    try:
-        store_data.opening_times = [datetime.fromisoformat(ot) for ot in store_data.opening_times]
-    except(ValueError):
-        raise HTTPException(status_code=400, detail="Invalid opening time")
-
-    try:
-        store_data.closing_times = [datetime.fromisoformat(ct) for ct in store_data.closing_times]
-    except(ValueError):
-        raise HTTPException(status_code=400, detail="Invalid closing time")
-    
     store = Store(
         **store_data.model_dump()
     ) 
