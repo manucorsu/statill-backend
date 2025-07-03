@@ -1,5 +1,7 @@
 from fastapi import APIRouter, Depends
 
+from app.models.user import User
+
 from ...schemas.general import APIResponse
 from ...schemas.user import UserCreate, GetAllUsersResponse, GetUserResponse, UserRead
 
@@ -27,19 +29,23 @@ def get_all(session: Session = Depends(get_db)):
     user_reads: list[UserRead] = []
 
     for user in users:
-        ur = UserRead(
+        user_reads.append(__user_to_userread(user))
+
+    return GetAllUsersResponse(
+        successful=True, data=user_reads, message="Successfully retrieved all Users."
+    )
+
+
+def __user_to_userread(user: User):
+    return UserRead(
             id=user.id,
             first_names=user.first_names,
             last_name=user.last_name,
             email=user.email,
             password=user.password,
+            birthdate=str(user.birthdate),
             gender=str(user.gender.value),
             res_area=user.res_area,
             store_id=user.store_id,
-            store_role=str(user.store_role.value) if user.store_role else None
+            store_role=str(user.store_role.value) if user.store_role else None,
         )
-        user_reads.append(ur)
-    
-    return GetAllUsersResponse(
-        successful=True, data=user_reads, message="Successfully retrieved all Users."
-    )

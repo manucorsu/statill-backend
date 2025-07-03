@@ -18,14 +18,8 @@ class UserCreate(BaseModel):
 
 class UserRead(UserCreate):
     id: int
-    role: Literal["buyer", "seller", "admin"]
     store_id: int | None
     store_role: Literal["cashier", "owner"] | None
-
-    # Esto se asignar después (role empieza en "buyer")
-    # role: Literal["buyer", "seller", "admin"]
-    # store_id: int | None
-    # store_role: Literal["cashier", "owner"] | None
 
 
 class GetAllUsersResponse(APIResponse):

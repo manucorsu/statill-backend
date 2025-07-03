@@ -34,6 +34,8 @@ def get_by_id(id: int, session: Session):
     user = session.get(User, id)
     if user is None:
         raise HTTPException(404, detail="User not found")
+    
+    return user
 
 
 def create(user_data: UserCreate, session: Session):
