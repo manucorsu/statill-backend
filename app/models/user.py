@@ -6,13 +6,14 @@ from .sale import Sale
 from .review import Review
 from .points import Points
 
-class GenderEnum(enum.Enum):
+
+class GenderEnum(str, enum.Enum):
     MALE = "M"
     FEMALE = "F"
     OTHER = "X"
 
 
-class StoreRoleEnum(enum.Enum):
+class StoreRoleEnum(str, enum.Enum):
     CASHIER = "cashier"
     OWNER = "owner"
 
@@ -29,11 +30,10 @@ class User(Base):
     res_area = Column(String(50), nullable=False)
     is_admin = Column(Boolean, nullable=False)
     store_id = Column(BigInteger)
-    store_role = Column(Enum(StoreRoleEnum, name="store_role_enum"), nullable=False)
+    store_role = Column(Enum(StoreRoleEnum, name="store_role_enum"))
 
-    #Relationships
+    # Relationships
     order = relationship("Order", back_populates="user")
     sale = relationship("Sale", back_populates="user")
     review = relationship("Review", back_populates="user")
     points = relationship("Points", back_populates="user")
-

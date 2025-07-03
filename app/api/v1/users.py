@@ -13,6 +13,7 @@ from ...crud import user as crud
 
 router = APIRouter()
 
+
 @router.get("/", response_model=GetAllUsersResponse)
 def get_all(session: Session = Depends(get_db)):
     """
@@ -36,16 +37,56 @@ def get_all(session: Session = Depends(get_db)):
     )
 
 
+@router.get("/{id}", response_model=GetUserResponse)
+def get_by_id(id: int, session: Session = Depends(get_db)):
+    """
+    Retrieves a user by their ID.
+
+    (Will require auth in the future)
+
+    Args:
+        id (int): The ID of the product to retrieve.
+        db (Session): The SQLAlchemy session to use for the query.
+
+    Returns:
+        GetUserResponse: A response containing the user with the specified ID.
+
+    Raises:
+        HTTPException(400): If the provided ID is invalid (less than or equal to 0).
+        HTTPException(404): If the product with the specified ID does not exist.
+    """
+    result = crud.get_by_id(id, session)
+    return GetUserResponse(
+        successful=True,
+        data=__user_to_userread(result),
+        message="Successfully retrieved all Users.",
+    )
+
+@router.post("/", response_model=APIResponse, status_code=201)
+def create_user(user: UserCreate, db: Session = Depends(get_db)):
+    """
+    Creates a user.
+    Args:
+        user (UserCreate): The User data.
+        db (Session): The SQLAlchemy session to use for the query.
+    """
+    user_id = crud.create(user, db)
+    return APIResponse(
+        successful=True,
+        data={"id": user_id},
+        message=f"Successfully created the User, which received id {user_id}.",
+    )
+
 def __user_to_userread(user: User):
     return UserRead(
-            id=user.id,
-            first_names=user.first_names,
-            last_name=user.last_name,
-            email=user.email,
-            password=user.password,
-            birthdate=str(user.birthdate),
-            gender=str(user.gender.value),
-            res_area=user.res_area,
-            store_id=user.store_id,
-            store_role=str(user.store_role.value) if user.store_role else None,
-        )
+        id=user.id,
+        first_names=user.first_names,
+        last_name=user.last_name,
+        email=user.email,
+        password=user.password,
+        birthdate=str(user.birthdate),
+        gender=str(user.gender.value),
+        res_area=user.res_area,
+        store_id=user.store_id,
+        store_role=str(user.store_role.value) if user.store_role else None,
+    )

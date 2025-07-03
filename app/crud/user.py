@@ -31,10 +31,13 @@ def get_by_id(id: int, session: Session):
     Raises:
         HTTPException(404): If the user with the specified ID does not exist.
     """
+    if id <= 0:
+        raise HTTPException(status_code=400, detail="Invalid id.")
+
     user = session.get(User, id)
     if user is None:
         raise HTTPException(404, detail="User not found")
-    
+
     return user
 
 
@@ -47,7 +50,7 @@ def create(user_data: UserCreate, session: Session):
     Returns:
         int: The ID of the newly created user.
     """
-    user = User(**user_data.model_dump(), role="buyer")
+    user = User(**user_data.model_dump(), is_admin=False)
 
     session.add(user)
     session.commit()
