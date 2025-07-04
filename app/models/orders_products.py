@@ -2,7 +2,7 @@ from app.database.base import Base
 from sqlalchemy import Column, Integer, BigInteger, ForeignKey
 from sqlalchemy.orm import relationship
 
-class Orders_Products(Base):
+class OrdersProducts(Base):
     __tablename__ = "orders_products"
     id = Column(BigInteger, primary_key=True)
     order_id = Column(BigInteger, ForeignKey('orders.id'), nullable=False)

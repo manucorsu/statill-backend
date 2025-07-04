@@ -3,6 +3,8 @@ from sqlalchemy import Column, Integer, BigInteger, CheckConstraint, ForeignKey,
 from sqlalchemy.dialects.postgresql import TIME
 from sqlalchemy.orm import relationship
 import enum
+from .user import User
+from .orders_products import OrdersProducts
 
 class StatusEnum(enum.Enum):
     PENDING = "pending"
@@ -22,7 +24,7 @@ class Order(Base):
     # Relationships
     user = relationship("User", back_populates="order")
     store = relationship("Store", back_populates="order")
-    orders_products = relationship("Orders_Products", back_populates="order")
+    orders_products = relationship("OrdersProducts", back_populates="order")
 
     #Constraints
     __table_args__ = (
