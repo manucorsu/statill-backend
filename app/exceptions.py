@@ -13,7 +13,7 @@ def http_exception_handler(_: Request, ex: HTTPException):
     # logger.warning(f"HTTPException: {ex.detail} (status {ex.status_code}) at {request.url}")
     return JSONResponse(
         status_code=ex.status_code,
-        content=APIResponse(successful=False, data=str(ex), message=ex.detail),
+        content=APIResponse(successful=False, data=str(ex), message=ex.detail).model_dump(),
     )
 
 
