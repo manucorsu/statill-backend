@@ -57,3 +57,42 @@ def create(user_data: UserCreate, session: Session):
     session.refresh(user)
 
     return int(user.id)
+
+
+def update(id: int, user_data: UserCreate, session: Session):
+    """
+    Updates a user by its ID.
+    Args:
+        id (int): The ID of the user to update.
+        user_data (UserCreate): The updated user data.
+        session (Session): The SQLAlchemy session to use for the update.
+    Returns:
+        None
+    Raises:
+        HTTPException(404): If the user with the specified ID does not exist.
+    """
+    user = get_by_id(id, session)
+
+    updates = user_data.model_dump(exclude_unset=True)
+
+    for field, value in updates.items():
+        setattr(user, field, value)
+
+    session.commit()
+
+
+def delete(id: int, session: Session):
+    """
+    Deletes a user by its ID.
+    Args:
+        id (int): The ID of the user to delete.
+        session (Session): The SQLAlchemy session to use for the delete.
+    Returns:
+        None
+    Raises:
+        HTTPException(404): If the user with the specified ID does not exist.
+    """
+    item = get_by_id(id, session)
+    session.delete(item)
+
+    session.commit()
