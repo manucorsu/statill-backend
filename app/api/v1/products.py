@@ -76,6 +76,9 @@ def create_product(product: ProductCreate, db: Session = Depends(get_db)):
         product (ProductCreate): The product data.
         db (Session): The SQLAlchemy session to use for the query.
     """
+    if product.quantity <= 0:
+        raise HTTPException(status_code=400, detail="Invalid product quantity.")
+    
     product_id = crud.create(product, db)
     return APIResponse(
         successful=True,
@@ -103,6 +106,9 @@ def update_product(id: int, product: ProductCreate, db: Session = Depends(get_db
         HTTPException(400): If the provided ID is invalid (less than or equal to 0).
         HTTPException(404): If the product with the specified ID does not exist.
     """
+    if product.quantity <= 0:
+        raise HTTPException(status_code=400, detail="Invalid product quantity.")
+
     if id <= 0:
         raise HTTPException(status_code=400, detail="Invalid id.")
 
@@ -137,5 +143,5 @@ def delete_product_by_id(id: int, db: Session = Depends(get_db)):
     return APIResponse(
         successful=True,
         data=None,
-        message=f"Successfully deleted the Product with id {id}.",
+        message=f"Successfully deleted the Product with id {id}."
     )
