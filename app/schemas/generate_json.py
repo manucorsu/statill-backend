@@ -36,3 +36,7 @@ if GENERATE_JSON_SCHEMAS:
     for schema in schemas:
         with open(f"./json/{schema.__name__}.json", "w") as out_file:
             json.dump(model_json_schema(schema, mode="validation"), out_file, indent=2)
+
+    input(
+        "Generated JSON schemas, please remember to set GENERATE_JSON_SCHEMAS to False (press Enter to continue)"
+    )
