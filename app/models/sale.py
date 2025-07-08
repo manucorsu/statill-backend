@@ -1,24 +1,28 @@
 from app.database.base import Base
-from sqlalchemy import Column, Integer, BigInteger, CheckConstraint, ForeignKey
-from sqlalchemy.dialects.postgresql import TIME
+from sqlalchemy import Column, Integer, BigInteger, CheckConstraint, ForeignKey, String
+from datetime import datetime, timezone
 from sqlalchemy.orm import relationship
+from .products_sales import ProductsSales
+
 
 class Sale(Base):
     __tablename__ = "sales"
+
     id = Column(BigInteger, primary_key=True)
-    store_id = Column(BigInteger, ForeignKey('stores.id'), nullable=False)
-    user_id = Column(BigInteger, ForeignKey('users.id'), nullable=False)
-    payement_method  = Column(Integer, nullable=False)
-    timestamp = Column(TIME(timezone=True), nullable=False)
-
+    store_id = Column(BigInteger, ForeignKey("stores.id"), nullable=False)
+    user_id = Column(BigInteger, ForeignKey("users.id"), nullable=False)
+    payment_method = Column(Integer, nullable=False)
+    timestamp = Column(
+        String(32),
+        default=lambda: datetime.now(timezone.utc).isoformat(),
+        nullable=False,
+    )
     # Relationships
-    user = relationship("User", back_populates="order")
-    store = relationship("Store", back_populates="order")
-    products_sales = relationship("Products_Sales", back_populates="order")
+    user = relationship("User", back_populates="sale")
+    store = relationship("Store", back_populates="sale")
+    products_sales = relationship("ProductsSales", back_populates="sale")
 
-    #Constraints
+    # Constraints
     __table_args__ = (
-        CheckConstraint(
-            "payement_method IN (1,2,3,4,5)", name = "payement_method_check"
-        ),
+        CheckConstraint("payment_method IN (1,2,3,4,5)", name="payment_method_check"),
     )

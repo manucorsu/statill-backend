@@ -1,11 +1,17 @@
 from fastapi import APIRouter
+from app.schemas.general import APIResponse
 
 router = APIRouter()
 
 
-@router.get("/")
+@router.get("/", response_model=APIResponse)
 def get_status():
     """
-    Returns `{"status": "ok"}` with status code 200 (OK).
+    Checks the status of the API.
+
+    Returns a simple status message indicating that the API is operational.
+    
+    Returns:
+        APIResponse: A response indicating the API status.
     """
-    return {"status": "ok"}
+    return APIResponse(successful=True, data={"status": "ok"}, message="Successfully performed a status check.")

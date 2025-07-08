@@ -1,1 +1,1 @@
-# This directory will contain Pydantic schemas
+from . import generate_json

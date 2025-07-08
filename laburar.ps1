@@ -16,7 +16,8 @@ Write-Host ""
 
 Write-Host "Instalando dependencias..."
 python -m pip install -r requirements.txt
+python -m pip install -U black
 Write-Host ""
 
-Write-Host "✅ Listo."
+Write-Host "✅ Listo. No te olvides de importar el .env"
 Write-Host ""
