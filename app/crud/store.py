@@ -1,14 +1,9 @@
-from asyncio.windows_events import NULL
-from datetime import datetime
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
-from app.models.products_sales import ProductsSales
 
 from app.models.store import Store
 from app.schemas.store import StoreCreate
 from app.crud.user import get_by_id as get_user_by_id, get_all_by_store_id
-
-from . import product as products_crud
 
 def get_all(session: Session):
     """
