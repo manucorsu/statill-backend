@@ -9,7 +9,7 @@ from sqlalchemy.exc import IntegrityError
 
 warnings.simplefilter("always", DeprecationWarning)
 
-app = FastAPI(title="Statill API")
+app = FastAPI(title="Statill API", version="0.2.0")
 
 app.add_middleware(
     CORSMiddleware,

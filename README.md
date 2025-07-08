@@ -17,8 +17,7 @@ Repositorio de la API de Statill.
 
 4. Ejecutar `. .\laburar.ps1` y esperar a que de termine de hacer sus cosas.
     * *Solo si* aparece un error terminado en **`UnauthorizedAccess`**, ejecutar `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass` aceptando la advertencia y luego repetir el paso 2 o alternativamente cambiar el perfil de la terminal a Git Bash y seguir los pasos para `bash`.
-5. ✅ Listo.
-    * Debería aparecer `(.venv)` en verde a la izquierda de `PS`
+5. Debería aparecer `✅ Listo.`, y luego `(.venv)` en verde a la izquierda de `PS`. **Seguir desde [acá](#luego)**
 
 
 
@@ -29,8 +28,7 @@ Repositorio de la API de Statill.
 * Se ve como el bash de Linux en general
 
 4. Ejecutar `source ./laburar.sh` y esperar a que termine de hacer sus cosas.
-5. ✅ Listo.
-    * Debería aparecer `(.venv)` abajo del resultado de cada comando que se ejecute
+5. Debería aparecer `✅ Listo.`, y luego `(.venv)` abajo del resultado de cada comando que se ejecute. **Seguir desde [acá](#luego)**
 
 
 ### Luego:
