@@ -67,17 +67,18 @@ def get_store_by_id(id: int, db: Session = Depends(get_db)):
 
 
 @router.post("/", response_model=APIResponse, status_code=201)
-def create_store(store: StoreCreate, db: Session = Depends(get_db)):
+def create_store(store: StoreCreate, user_id: int, db: Session = Depends(get_db)):
     """
     Creates a store.
 
     (Will require auth in the future)
 
-    Args:
+    Args:  
         store (StoreCreate): The store data.
+        (temp) user_id: The owner id.
         db (Session): The SQLAlchemy session to use for the query.
     """
-    store_id = crud.create(store, db)
+    store_id = crud.create(store, user_id, db)
     return APIResponse(
         successful=True,
         data={"id": store_id},
