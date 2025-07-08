@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends
+from fastapi.exceptions import HTTPException
 
 from app.models.user import User
 
@@ -89,4 +90,60 @@ def __user_to_userread(user: User):
         res_area=user.res_area,
         store_id=user.store_id,
         store_role=str(user.store_role.value) if user.store_role else None,
+    )
+
+@router.put("/{id}", response_model=APIResponse)
+def update_user(id: int, user: UserCreate, db: Session = Depends(get_db)):
+    """
+    Updates a user by its ID.
+
+    (Will require auth in the future)
+    
+    Args:
+        id (int): The ID of the user to update.
+        user (UserCreate): The updated user data.
+        db (Session): The SQLAlchemy session to use for the update.
+    
+    Returns:
+        APIResponse: A response indicating the success of the update operation.
+    
+    Raises:
+        HTTPException(400): If the provided ID is invalid (less than or equal to 0).
+        HTTPException(404): If the user with the specified ID does not exist.
+    """
+    if id <= 0:
+        raise HTTPException(status_code=400, detail="Invalid id.")
+
+    crud.update(id, user, db)
+    return APIResponse(
+        successful=True, data=None, message="Successfully updated the User."
+    )
+
+
+@router.delete("/{id}", response_model=APIResponse)
+def delete_user_by_id(id: int, db: Session = Depends(get_db)):
+    """
+    Deletes a user by its ID.
+    
+    (Will require auth in the future)
+
+    Args:
+        id (int): The ID of the user to delete.
+        db (Session): The SQLAlchemy session to use for the delete.
+    
+    Returns:
+        APIResponse: A response indicating the success of the delete operation.
+    
+    Raises:
+        HTTPException(400): If the provided ID is invalid (less than or equal to 0).
+        HTTPException(404): If the user  with the specified ID does not exist.
+    """
+    if id <= 0:
+        raise HTTPException(status_code=400, detail="Invalid id.")
+
+    crud.delete(id, db)
+    return APIResponse(
+        successful=True,
+        data=None,
+        message=f"Successfully deleted the User with id {id}.",
     )
