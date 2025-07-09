@@ -3,13 +3,17 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.exceptions import RequestValidationError
 from app.api.v1 import router as api_router
 from .config import settings
-from .exceptions import http_exception_handler, validation_exception_handler, check_violation_handler
+from .exceptions import (
+    http_exception_handler,
+    validation_exception_handler,
+    check_violation_handler,
+)
 import warnings
 from sqlalchemy.exc import IntegrityError
 
 warnings.simplefilter("always", DeprecationWarning)
 
-app = FastAPI(title="Statill API")
+app = FastAPI(title="Statill API", version="0.2.1")
 
 app.add_middleware(
     CORSMiddleware,

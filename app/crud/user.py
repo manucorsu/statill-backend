@@ -19,6 +19,19 @@ def get_all(session: Session):
     print(users)
     return users
 
+def get_all_by_store_id(id:int, session: Session):
+    """
+    Retrieves all users from the database by their store ID.
+    Args:
+        id (int): The ID of the store.
+        session (Session): The SQLAlchemy session to use for the query.
+    Returns:
+        list[User]: A list fo the users wiith the store ID.
+    Raises:
+        HTTPException(404): If the store with the specified ID does not exist.
+    """
+    users = session.query(User).filter(User.store_id == id).all()
+    return users
 
 def get_by_id(id: int, session: Session):
     """
@@ -31,9 +44,6 @@ def get_by_id(id: int, session: Session):
     Raises:
         HTTPException(404): If the user with the specified ID does not exist.
     """
-    if id <= 0:
-        raise HTTPException(status_code=400, detail="Invalid id.")
-
     user = session.get(User, id)
     if user is None:
         raise HTTPException(404, detail="User not found")
@@ -57,3 +67,42 @@ def create(user_data: UserCreate, session: Session):
     session.refresh(user)
 
     return int(user.id)
+
+
+def update(id: int, user_data: UserCreate, session: Session):
+    """
+    Updates a user by its ID.
+    Args:
+        id (int): The ID of the user to update.
+        user_data (UserCreate): The updated user data.
+        session (Session): The SQLAlchemy session to use for the update.
+    Returns:
+        None
+    Raises:
+        HTTPException(404): If the user with the specified ID does not exist.
+    """
+    user = get_by_id(id, session)
+
+    updates = user_data.model_dump(exclude_unset=True)
+
+    for field, value in updates.items():
+        setattr(user, field, value)
+
+    session.commit()
+
+
+def delete(id: int, session: Session):
+    """
+    Deletes a user by its ID.
+    Args:
+        id (int): The ID of the user to delete.
+        session (Session): The SQLAlchemy session to use for the delete.
+    Returns:
+        None
+    Raises:
+        HTTPException(404): If the user with the specified ID does not exist.
+    """
+    item = get_by_id(id, session)
+    session.delete(item)
+
+    session.commit()

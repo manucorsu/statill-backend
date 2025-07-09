@@ -1,6 +1,7 @@
 from typing import Any, Optional
 from pydantic import BaseModel
 from typing_extensions import deprecated
+from .custom_types import NonEmptyStr
 
 
 @deprecated("Please use APIResponse instead.")
@@ -19,4 +20,4 @@ class APIResponse(BaseModel):
 
     successful: bool
     data: Optional[Any]
-    message: str
+    message: NonEmptyStr
