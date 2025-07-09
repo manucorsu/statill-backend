@@ -5,6 +5,7 @@ from app.models.store import Store
 from app.schemas.store import StoreCreate
 from app.crud.user import get_by_id as get_user_by_id, get_all_by_store_id
 
+
 def get_all(session: Session):
     """
     Retrieves all stores from the database.
@@ -14,6 +15,7 @@ def get_all(session: Session):
         list[Store]: A list of all stores.
     """
     return session.query(Store).all()
+
 
 def get_by_id(id: int, session: Session):
     """
@@ -31,6 +33,7 @@ def get_by_id(id: int, session: Session):
         raise HTTPException(status_code=404, detail="Store not found")
     return store
 
+
 def create(store_data: StoreCreate, user_id: int, session: Session):
     """
     Creates a new store in the database.
@@ -40,9 +43,19 @@ def create(store_data: StoreCreate, user_id: int, session: Session):
     Returns:
         int: The ID of the newly created store.
     """
-    store = Store(
-        **store_data.model_dump()
-    ) 
+    for index, ct in enumerate(store_data.closing_times):
+        ot = store_data.opening_times[index]
+
+        if (ct is None or ot is None) and ct != ot:
+            raise HTTPException(
+                400,
+                detail="A store's opening time cannot be None if its closing time has a value (and vice-versa)",
+            )
+
+        if ct == ot:
+            raise HTTPException(400, "A store cannot open and close at the same time")
+
+    store = Store(**store_data.model_dump())
 
     session.add(store)
     session.flush()
@@ -50,10 +63,11 @@ def create(store_data: StoreCreate, user_id: int, session: Session):
 
     user = get_user_by_id(user_id, session)
     user.store_id = store.id
-    user.store_role  = "owner"
+    user.store_role = "owner"
 
     session.commit()
     return store.id
+
 
 def update(id: int, store_data: StoreCreate, session: Session):
     """
@@ -76,6 +90,7 @@ def update(id: int, store_data: StoreCreate, session: Session):
 
     session.commit()
 
+
 def delete(id: int, session: Session):
     """
     Deletes a store by its ID.
@@ -92,9 +107,9 @@ def delete(id: int, session: Session):
     users = get_all_by_store_id(id, session)
 
     for user in users:
-     user.store_id = None
-     user.store_role  = None
-     
+        user.store_id = None
+        user.store_role = None
+
     session.delete(item)
 
     session.commit()

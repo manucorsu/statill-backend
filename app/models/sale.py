@@ -24,5 +24,5 @@ class Sale(Base):
 
     # Constraints
     __table_args__ = (
-        CheckConstraint("payment_method IN (1,2,3,4,5)", name="payment_method_check"),
+        CheckConstraint("payment_method IN (0, 1, 2, 3)", name="payment_method_check"),
     )

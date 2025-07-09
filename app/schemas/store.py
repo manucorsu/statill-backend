@@ -1,35 +1,35 @@
-from time import timezone
-from typing import Literal
-from pydantic import BaseModel
+from typing import Literal, Annotated
+from pydantic import BaseModel, Field
 from app.schemas.general import APIResponse
 from datetime import time
+from .custom_types import PositiveInt, NonEmptyStr, UnsignedInt
+
 
 class StoreRead(BaseModel):
-    id: int
-    name: str
-    address: str
-    category: int
+    id: PositiveInt
+    name: NonEmptyStr
+    address: NonEmptyStr
+    category: UnsignedInt
     preorder_enabled: bool
     ps_enabled: bool
-    days_open: list[bool]
-    opening_times: list[time]
-    closing_times: list[time]
-    payment_methods: list[bool]
+    opening_times: Annotated[list[time | None], Field(min_length=7, max_length=7)]
+    closing_times: Annotated[list[time | None], Field(min_length=7, max_length=7)]
+    payment_methods: Annotated[list[bool], Field(min_length=4, max_length=4)]
 
     class Config:
         from_attributes = True
 
 
 class StoreCreate(BaseModel):
-    name: str
-    address: str
-    category: int
+    name: NonEmptyStr
+    address: NonEmptyStr
+    category: UnsignedInt
     preorder_enabled: bool
     ps_enabled: bool
-    days_open: list[bool]
-    opening_times: list[time]
-    closing_times: list[time]
-    payment_methods: list[bool]
+    opening_times: Annotated[list[time | None], Field(min_length=7, max_length=7)]
+    closing_times: Annotated[list[time | None], Field(min_length=7, max_length=7)]
+    payment_methods: Annotated[list[bool], Field(min_length=4, max_length=4)]
+
     class Config:
         from_attributes = True
 

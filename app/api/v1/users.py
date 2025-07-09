@@ -111,9 +111,6 @@ def update_user(id: int, user: UserCreate, db: Session = Depends(get_db)):
         HTTPException(400): If the provided ID is invalid (less than or equal to 0).
         HTTPException(404): If the user with the specified ID does not exist.
     """
-    if id <= 0:
-        raise HTTPException(status_code=400, detail="Invalid id.")
-
     crud.update(id, user, db)
     return APIResponse(
         successful=True, data=None, message="Successfully updated the User."
@@ -138,9 +135,6 @@ def delete_user_by_id(id: int, db: Session = Depends(get_db)):
         HTTPException(400): If the provided ID is invalid (less than or equal to 0).
         HTTPException(404): If the user  with the specified ID does not exist.
     """
-    if id <= 0:
-        raise HTTPException(status_code=400, detail="Invalid id.")
-
     crud.delete(id, db)
     return APIResponse(
         successful=True,

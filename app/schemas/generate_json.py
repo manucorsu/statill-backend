@@ -1,4 +1,4 @@
-GENERATE_JSON_SCHEMAS = False  # set to True only if needed to create postman tests
+GENERATE_JSON_SCHEMAS = True  # set to True only if needed to create postman tests
 
 if GENERATE_JSON_SCHEMAS:
     import json

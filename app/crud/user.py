@@ -30,9 +30,6 @@ def get_all_by_store_id(id:int, session: Session):
     Raises:
         HTTPException(404): If the store with the specified ID does not exist.
     """
-    if id <= 0:
-        raise HTTPException(status_code=400, detail="Invalid id.")
-
     users = session.query(User).filter(User.store_id == id).all()
     return users
 
@@ -47,9 +44,6 @@ def get_by_id(id: int, session: Session):
     Raises:
         HTTPException(404): If the user with the specified ID does not exist.
     """
-    if id <= 0:
-        raise HTTPException(status_code=400, detail="Invalid id.")
-
     user = session.get(User, id)
     if user is None:
         raise HTTPException(404, detail="User not found")

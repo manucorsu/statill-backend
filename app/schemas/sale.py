@@ -1,31 +1,37 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from app.schemas.general import APIResponse
+from typing import Annotated
+from .custom_types import PositiveInt, NonEmptyStr, NonNegativeFloat
 
 
 class SaleRead(BaseModel):
-    id: int
-    user_id: int
-    store_id: int
-    payment_method: int
-    timestamp: str
+    id: PositiveInt
+    user_id: PositiveInt
+    store_id: PositiveInt
+    payment_method: Annotated[int, Field(ge=0, le=3)]
+    timestamp: NonEmptyStr
 
     class Config:
         from_attributes = True
+
 
 class ProductSale(BaseModel):
-    product_id: int
-    quantity: float
+    product_id: NonEmptyStr
+    quantity: NonNegativeFloat
+
 
 class SaleCreate(BaseModel):
-    store_id: int
+    store_id: PositiveInt
     products: list[ProductSale]
-    payment_method: int
+    payment_method: Annotated[int, Field(ge=0, le=3)]
 
     class Config:
         from_attributes = True
+
 
 class GetAllSalesResponse(APIResponse):
     data: list[SaleRead]
+
 
 class GetSaleResponse(APIResponse):
     data: SaleRead

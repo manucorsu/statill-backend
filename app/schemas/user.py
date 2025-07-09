@@ -1,24 +1,25 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 from typing import Literal
 from .general import APIResponse
+from .custom_types import NonEmptyStr, PositiveInt, UserPassword
 
 
 class UserCreate(BaseModel):
-    first_names: str
-    last_name: str
-    email: str
-    password: str
-    birthdate: str
+    first_names: NonEmptyStr
+    last_name: NonEmptyStr
+    email: NonEmptyStr
+    password: UserPassword
+    birthdate: NonEmptyStr
     gender: Literal["X", "F", "M"]
-    res_area: str
+    res_area: NonEmptyStr
 
     class Config:
         from_attributes = True
 
 
 class UserRead(UserCreate):
-    id: int
-    store_id: int | None
+    id: PositiveInt
+    store_id: PositiveInt | None
     store_role: Literal["cashier", "owner"] | None
 
 

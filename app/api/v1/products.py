@@ -54,8 +54,6 @@ def get_product_by_id(id: int, db: Session = Depends(get_db)):
         HTTPException(400): If the provided ID is invalid (less than or equal to 0).
         HTTPException(404): If the product with the specified ID does not exist.
     """
-    if id <= 0:
-        raise HTTPException(status_code=400, detail="Invalid id.")
 
     result = crud.get_by_id(id, db)
     return GetProductResponse(
@@ -106,12 +104,6 @@ def update_product(id: int, product: ProductCreate, db: Session = Depends(get_db
         HTTPException(400): If the provided ID is invalid (less than or equal to 0).
         HTTPException(404): If the product with the specified ID does not exist.
     """
-    if product.quantity <= 0:
-        raise HTTPException(status_code=400, detail="Invalid product quantity.")
-
-    if id <= 0:
-        raise HTTPException(status_code=400, detail="Invalid id.")
-
     crud.update(id, product, db)
     return APIResponse(
         successful=True, data=None, message="Successfully updated the Product."
@@ -136,9 +128,6 @@ def delete_product_by_id(id: int, db: Session = Depends(get_db)):
         HTTPException(400): If the provided ID is invalid (less than or equal to 0).
         HTTPException(404): If the product with the specified ID does not exist.
     """
-    if id <= 0:
-        raise HTTPException(status_code=400, detail="Invalid id.")
-
     crud.delete(id, db)
     return APIResponse(
         successful=True,

@@ -4,6 +4,7 @@ from sqlalchemy.dialects.postgresql import ARRAY, BOOLEAN, TIME
 from sqlalchemy.orm import relationship
 from .order import Order
 
+
 class Store(Base):
     __tablename__ = "stores"
     id = Column(BigInteger, primary_key=True)
@@ -12,19 +13,18 @@ class Store(Base):
     address = Column(String, nullable=False)
     preorder_enabled = Column(Boolean, nullable=False)
     ps_enabled = Column(Boolean, nullable=False)
-    days_open = Column(ARRAY(BOOLEAN), nullable=False)
     opening_times = Column(ARRAY(TIME(timezone=True)), nullable=False)
     closing_times = Column(ARRAY(TIME(timezone=True)), nullable=False)
     payment_methods = Column(ARRAY(BOOLEAN), nullable=False)
 
-    #Relationships
+    # Relationships
     order = relationship("Order", back_populates="store")
     sale = relationship("Sale", back_populates="store")
     review = relationship("Review", back_populates="store")
     points = relationship("Points", back_populates="store")
     product = relationship("Product", back_populates="store")
 
-    #Constraints
+    # Constraints
     __table_args__ = (
         CheckConstraint(
             "array_length(days_open, 1) = 7", name="days_open_length_check"
