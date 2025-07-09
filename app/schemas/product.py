@@ -30,7 +30,7 @@ class ProductCreate(BaseModel):
     brand: NonEmptyStr
     price: MoneyAmount
     type: UnsignedInt
-    quantity: NonEmptyStr
+    quantity: NonNegativeFloat
     desc: NonEmptyStr
     barcode: NonEmptyStr | None
 
