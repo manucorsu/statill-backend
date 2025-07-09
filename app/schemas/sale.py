@@ -24,6 +24,7 @@ class SaleCreate(BaseModel):
     store_id: PositiveInt
     products: list[ProductSale]
     payment_method: Annotated[int, Field(ge=0, le=3)]
+    user_id: PositiveInt
 
     class Config:
         from_attributes = True

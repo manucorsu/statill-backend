@@ -54,7 +54,7 @@ def create_sale_with_products(sale_data: SaleCreate, session: Session):
         raise HTTPException(status_code=404, detail="Store not found")
     sale = Sale(
         store_id=sale_data.store_id,
-        user_id=1,
+        user_id=sale_data.user_id,
         payment_method=sale_data.payment_method,
         timestamp=datetime.now(),
     )
