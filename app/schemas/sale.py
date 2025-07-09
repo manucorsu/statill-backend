@@ -16,7 +16,7 @@ class SaleRead(BaseModel):
 
 
 class ProductSale(BaseModel):
-    product_id: NonEmptyStr
+    product_id: PositiveInt
     quantity: NonNegativeFloat
 
 
