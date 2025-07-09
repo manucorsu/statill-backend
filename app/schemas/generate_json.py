@@ -38,4 +38,6 @@ if GENERATE_JSON_SCHEMAS:
         with open(f"./json/{schema.__name__}.json", "w") as out_file:
             json.dump(model_json_schema(schema, mode="validation"), out_file, indent=2)
 
-    warnings.warn("⚠️   Please remember to set GENERATE_JSON_SCHEMAS to False before pushing, or deploying WILL fail!")
+    warnings.warn(
+        "⚠️   Please remember to set GENERATE_JSON_SCHEMAS to False before pushing, or deploying WILL fail!"
+    )

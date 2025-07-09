@@ -5,21 +5,27 @@ from ..models.user import User
 from fastapi import HTTPException
 
 from ..schemas.user import *
+from app.models.products_sales import ProductsSales
+from datetime import date
 
 
-def get_all(session: Session):
+def get_all(session: Session, include_anonymized: bool = False):
     """
     Retrieves all users from the database.
     Args:
         session (Session): The SQLAlchemy session to use for the query.
+        include_anonymized (bool): Whether to include users anonymized as "Deleted User".
     Returns:
         list[User]: A list of all users.
     """
-    users = session.query(User).all()
-    print(users)
+    query = session.query(User)
+    if not include_anonymized:
+        query = query.filter(User.name != "Deleted User")
+    users = query.all()
     return users
 
-def get_all_by_store_id(id:int, session: Session):
+
+def get_all_by_store_id(id: int, session: Session):
     """
     Retrieves all users from the database by their store ID.
     Args:
@@ -31,21 +37,29 @@ def get_all_by_store_id(id:int, session: Session):
         HTTPException(404): If the store with the specified ID does not exist.
     """
     users = session.query(User).filter(User.store_id == id).all()
-    return users
+    result: list[User] = []
+    for u in users:
+        if u.email != "deleted@example.com":
+            result.append(u)
 
-def get_by_id(id: int, session: Session):
+    return result
+
+
+def get_by_id(id: int, session: Session, allow_anonymized: bool = False):
     """
-    Retrieves a user by its ID.
+    Retrieves a user by their ID.
+
     Args:
         id (int): The ID of the user to retrieve.
         session (Session): The SQLAlchemy session to use for the query.
+        allow_anonymized (bool): If set to `False`, a 404 error will be raised if the User with the specified ID is marked as `"Deleted User"`, just as if the user did not exist in the database. Default is `False`.
     Returns:
         User: The user with the specified ID.
     Raises:
-        HTTPException(404): If the user with the specified ID does not exist.
+        HTTPException(404): If the user with the specified ID does not exist, or is a `"Deleted User"` and `allow_anonymized` is set to `False`.
     """
     user = session.get(User, id)
-    if user is None:
+    if user is None or (user.email == "deleted@example.com" and not allow_anonymized):
         raise HTTPException(404, detail="User not found")
 
     return user
@@ -60,6 +74,9 @@ def create(user_data: UserCreate, session: Session):
     Returns:
         int: The ID of the newly created user.
     """
+    if user_data.email.lower() == "deleted@example.com":
+        raise HTTPException(400, detail="Invalid user data")
+
     user = User(**user_data.model_dump(), is_admin=False)
 
     session.add(user)
@@ -93,7 +110,7 @@ def update(id: int, user_data: UserCreate, session: Session):
 
 def delete(id: int, session: Session):
     """
-    Deletes a user by its ID.
+    Deletes a user by its ID, or anonymizes them if referenced in ProductsSales.
     Args:
         id (int): The ID of the user to delete.
         session (Session): The SQLAlchemy session to use for the delete.
@@ -102,7 +119,23 @@ def delete(id: int, session: Session):
     Raises:
         HTTPException(404): If the user with the specified ID does not exist.
     """
-    item = get_by_id(id, session)
-    session.delete(item)
+    user = get_by_id(id, session)
+
+    referenced = (
+        session.query(ProductsSales).filter(ProductsSales.user_id == id).first()
+    )
+
+    if referenced:
+        user.first_names = "Deleted User"
+        user.last_name = "Deleted User"
+        user.birthdate = date(1900, 1, 1)
+        user.gender = "X"
+        user.email = "deleted@example.com"
+        user.password = "Deleted User"
+        user.res_area = "Deleted User"
+        user.store_id = None
+        user.store_role = None
+    else:
+        session.delete(user)
 
     session.commit()

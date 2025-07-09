@@ -16,18 +16,19 @@ router = APIRouter()
 
 
 @router.get("/", response_model=GetAllUsersResponse)
-def get_all(session: Session = Depends(get_db)):
+def get_all(include_anonymized: bool = False, session: Session = Depends(get_db)):
     """
     Retrieves all users from the database.
 
     (Will require auth in the future)
     (Will require admin role in the future)
     Args:
+        include_anonymized (bool): Whether to include users anonymized as "Deleted User".
         session (Session): The SQLAlchemy session to use for the query.
     Returns:
-        GetAllUsersResponse: A response containing a list of all sales.
+        GetAllUsersResponse: A response containing a list of all users.
     """
-    users = crud.get_all(session)
+    users = crud.get_all(session, include_anonymized=include_anonymized)
     user_reads: list[UserRead] = []
 
     for user in users:
@@ -39,28 +40,33 @@ def get_all(session: Session = Depends(get_db)):
 
 
 @router.get("/{id}", response_model=GetUserResponse)
-def get_by_id(id: int, session: Session = Depends(get_db)):
+def get_by_id(
+    id: int,
+    allow_anonymized: bool = False,
+    session: Session = Depends(get_db),
+):
     """
     Retrieves a user by their ID.
 
     (Will require auth in the future)
 
     Args:
-        id (int): The ID of the product to retrieve.
-        db (Session): The SQLAlchemy session to use for the query.
+        id (int): The ID of the user to retrieve.
+        allow_anonymized (bool): Whether to include users anonymized as "Deleted User".
+        session (Session): The SQLAlchemy session to use for the query.
 
     Returns:
         GetUserResponse: A response containing the user with the specified ID.
 
     Raises:
         HTTPException(400): If the provided ID is invalid (less than or equal to 0).
-        HTTPException(404): If the product with the specified ID does not exist.
+        HTTPException(404): If the user with the specified ID does not exist.
     """
-    result = crud.get_by_id(id, session)
+    result = crud.get_by_id(id, session, allow_anonymized=allow_anonymized)
     return GetUserResponse(
         successful=True,
         data=__user_to_userread(result),
-        message="Successfully retrieved all Users.",
+        message="Successfully retrieved the User.",
     )
 
 @router.post("/", response_model=APIResponse, status_code=201)
@@ -120,14 +126,14 @@ def update_user(id: int, user: UserCreate, db: Session = Depends(get_db)):
 @router.delete("/{id}", response_model=APIResponse)
 def delete_user_by_id(id: int, db: Session = Depends(get_db)):
     """
-    Deletes a user by its ID.
+    Deletes a user by its ID, or anonymizes them if referenced in ProductsSales.
     
     (Will require auth in the future)
-
+    
     Args:
         id (int): The ID of the user to delete.
-        db (Session): The SQLAlchemy session to use for the delete.
-    
+        session (Session): The SQLAlchemy session to use for the delete.
+
     Returns:
         APIResponse: A response indicating the success of the delete operation.
     

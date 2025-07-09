@@ -64,7 +64,7 @@ def create_sale_with_products(sale_data: SaleCreate, session: Session):
     for product_data in sale_data.products:
         product = products_crud.get_by_id(product_data.product_id, session)
         if (product.store_id != sale_data.store_id):
-            raise HTTPException(status_code=400, detail=f"Product with id {product_data.product_id} not found on this store")
+            raise HTTPException(status_code=400, detail=f"Product with id {product_data.product_id} does not belong to this store")
     
         if ((product.quantity - product_data.quantity) < 0):
             raise HTTPException(status_code=400, detail=f"Not enough {product.name} in stock")

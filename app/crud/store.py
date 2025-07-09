@@ -93,7 +93,7 @@ def update(id: int, store_data: StoreCreate, session: Session):
 
 def delete(id: int, session: Session):
     """
-    Deletes a store by its ID.
+    Deletes a store by its ID, cascading delete to products, sales, and products_sales, but not users.
     Args:
         id (int): The ID of the store to delete.
         session (Session): The SQLAlchemy session to use for the delete.
@@ -104,12 +104,29 @@ def delete(id: int, session: Session):
     """
     item = get_by_id(id, session)
 
-    users = get_all_by_store_id(id, session)
+    # Delete all products associated with this store
+    from app.models.product import Product
+    products = session.query(Product).filter(Product.store_id == id).all()
+    for product in products:
+        session.delete(product)
 
+    # Delete all sales associated with this store
+    from app.models.sale import Sale
+    sales = session.query(Sale).filter(Sale.store_id == id).all()
+    for sale in sales:
+        session.delete(sale)
+
+    # Delete all products_sales associated with this store
+    from app.models.products_sales import ProductsSales
+    products_sales = session.query(ProductsSales).filter(ProductsSales.store_id == id).all()
+    for ps in products_sales:
+        session.delete(ps)
+
+    # Do NOT delete users, just disassociate them
+    users = get_all_by_store_id(id, session)
     for user in users:
         user.store_id = None
         user.store_role = None
 
     session.delete(item)
-
     session.commit()
