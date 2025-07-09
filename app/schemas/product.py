@@ -33,6 +33,20 @@ class ProductCreate(BaseModel):
     quantity: NonNegativeFloat
     desc: NonEmptyStr
     barcode: NonEmptyStr | None
+    store_id: PositiveInt  # temp until login
+
+    class Config:
+        from_attributes = True
+
+
+class ProductUpdate(BaseModel):
+    name: NonEmptyStr | None
+    brand: NonEmptyStr | None
+    price: MoneyAmount | None
+    type: UnsignedInt | None
+    quantity: NonNegativeFloat | None
+    desc: NonEmptyStr | None
+    barcode: NonEmptyStr | None
 
     class Config:
         from_attributes = True
