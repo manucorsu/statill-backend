@@ -112,15 +112,13 @@ def delete(id: int, session: Session):
 
     # Delete all sales associated with this store
     from app.models.sale import Sale
+    from app.models.products_sales import ProductsSales
     sales = session.query(Sale).filter(Sale.store_id == id).all()
     for sale in sales:
+        products_sales = session.query(ProductsSales).filter(ProductsSales.sale_id == id).all()
+        for ps in products_sales:
+            session.delete(ps)
         session.delete(sale)
-
-    # Delete all products_sales associated with this store
-    from app.models.products_sales import ProductsSales
-    products_sales = session.query(ProductsSales).filter(ProductsSales.store_id == id).all()
-    for ps in products_sales:
-        session.delete(ps)
 
     # Do NOT delete users, just disassociate them
     users = get_all_by_store_id(id, session)
