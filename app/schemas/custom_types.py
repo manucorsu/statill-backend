@@ -39,3 +39,8 @@ UnsignedInt = Annotated[int, Field(ge=0)]
 """
 **An integer that is >= 0.**
 """
+
+Gt0Float = Annotated[float, Field(gt=0)]
+"""
+**A float that is > 0.**
+"""

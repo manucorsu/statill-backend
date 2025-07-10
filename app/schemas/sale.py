@@ -1,7 +1,7 @@
 from pydantic import BaseModel, Field
 from app.schemas.general import APIResponse
 from typing import Annotated
-from .custom_types import PositiveInt, NonEmptyStr, NonNegativeFloat
+from .custom_types import PositiveInt, NonEmptyStr, NonNegativeFloat, Gt0Float
 
 
 class SaleRead(BaseModel):
@@ -17,7 +17,7 @@ class SaleRead(BaseModel):
 
 class ProductSale(BaseModel):
     product_id: PositiveInt
-    quantity: NonNegativeFloat
+    quantity: Gt0Float
 
 
 class SaleCreate(BaseModel):
