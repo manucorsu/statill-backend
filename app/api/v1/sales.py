@@ -3,11 +3,35 @@ from sqlalchemy.orm import Session
 from app.dependencies.db import get_db
 
 from app.schemas.general import APIResponse
-from app.schemas.sale import SaleCreate, GetAllSalesResponse, GetSaleResponse
-from app.schemas.general import Message
+from app.schemas.sale import (
+    SaleCreate,
+    GetAllSalesResponse,
+    GetSaleResponse,
+    SaleRead,
+    ProductSale as ProductSaleSchema,
+)
 from ...crud import sale as crud
+from ...models.sale import Sale
+from ...models.products_sales import ProductsSales as ProductsSalesModel
 
 router = APIRouter()
+
+
+def __sale_to_saleread(sale: Sale, products: list[ProductsSalesModel]):
+    products_as_schemas: list[ProductSaleSchema] = []
+    for ps in products:
+        products_as_schemas.append(
+            ProductSaleSchema(product_id=ps.product_id, quantity=ps.quantity)
+        )
+
+    return SaleRead(
+        id=sale.id,
+        user_id=sale.user_id,
+        store_id=sale.store_id,
+        payment_method=sale.payment_method,
+        timestamp=sale.timestamp,
+        products=products_as_schemas,
+    )
 
 
 @router.get("/", response_model=GetAllSalesResponse)
@@ -22,8 +46,8 @@ def get_sales(db: Session = Depends(get_db)):
     Returns:
         GetAllSalesResponse: A response containing a list of all sales.
     """
-    result = crud.get_all(db)
-
+    sales = crud.get_all(db)
+    result = [__sale_to_saleread(s, crud.get_ps_by_sale(s, db)) for s in sales]
     return GetAllSalesResponse(
         successful=True, data=result, message="Successfully retrieved all Sales."
     )
@@ -47,7 +71,8 @@ def get_sale_by_id(id: int, db: Session = Depends(get_db)):
         HTTPException(400): If the provided ID is invalid (less than or equal to 0).
         HTTPException(404): If the sale with the specified ID does not exist.
     """
-    result = crud.get_by_id(id, db)
+    sale = crud.get_by_id(id, db)
+    result = __sale_to_saleread(sale, crud.get_ps_by_sale(sale, db))
     return GetSaleResponse(
         successful=True,
         data=result,

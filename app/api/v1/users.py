@@ -69,6 +69,7 @@ def get_by_id(
         message="Successfully retrieved the User.",
     )
 
+
 @router.post("/", response_model=APIResponse, status_code=201)
 def create_user(user: UserCreate, db: Session = Depends(get_db)):
     """
@@ -84,6 +85,7 @@ def create_user(user: UserCreate, db: Session = Depends(get_db)):
         message=f"Successfully created the User, which received id {user_id}.",
     )
 
+
 def __user_to_userread(user: User):
     return UserRead(
         id=user.id,
@@ -98,21 +100,22 @@ def __user_to_userread(user: User):
         store_role=str(user.store_role.value) if user.store_role else None,
     )
 
+
 @router.put("/{id}", response_model=APIResponse)
 def update_user(id: int, user: UserCreate, db: Session = Depends(get_db)):
     """
     Updates a user by its ID.
 
     (Will require auth in the future)
-    
+
     Args:
         id (int): The ID of the user to update.
         user (UserCreate): The updated user data.
         db (Session): The SQLAlchemy session to use for the update.
-    
+
     Returns:
         APIResponse: A response indicating the success of the update operation.
-    
+
     Raises:
         HTTPException(400): If the provided ID is invalid (less than or equal to 0).
         HTTPException(404): If the user with the specified ID does not exist.
@@ -127,16 +130,16 @@ def update_user(id: int, user: UserCreate, db: Session = Depends(get_db)):
 def delete_user_by_id(id: int, db: Session = Depends(get_db)):
     """
     Deletes a user by its ID, or anonymizes them if referenced in ProductsSales.
-    
+
     (Will require auth in the future)
-    
+
     Args:
         id (int): The ID of the user to delete.
         session (Session): The SQLAlchemy session to use for the delete.
 
     Returns:
         APIResponse: A response indicating the success of the delete operation.
-    
+
     Raises:
         HTTPException(400): If the provided ID is invalid (less than or equal to 0).
         HTTPException(404): If the user  with the specified ID does not exist.
