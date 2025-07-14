@@ -24,9 +24,7 @@ def get_all(session: Session):
 
 
 def get_ps_by_sale(sale: Sale, session: Session):
-    return (
-        session.query(ProductsSales).filter(ProductsSales.sale_id == sale.id).all()
-    )
+    return session.query(ProductsSales).filter(ProductsSales.sale_id == sale.id).all()
 
 
 def get_by_id(id: int, session: Session):
