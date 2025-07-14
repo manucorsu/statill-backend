@@ -1,4 +1,5 @@
 from datetime import datetime
+from datetime import timezone as timezone
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from app.models.products_sales import ProductsSales
@@ -24,7 +25,7 @@ def get_all(session: Session):
 
 def get_ps_by_sale(sale: Sale, session: Session):
     return (
-        session.query(ProductsSales).filter(ProductsSales.product_id == sale.id).all()
+        session.query(ProductsSales).filter(ProductsSales.sale_id == sale.id).all()
     )
 
 
@@ -61,7 +62,7 @@ def create_sale_with_products(sale_data: SaleCreate, session: Session):
         store_id=sale_data.store_id,
         user_id=sale_data.user_id,
         payment_method=sale_data.payment_method,
-        timestamp=datetime.now(),
+        timestamp=datetime.now(timezone.utc),
     )
     session.add(sale)
     session.commit()

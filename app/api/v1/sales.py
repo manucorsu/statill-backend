@@ -72,7 +72,7 @@ def get_sale_by_id(id: int, db: Session = Depends(get_db)):
         HTTPException(404): If the sale with the specified ID does not exist.
     """
     sale = crud.get_by_id(id, db)
-    result = SaleRead(**sale.__dict__, products=crud.get_ps_by_sale(sale, db))
+    result = __sale_to_saleread(sale, crud.get_ps_by_sale(sale, db))
     return GetSaleResponse(
         successful=True,
         data=result,
