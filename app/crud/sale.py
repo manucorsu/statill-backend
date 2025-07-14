@@ -16,10 +16,12 @@ def get_all(session: Session):
     Args:
         session (Session): The SQLAlchemy session to use for the query.
     Returns:
-        list[Sale]: A list of all products.
+        list[Sale]: A list of all sales.
     """
     return session.query(Sale).all()
 
+def get_ps_by_sale(sale: Sale, session: Session):
+    return session.query(ProductsSales).filter(ProductsSales.product_id==sale.id)
 
 def get_by_id(id: int, session: Session):
     """

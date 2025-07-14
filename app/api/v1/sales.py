@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from app.dependencies.db import get_db
 
 from app.schemas.general import APIResponse
-from app.schemas.sale import SaleCreate, GetAllSalesResponse, GetSaleResponse
+from app.schemas.sale import SaleCreate, GetAllSalesResponse, GetSaleResponse, SaleRead
 from app.schemas.general import Message
 from ...crud import sale as crud
 
@@ -22,8 +22,10 @@ def get_sales(db: Session = Depends(get_db)):
     Returns:
         GetAllSalesResponse: A response containing a list of all sales.
     """
-    result = crud.get_all(db)
-
+    sales = crud.get_all(db)
+    result: list[SaleRead] = []
+    for s in sales:
+        result += SaleRead(**s.__dict__, products=crud.get_ps_by_sale(s, db))
     return GetAllSalesResponse(
         successful=True, data=result, message="Successfully retrieved all Sales."
     )
@@ -47,7 +49,8 @@ def get_sale_by_id(id: int, db: Session = Depends(get_db)):
         HTTPException(400): If the provided ID is invalid (less than or equal to 0).
         HTTPException(404): If the sale with the specified ID does not exist.
     """
-    result = crud.get_by_id(id, db)
+    sale = crud.get_by_id(id, db)
+    result = SaleRead(**sale.__dict__, products=crud.get_ps_by_sale(sale, db))
     return GetSaleResponse(
         successful=True,
         data=result,

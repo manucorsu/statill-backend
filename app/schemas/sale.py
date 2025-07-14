@@ -3,6 +3,10 @@ from app.schemas.general import APIResponse
 from typing import Annotated
 from .custom_types import PositiveInt, NonEmptyStr, NonNegativeFloat, Gt0Float
 
+class ProductSale(BaseModel):
+    product_id: PositiveInt
+    quantity: Gt0Float
+
 
 class SaleRead(BaseModel):
     id: PositiveInt
@@ -10,14 +14,10 @@ class SaleRead(BaseModel):
     store_id: PositiveInt
     payment_method: Annotated[int, Field(ge=0, le=3)]
     timestamp: NonEmptyStr
+    products: ProductSale
 
     class Config:
         from_attributes = True
-
-
-class ProductSale(BaseModel):
-    product_id: PositiveInt
-    quantity: Gt0Float
 
 
 class SaleCreate(BaseModel):
