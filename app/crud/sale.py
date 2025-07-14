@@ -10,6 +10,7 @@ from app.schemas.sale import SaleCreate
 from . import product as products_crud
 from . import store as stores_crud
 
+
 def get_all(session: Session):
     """
     Retrieves all sales from the database.
@@ -20,8 +21,12 @@ def get_all(session: Session):
     """
     return session.query(Sale).all()
 
+
 def get_ps_by_sale(sale: Sale, session: Session):
-    return session.query(ProductsSales).filter(ProductsSales.product_id==sale.id)
+    return (
+        session.query(ProductsSales).filter(ProductsSales.product_id == sale.id).all()
+    )
+
 
 def get_by_id(id: int, session: Session):
     """
@@ -38,8 +43,6 @@ def get_by_id(id: int, session: Session):
     if sale is None:
         raise HTTPException(status_code=404, detail="Sale not found")
     return sale
-
-    
 
 
 def create_sale_with_products(sale_data: SaleCreate, session: Session):
@@ -65,16 +68,23 @@ def create_sale_with_products(sale_data: SaleCreate, session: Session):
 
     for product_data in sale_data.products:
         product = products_crud.get_by_id(product_data.product_id, session)
-        if (product.store_id != sale_data.store_id):
-            raise HTTPException(status_code=400, detail=f"Product with id {product_data.product_id} does not belong to this store")
-    
-        if ((product.quantity - product_data.quantity) < 0):
-            raise HTTPException(status_code=400, detail=f"Not enough {product.name} in stock")
+        if product.store_id != sale_data.store_id:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Product with id {product_data.product_id} does not belong to this store",
+            )
+
+        if (product.quantity - product_data.quantity) < 0:
+            raise HTTPException(
+                status_code=400, detail=f"Not enough {product.name} in stock"
+            )
         else:
             product.quantity -= product_data.quantity
 
         ps = ProductsSales(
-            sale_id=sale.id, product_id=product_data.product_id, quantity=product_data.quantity
+            sale_id=sale.id,
+            product_id=product_data.product_id,
+            quantity=product_data.quantity,
         )
         session.add(ps)
 
