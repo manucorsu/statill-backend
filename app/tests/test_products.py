@@ -99,9 +99,8 @@ def test_post_product():
         "quantity": 16000000,
         "desc": "SimCity es un juego donde simulás una city",
         "barcode": "AB010AF889199900AAFF",
-        "store_id": 2
+        "store_id": 2,
     }
     response = client.post("/api/v1/products", json=product)
 
     assert response.status_code == 201
-    

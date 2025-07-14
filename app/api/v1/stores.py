@@ -69,7 +69,7 @@ def create_store(store: StoreCreate, user_id: int, db: Session = Depends(get_db)
 
     (Will require auth in the future)
 
-    Args:  
+    Args:
         store (StoreCreate): The store data.
         (temp) user_id: The owner id.
         db (Session): The SQLAlchemy session to use for the query.
@@ -88,15 +88,15 @@ def update_store(id: int, store: StoreCreate, db: Session = Depends(get_db)):
     Updates a store by its ID.
 
     (Will require auth in the future)
-    
+
     Args:
         id (int): The ID of the store to update.
         store (StoreCreate): The updated store data.
         db (Session): The SQLAlchemy session to use for the update.
-    
+
     Returns:
         APIResponse: A response indicating the success of the update operation.
-    
+
     Raises:
         HTTPException(400): If the provided ID is invalid (less than or equal to 0).
         HTTPException(404): If the store with the specified ID does not exist.
@@ -111,16 +111,16 @@ def update_store(id: int, store: StoreCreate, db: Session = Depends(get_db)):
 def delete_store_by_id(id: int, db: Session = Depends(get_db)):
     """
     Deletes a store by its ID.
-    
+
     (Will require auth in the future)
 
     Args:
         id (int): The ID of the store to delete.
         db (Session): The SQLAlchemy session to use for the delete.
-    
+
     Returns:
         APIResponse: A response indicating the success of the delete operation.
-    
+
     Raises:
         HTTPException(400): If the provided ID is invalid (less than or equal to 0).
         HTTPException(404): If the store  with the specified ID does not exist.

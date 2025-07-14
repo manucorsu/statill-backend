@@ -7,7 +7,20 @@ from alembic import context
 
 from app.database.base import Base
 
-from app.models import discount, order, product, user, orders_products, points, product, products_sales, review, sale, store, user
+from app.models import (
+    discount,
+    order,
+    product,
+    user,
+    orders_products,
+    points,
+    product,
+    products_sales,
+    review,
+    sale,
+    store,
+    user,
+)
 
 from dotenv import load_dotenv
 from os import getenv

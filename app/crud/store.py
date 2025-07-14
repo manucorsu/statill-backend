@@ -106,6 +106,7 @@ def delete(id: int, session: Session):
 
     # Delete all products associated with this store
     from app.models.product import Product
+
     products = session.query(Product).filter(Product.store_id == id).all()
     for product in products:
         session.delete(product)
@@ -113,9 +114,12 @@ def delete(id: int, session: Session):
     # Delete all sales associated with this store
     from app.models.sale import Sale
     from app.models.products_sales import ProductsSales
+
     sales = session.query(Sale).filter(Sale.store_id == id).all()
     for sale in sales:
-        products_sales = session.query(ProductsSales).filter(ProductsSales.sale_id == id).all()
+        products_sales = (
+            session.query(ProductsSales).filter(ProductsSales.sale_id == id).all()
+        )
         for ps in products_sales:
             session.delete(ps)
         session.delete(sale)
