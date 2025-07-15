@@ -15,6 +15,7 @@ class StoreRead(BaseModel):
     opening_times: Annotated[list[time | None], Field(min_length=7, max_length=7)]
     closing_times: Annotated[list[time | None], Field(min_length=7, max_length=7)]
     payment_methods: Annotated[list[bool], Field(min_length=4, max_length=4)]
+    user_id: PositiveInt
 
     class Config:
         from_attributes = True
@@ -29,6 +30,7 @@ class StoreCreate(BaseModel):
     opening_times: Annotated[list[time | None], Field(min_length=7, max_length=7)]
     closing_times: Annotated[list[time | None], Field(min_length=7, max_length=7)]
     payment_methods: Annotated[list[bool], Field(min_length=4, max_length=4)]
+    user_id: PositiveInt
 
     class Config:
         from_attributes = True

@@ -34,7 +34,7 @@ def get_by_id(id: int, session: Session):
     return store
 
 
-def create(store_data: StoreCreate, user_id: int, session: Session):
+def create(store_data: StoreCreate, session: Session):
     """
     Creates a new store in the database.
     Args:
@@ -61,7 +61,7 @@ def create(store_data: StoreCreate, user_id: int, session: Session):
     session.flush()
     session.refresh(store)
 
-    user = get_user_by_id(user_id, session)
+    user = get_user_by_id(store_data.user_id, session)
     user.store_id = store.id
     user.store_role = "owner"
 
