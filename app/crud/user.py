@@ -20,7 +20,7 @@ def get_all(session: Session, include_anonymized: bool = False):
     """
     query = session.query(User)
     if not include_anonymized:
-        query = query.filter(User.name != "Deleted User")
+        query = query.filter(User.first_names != "Deleted User")
     users = query.all()
     return users
 
