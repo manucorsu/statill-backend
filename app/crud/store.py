@@ -55,7 +55,9 @@ def create(store_data: StoreCreate, session: Session):
         if (ct == ot) and (ct is not None and ot is not None):
             raise HTTPException(400, "A store cannot open and close at the same time")
 
-    store = Store(**store_data.model_dump())
+    store_dump = store_data.model_dump()
+    del store_dump["user_id"]
+    store = Store(**store_dump)
 
     session.add(store)
     session.flush()
