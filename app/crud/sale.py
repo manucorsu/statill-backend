@@ -43,6 +43,8 @@ def get_by_id(id: int, session: Session):
         raise HTTPException(status_code=404, detail="Sale not found")
     return sale
 
+def get_sales_by_user_id(user_id: int, session:Session):
+    return session.query(Sale).filter(Sale.user_id == user_id).all()
 
 def create_sale_with_products(sale_data: SaleCreate, session: Session):
     """

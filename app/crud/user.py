@@ -7,6 +7,7 @@ from fastapi import HTTPException
 from ..schemas.user import *
 from app.models.products_sales import ProductsSales
 from datetime import date
+from .sale import get_sales_by_user_id
 
 
 def get_all(session: Session, include_anonymized: bool = False):
@@ -131,9 +132,7 @@ def delete(id: int, session: Session):
     """
     user = get_by_id(id, session)
 
-    referenced = (
-        session.query(ProductsSales).filter(ProductsSales.user_id == id).first()
-    )
+    referenced = get_sales_by_user_id(id, session).__len__() > 0
 
     if referenced:
         user.first_names = "Deleted User"
