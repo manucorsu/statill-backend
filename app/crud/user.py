@@ -77,6 +77,11 @@ def create(user_data: UserCreate, session: Session):
     if user_data.email.lower() == "deleted@example.com":
         raise HTTPException(400, detail="Invalid user data")
 
+    try:
+        date.fromisoformat(user_data.birthdate)
+    except ValueError:
+        raise HTTPException(400, detail="Invalid birthdate.")
+
     user = User(**user_data.model_dump(), is_admin=False)
 
     session.add(user)
@@ -98,6 +103,11 @@ def update(id: int, user_data: UserCreate, session: Session):
     Raises:
         HTTPException(404): If the user with the specified ID does not exist.
     """
+    try:
+        date.fromisoformat(user_data.birthdate)
+    except ValueError:
+        raise HTTPException(400, detail="Invalid birthdate.")
+
     user = get_by_id(id, session)
 
     updates = user_data.model_dump(exclude_unset=True)
