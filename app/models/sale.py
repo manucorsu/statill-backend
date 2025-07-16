@@ -10,7 +10,7 @@ class Sale(Base):
 
     id = Column(BigInteger, primary_key=True)
     store_id = Column(BigInteger, ForeignKey("stores.id"), nullable=False)
-    user_id = Column(BigInteger, ForeignKey("users.id"), nullable=False)
+    user_id = Column(BigInteger, ForeignKey("users.id"), nullable=True)
     payment_method = Column(Integer, nullable=False)
     timestamp = Column(
         String(32),

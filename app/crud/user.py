@@ -7,6 +7,7 @@ from fastapi import HTTPException
 from ..schemas.user import *
 from app.models.products_sales import ProductsSales
 from datetime import date
+from .sale import get_sales_by_user_id
 
 
 def get_all(session: Session, include_anonymized: bool = False):
@@ -77,6 +78,11 @@ def create(user_data: UserCreate, session: Session):
     if user_data.email.lower() == "deleted@example.com":
         raise HTTPException(400, detail="Invalid user data")
 
+    try:
+        date.fromisoformat(user_data.birthdate)
+    except ValueError:
+        raise HTTPException(400, detail="Invalid birthdate.")
+
     user = User(**user_data.model_dump(), is_admin=False)
 
     session.add(user)
@@ -98,6 +104,11 @@ def update(id: int, user_data: UserCreate, session: Session):
     Raises:
         HTTPException(404): If the user with the specified ID does not exist.
     """
+    try:
+        date.fromisoformat(user_data.birthdate)
+    except ValueError:
+        raise HTTPException(400, detail="Invalid birthdate.")
+
     user = get_by_id(id, session)
 
     updates = user_data.model_dump(exclude_unset=True)
@@ -121,9 +132,7 @@ def delete(id: int, session: Session):
     """
     user = get_by_id(id, session)
 
-    referenced = (
-        session.query(ProductsSales).filter(ProductsSales.user_id == id).first()
-    )
+    referenced = get_sales_by_user_id(id, session).__len__() > 0
 
     if referenced:
         user.first_names = "Deleted User"

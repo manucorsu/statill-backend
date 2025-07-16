@@ -7,7 +7,7 @@ from .custom_types import NonEmptyStr, PositiveInt, UserPassword
 class UserCreate(BaseModel):
     first_names: NonEmptyStr
     last_name: NonEmptyStr
-    email: NonEmptyStr
+    email: EmailStr
     password: UserPassword
     birthdate: NonEmptyStr
     gender: Literal["X", "F", "M"]
