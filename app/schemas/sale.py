@@ -11,7 +11,7 @@ class ProductSale(BaseModel):
 
 class SaleRead(BaseModel):
     id: PositiveInt
-    user_id: PositiveInt
+    user_id: PositiveInt | None
     store_id: PositiveInt
     payment_method: Annotated[int, Field(ge=0, le=3)]
     timestamp: NonEmptyStr
@@ -25,7 +25,7 @@ class SaleCreate(BaseModel):
     store_id: PositiveInt
     products: list[ProductSale]
     payment_method: Annotated[int, Field(ge=0, le=3)]
-    user_id: PositiveInt
+    user_id: PositiveInt | None
 
     class Config:
         from_attributes = True
