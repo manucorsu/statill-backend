@@ -21,6 +21,13 @@ def http_exception_handler(_: Request, ex: HTTPException):
 
 
 def validation_exception_handler(_: Request, ex: RequestValidationError):
+    errors = ex.errors()
+    for err in errors:
+        if "ctx" in err and "error" in err["ctx"]:
+            err["ctx"]["error"] = str(
+                err["ctx"]["error"]
+            )  # odio este lenguaje parte 1000
+
     return JSONResponse(
         status_code=422,
         content=APIResponse(

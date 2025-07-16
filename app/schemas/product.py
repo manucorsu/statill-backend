@@ -1,13 +1,14 @@
 from typing import Literal
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 from app.schemas.general import APIResponse
 from .custom_types import (
     PositiveInt,
     NonEmptyStr,
-    MoneyAmount,
+    Money,
     UnsignedInt,
     NonNegativeFloat,
 )
+from decimal import Decimal
 
 
 class ProductRead(BaseModel):
@@ -15,11 +16,18 @@ class ProductRead(BaseModel):
     store_id: PositiveInt
     name: NonEmptyStr
     brand: NonEmptyStr
-    price: MoneyAmount
+    price: Money
     type: UnsignedInt
     quantity: NonNegativeFloat
     desc: NonEmptyStr
     barcode: NonEmptyStr | None
+
+    @field_validator("price", mode="before")
+    @classmethod
+    def convert_decimal_to_money(cls, v):
+        if isinstance(v, (int, float, Decimal)):
+            return Money(value=v)
+        return v
 
     class Config:
         from_attributes = True
@@ -28,7 +36,7 @@ class ProductRead(BaseModel):
 class ProductCreate(BaseModel):
     name: NonEmptyStr
     brand: NonEmptyStr
-    price: MoneyAmount
+    price: Money
     type: UnsignedInt
     quantity: NonNegativeFloat
     desc: NonEmptyStr
@@ -42,7 +50,7 @@ class ProductCreate(BaseModel):
 class ProductUpdate(BaseModel):
     name: NonEmptyStr | None
     brand: NonEmptyStr | None
-    price: MoneyAmount | None
+    price: Money | None
     type: UnsignedInt | None
     quantity: NonNegativeFloat | None
     desc: NonEmptyStr | None
