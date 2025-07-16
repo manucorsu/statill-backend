@@ -34,7 +34,7 @@ def get_by_id(id: int, session: Session):
     return store
 
 
-def create(store_data: StoreCreate, user_id: int, session: Session):
+def create(store_data: StoreCreate, session: Session):
     """
     Creates a new store in the database.
     Args:
@@ -55,13 +55,15 @@ def create(store_data: StoreCreate, user_id: int, session: Session):
         if (ct == ot) and (ct is not None and ot is not None):
             raise HTTPException(400, "A store cannot open and close at the same time")
 
-    store = Store(**store_data.model_dump())
+    store_dump = store_data.model_dump()
+    del store_dump["user_id"]
+    store = Store(**store_dump)
 
     session.add(store)
     session.flush()
     session.refresh(store)
 
-    user = get_user_by_id(user_id, session)
+    user = get_user_by_id(store_data.user_id, session)
     user.store_id = store.id
     user.store_role = "owner"
 
