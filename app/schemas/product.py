@@ -1,5 +1,5 @@
 from typing import Literal
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, field_validator, Field
 from app.schemas.general import APIResponse
 from .custom_types import (
     PositiveInt,
@@ -42,7 +42,7 @@ class ProductCreate(BaseModel):
     quantity: NonNegativeFloat
     desc: NonEmptyStr
     barcode: NonEmptyStr | None
-    hidden: bool
+    hidden: bool = Field(default=False)
     store_id: PositiveInt  # temp until login
 
     class Config:
@@ -56,7 +56,7 @@ class ProductUpdate(BaseModel):
     type: UnsignedInt | None
     quantity: NonNegativeFloat | None
     desc: NonEmptyStr | None
-    hidden: bool | None
+    hidden: bool | None = Field(default=False)
     barcode: NonEmptyStr | None
 
     class Config:
