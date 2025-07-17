@@ -45,8 +45,8 @@ def get_product_by_id(
 
     Args:
         id (int): The ID of the product to retrieve.
+        allow_anonymized (bool): If set to `False`, a 404 error will be raised if the product with the specified ID is marked as `"Deleted Product"`, just as if the product did not exist in the database. Default is `False`.
         session (Session): The SQLAlchemy session to use for the query.
-        allow_anonymized (bool): If set to `False`, a 404 error will be raised if the product with the specified ID is marked as`"Deleted Product"`, just as if the product did not exist in the database. Default is `False`.
 
     Returns:
         GetProductResponse: A response containing the product with the specified ID.

@@ -43,6 +43,12 @@ def create(store_data: StoreCreate, session: Session):
     Returns:
         int: The ID of the newly created store.
     """
+    user = get_user_by_id(store_data.user_id, session)
+    if user.store_id:
+        raise HTTPException(
+            400,
+            f"User must be disassociated from store {user.store_id} before associating them to a new one.",
+        )
     for index, ct in enumerate(store_data.closing_times):
         ot = store_data.opening_times[index]
 
