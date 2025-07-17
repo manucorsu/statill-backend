@@ -128,9 +128,10 @@ def delete(id: int, session: Session):
         products_sales = (
             session.query(ProductsSales).filter(ProductsSales.sale_id == id).all()
         )
+        
+        session.delete(sale)
         for ps in products_sales:
             session.delete(ps)
-        session.delete(sale)
 
     # Do NOT delete users, just disassociate them
     users = get_all_by_store_id(id, session)

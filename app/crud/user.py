@@ -132,7 +132,10 @@ def delete(id: int, session: Session):
     """
     user = get_by_id(id, session)
     if user in get_all_by_store_id(user.store_id, session):
-        raise HTTPException(400, f"User must be dissasociated from store {user.store_id} before deleting them.")
+        raise HTTPException(
+            400,
+            f"User must be dissasociated from store {user.store_id} before deleting them.",
+        )
 
     has_sales = get_sales_by_user_id(id, session).__len__() > 0
     if has_sales:
