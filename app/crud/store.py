@@ -2,6 +2,9 @@ from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
 from app.models.store import Store
+from app.models.sale import Sale
+from app.models.products_sales import ProductsSales
+from app.models.product import Product
 from app.schemas.store import StoreCreate
 from app.crud.user import get_by_id as get_user_by_id, get_all_by_store_id
 
@@ -113,22 +116,17 @@ def delete(id: int, session: Session):
     item = get_by_id(id, session)
 
     # Delete all products associated with this store
-    from app.models.product import Product
-
     products = session.query(Product).filter(Product.store_id == id).all()
     for product in products:
         session.delete(product)
 
     # Delete all sales associated with this store
-    from app.models.sale import Sale
-    from app.models.products_sales import ProductsSales
-
     sales = session.query(Sale).filter(Sale.store_id == id).all()
     for sale in sales:
         products_sales = (
-            session.query(ProductsSales).filter(ProductsSales.sale_id == id).all()
+            session.query(ProductsSales).filter(ProductsSales.sale_id == sale.id).all()
         )
-        
+
         session.delete(sale)
         for ps in products_sales:
             session.delete(ps)
