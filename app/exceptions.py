@@ -5,13 +5,8 @@ from app.schemas.general import APIResponse
 from sqlalchemy.exc import IntegrityError
 import re
 
-# import logging
-
-# logger = logging.getLogger(__name__)
-
 
 def http_exception_handler(_: Request, ex: HTTPException):
-    # logger.warning(f"HTTPException: {ex.detail} (status {ex.status_code}) at {request.url}")
     return JSONResponse(
         status_code=ex.status_code,
         content=APIResponse(
