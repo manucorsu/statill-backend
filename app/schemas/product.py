@@ -20,6 +20,7 @@ class ProductRead(BaseModel):
     type: UnsignedInt
     quantity: NonNegativeFloat
     desc: NonEmptyStr
+    hidden: bool
     barcode: NonEmptyStr | None
 
     @field_validator("price", mode="before")
@@ -41,6 +42,7 @@ class ProductCreate(BaseModel):
     quantity: NonNegativeFloat
     desc: NonEmptyStr
     barcode: NonEmptyStr | None
+    hidden: bool
     store_id: PositiveInt  # temp until login
 
     class Config:
@@ -54,6 +56,7 @@ class ProductUpdate(BaseModel):
     type: UnsignedInt | None
     quantity: NonNegativeFloat | None
     desc: NonEmptyStr | None
+    hidden: bool | None
     barcode: NonEmptyStr | None
 
     class Config:
