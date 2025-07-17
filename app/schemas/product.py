@@ -38,7 +38,7 @@ class ProductCreate(BaseModel):
     name: NonEmptyStr
     brand: NonEmptyStr
     price: Money
-    type: UnsignedInt
+    type: PositiveInt
     quantity: NonNegativeFloat
     desc: NonEmptyStr
     barcode: NonEmptyStr | None
@@ -53,7 +53,7 @@ class ProductUpdate(BaseModel):
     name: NonEmptyStr | None
     brand: NonEmptyStr | None
     price: Money | None
-    type: UnsignedInt | None
+    type: PositiveInt | None
     quantity: NonNegativeFloat | None
     desc: NonEmptyStr | None
     hidden: bool | None = Field(default=False)

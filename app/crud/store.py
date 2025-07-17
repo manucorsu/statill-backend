@@ -61,8 +61,8 @@ def create(store_data: StoreCreate, session: Session):
                 detail="A store's opening time cannot be None if its closing time has a value (and vice-versa)",
             )
 
-        if (ct == ot) and (ct is not None and ot is not None):
-            raise HTTPException(400, "A store cannot open and close at the same time")
+        if(ct is not None and ot is not None) and (ct <= ot):
+            raise HTTPException(400, "A store's closing time must be after its opening time.")
 
     store_dump = store_data.model_dump()
     del store_dump["user_id"]
@@ -92,6 +92,18 @@ def update(id: int, store_data: StoreCreate, session: Session):
     Raises:
         HTTPException(404): If the store with the specified ID does not exist.
     """
+    for index, ct in enumerate(store_data.closing_times):
+        ot = store_data.opening_times[index]
+
+        if (ct is None or ot is None) and ct != ot:
+            raise HTTPException(
+                400,
+                detail="A store's opening time cannot be None if its closing time has a value (and vice-versa)",
+            )
+
+        if(ct is not None and ot is not None) and (ct <= ot):
+            raise HTTPException(400, "A store's closing time must be after its opening time.")
+
     store = get_by_id(id, session)
 
     updates = store_data.model_dump(exclude_unset=True)
