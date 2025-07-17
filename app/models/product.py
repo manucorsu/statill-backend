@@ -1,5 +1,5 @@
 from app.database.base import Base
-from sqlalchemy import Column, String, Integer, BigInteger, Numeric, ForeignKey
+from sqlalchemy import Column, String, Integer, BigInteger, Numeric, ForeignKey, Boolean
 from sqlalchemy.dialects.postgresql import DOUBLE_PRECISION
 from sqlalchemy.orm import relationship
 from app.models.store import Store
@@ -17,6 +17,7 @@ class Product(Base):
     type = Column(Integer, nullable=False)
     quantity = Column(DOUBLE_PRECISION, nullable=False)
     desc = Column(String, nullable=False)
+    hidden = Column(Boolean, nullable=False)
     barcode = Column(String)
 
     # Relationships

@@ -107,7 +107,7 @@ def update_store(id: int, store: StoreCreate, db: Session = Depends(get_db)):
 
 
 @router.delete("/{id}", response_model=APIResponse)
-def delete_store_by_id(id: int, db: Session = Depends(get_db)):
+def delete_store(id: int, db: Session = Depends(get_db)):
     """
     Deletes a store by its ID.
 

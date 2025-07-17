@@ -131,10 +131,14 @@ def delete(id: int, session: Session):
         HTTPException(404): If the user with the specified ID does not exist.
     """
     user = get_by_id(id, session)
+    if user in get_all_by_store_id(user.store_id, session):
+        raise HTTPException(
+            400,
+            f"User must be dissasociated from store {user.store_id} before deleting them.",
+        )
 
-    referenced = get_sales_by_user_id(id, session).__len__() > 0
-
-    if referenced:
+    has_sales = get_sales_by_user_id(id, session).__len__() > 0
+    if has_sales:
         user.first_names = "Deleted User"
         user.last_name = "Deleted User"
         user.birthdate = date(1900, 1, 1)

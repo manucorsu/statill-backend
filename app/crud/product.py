@@ -52,6 +52,8 @@ def create(product_data: ProductCreate, session: Session):
     Returns:
         int: The ID of the newly created product.
     """
+    if product_data.hidden == None:
+        product_data.hidden = False
     if product_data.name == "Deleted Product":
         raise HTTPException(400, detail="Invalid product name.")
 
@@ -82,6 +84,9 @@ def update(id: int, product_data: ProductUpdate, session: Session):
         HTTPException(404): If the product with the specified ID does not exist.
     """
     product = get_by_id(id, session)
+
+    if product_data.hidden == None:
+        product_data.hidden = product.hidden
 
     updates = product_data.model_dump(exclude_unset=True)
 

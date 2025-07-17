@@ -91,7 +91,7 @@ def create_sale(sale: SaleCreate, db: Session = Depends(get_db)):
         sale (SaleCreate): The sale data.
         db (Session): The SQLAlchemy session to use for the query.
     """
-    sale_id = crud.create_sale_with_products(sale, db)
+    sale_id = crud.create_sale(sale, db)
     return APIResponse(
         successful=True,
         data={"id": sale_id},

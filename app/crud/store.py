@@ -2,6 +2,9 @@ from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
 from app.models.store import Store
+from app.models.sale import Sale
+from app.models.products_sales import ProductsSales
+from app.models.product import Product
 from app.schemas.store import StoreCreate
 from app.crud.user import get_by_id as get_user_by_id, get_all_by_store_id
 
@@ -43,6 +46,12 @@ def create(store_data: StoreCreate, session: Session):
     Returns:
         int: The ID of the newly created store.
     """
+    user = get_user_by_id(store_data.user_id, session)
+    if user.store_id:
+        raise HTTPException(
+            400,
+            f"User must be disassociated from store {user.store_id} before associating them to a new one.",
+        )
     for index, ct in enumerate(store_data.closing_times):
         ot = store_data.opening_times[index]
 
@@ -107,24 +116,20 @@ def delete(id: int, session: Session):
     item = get_by_id(id, session)
 
     # Delete all products associated with this store
-    from app.models.product import Product
-
     products = session.query(Product).filter(Product.store_id == id).all()
     for product in products:
         session.delete(product)
 
     # Delete all sales associated with this store
-    from app.models.sale import Sale
-    from app.models.products_sales import ProductsSales
-
     sales = session.query(Sale).filter(Sale.store_id == id).all()
     for sale in sales:
         products_sales = (
-            session.query(ProductsSales).filter(ProductsSales.sale_id == id).all()
+            session.query(ProductsSales).filter(ProductsSales.sale_id == sale.id).all()
         )
+
+        session.delete(sale)
         for ps in products_sales:
             session.delete(ps)
-        session.delete(sale)
 
     # Do NOT delete users, just disassociate them
     users = get_all_by_store_id(id, session)
