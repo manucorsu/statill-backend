@@ -8,6 +8,8 @@ from ..schemas.user import *
 from app.models.products_sales import ProductsSales
 from datetime import date
 from .sale import get_sales_by_user_id
+from email_validator import validate_email, EmailNotValidError
+from typing import overload, Literal
 
 
 def get_all(session: Session, include_anonymized: bool = False):
@@ -24,26 +26,6 @@ def get_all(session: Session, include_anonymized: bool = False):
         query = query.filter(User.first_names != "Deleted User")
     users = query.all()
     return users
-
-
-def get_all_by_store_id(id: int, session: Session):
-    """
-    Retrieves all users from the database by their store ID.
-    Args:
-        id (int): The ID of the store.
-        session (Session): The SQLAlchemy session to use for the query.
-    Returns:
-        list[User]: A list fo the users wiith the store ID.
-    Raises:
-        HTTPException(404): If the store with the specified ID does not exist.
-    """
-    users = session.query(User).filter(User.store_id == id).all()
-    result: list[User] = []
-    for u in users:
-        if u.email != "deleted@example.com":
-            result.append(u)
-
-    return result
 
 
 def get_by_id(id: int, session: Session, allow_anonymized: bool = False):
@@ -66,6 +48,60 @@ def get_by_id(id: int, session: Session, allow_anonymized: bool = False):
     return user
 
 
+@overload
+def get_by_email(email: str, session: Session, raise_404: Literal[True]) -> User: ...
+
+@overload
+def get_by_email(email: str, session: Session, raise_404: Literal[False]) -> User | None: ...
+
+def get_by_email(email: str, session: Session, raise_404: bool = True):
+    """
+    Retrieve a user from the database by their email address.
+
+    Args:
+        email (str): The email address of the user to retrieve.
+        session (Session): The SQLAlchemy session to use for the database query.
+        raise_404 (bool, optional): Whether to raise an HTTP 404 exception if the user is not found. Defaults to True.
+
+    Returns:
+        User or None: The user object if found, otherwise None (if raise_404 is False).
+
+    Raises:
+        HTTPException: If the email is invalid (400) or if no user is found and raise_404 is True (404).
+    """
+    try:
+        email = validate_email(email).normalized
+    except EmailNotValidError:
+        raise HTTPException(400, "Invalid email address.")
+    users = session.query(User).filter(User.email == email).all()
+    if len(users) < 1:
+        if raise_404:
+            raise HTTPException(404, f"No user found with the {email} email address.")
+        else:
+            return None
+    return users[0]
+
+
+def get_all_by_store_id(id: int, session: Session):
+    """
+    Retrieves all users from the database by their store ID.
+    Args:
+        id (int): The ID of the store.
+        session (Session): The SQLAlchemy session to use for the query.
+    Returns:
+        list[User]: A list fo the users wiith the store ID.
+    Raises:
+        HTTPException(404): If the store with the specified ID does not exist.
+    """
+    users = session.query(User).filter(User.store_id == id).all()
+    result: list[User] = []
+    for u in users:
+        if u.email != "deleted@example.com":
+            result.append(u)
+
+    return result
+
+
 def create(user_data: UserCreate, session: Session):
     """
     Creates a new user in the database.
@@ -75,9 +111,11 @@ def create(user_data: UserCreate, session: Session):
     Returns:
         int: The ID of the newly created user.
     """
-    if user_data.email.lower() == "deleted@example.com":
-        raise HTTPException(400, detail="Invalid user data")
+    if user_data.email.endswith("example.com"):
+        raise HTTPException(400, detail="Invalid email address.")
 
+    if get_by_email(user_data.email, session, raise_404=False):
+        raise HTTPException(400, detail="Email address already in use.")
     try:
         date.fromisoformat(user_data.birthdate)
     except ValueError:
