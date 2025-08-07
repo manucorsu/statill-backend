@@ -3,12 +3,26 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from app.schemas.general import APIResponse
-from ...schemas.order import GetAllOrdersResponse, GetOrderResponse, OrderCreate
+from ...schemas.order import GetAllOrdersResponse, GetOrderResponse, OrderCreate, OrderRead
+from ...schemas.product import ProductRead
+from ...models.order import Order
 from ...dependencies.db import get_db
 from ...crud import order as crud
 
 router = APIRouter()
 
+def __order_to_orderread(order: Order):
+
+    products_as_schemas: list[ProductRead] = []
+    for product in order.orders_products:
+        products_as_schemas.append(ProductRead(**product.__dict__))
+
+    order_as_dict = order.__dict__
+    order_as_dict["products"] = products_as_schemas
+    order_as_dict["status"] = str(order.status.value)
+    order_as_dict["created_at"] = order.created_at.isoformat()
+    order_as_dict["received_at"] = order.received_at.isoformat()
+    return OrderRead(**order_as_dict)
 
 @router.get("/", response_model=GetAllOrdersResponse)
 def get_all_orders(session: Session = Depends(get_db)):
@@ -23,7 +37,7 @@ def get_all_orders(session: Session = Depends(get_db)):
     """
     result = crud.get_all(session)
     return GetAllOrdersResponse(
-        successful=True, data=result, message="Successfully retrieved all orders."
+        successful=True, data=[__order_to_orderread(o) for o in result], message="Successfully retrieved all orders."
     )
 
 @router.get("/{id}", response_model=GetOrderResponse)
@@ -44,8 +58,7 @@ def get_order_by_id(id: int, db: Session = Depends(get_db)):
         HTTPException(400): If the provided ID is invalid (less than or equal to 0).
         HTTPException(404): If the order with the specified ID does not exist.
     """
-    order = crud.get_by_id(id, db)
-    result = crud.get_by_id(id, db)
+    result = __order_to_orderread(crud.get_by_id(id, db))
     return GetOrderResponse(
         successful=True,
         data=result,

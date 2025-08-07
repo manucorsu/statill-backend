@@ -1,14 +1,13 @@
-from sqlalchemy.orm import Session, object_mapper
+from sqlalchemy.orm import Session
 
-from ..models.order import Order
+from ..models.order import Order, StatusEnum
+from ..models.orders_products import OrdersProducts
 
 from fastapi import HTTPException
 
 from ..schemas.order import *
-from datetime import date, datetime, timezone
-from email_validator import validate_email, EmailNotValidError
-from typing import overload, Literal
-from . import store as stores_crud
+from datetime import datetime, timezone
+from . import store as stores_crud, product as products_crud
 
 
 def get_all(session: Session):
@@ -89,8 +88,30 @@ def create_order(order_data: OrderCreate, session: Session):
         payment_method=order_data.payment_method,
         created_at=datetime.now(timezone.utc),
         received_at=None,
-        status="pending",
-        products=order_data.products
+        status=StatusEnum("pending"),
     )
     session.add(order)
     session.commit()
+
+    for product_data in order_data.products:
+        product = products_crud.get_by_id(product_data.product_id, session)
+        if product.store_id != order_data.store_id:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Product with id {product_data.product_id} does not belong to this store",
+            )
+
+        if (product.quantity - product_data.quantity) < 0:
+            raise HTTPException(
+                status_code=400, detail=f"Not enough {product.name} in stock"
+            )
+
+        op = OrdersProducts(
+            order_id=order.id,
+            product_id=product_data.product_id,
+            quantity=product_data.quantity,
+        )
+        session.add(op)
+
+    session.commit()
+    return int(order.id)
