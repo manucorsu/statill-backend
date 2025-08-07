@@ -1,7 +1,9 @@
 pytest --cov=app --cov-report=html
-# $scriptLocation = $PSScriptRoot
-# cd ..
-# cd ..
-# $projectRoot = (Get-Location).Path
-# Write-Output "Coverage en $projectRoot\htmlcov\index.html"
-# cd $scriptLocation
+
+$reportPath = Join-Path -Path (Get-Location) -ChildPath "htmlcov\index.html"
+
+if (Test-Path $reportPath) {
+    Write-Host "Coverage report generated at:`n$reportPath"
+} else {
+    Write-Host "Coverage report not found. Please check if pytest ran successfully."
+}
