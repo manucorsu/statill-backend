@@ -20,8 +20,8 @@ class Order(Base):
     store_id = Column(BigInteger, ForeignKey("stores.id"), nullable=False)
     created_at = Column(TIME(timezone=True), nullable=False)
     status = Column(Enum(StatusEnum, name="status_enum"), nullable=False)
-    recieved_at = Column(TIME(timezone=True), nullable=False)
-    payement_method = Column(Integer, nullable=False)
+    received_at = Column(TIME(timezone=True), nullable=True)
+    payment_method = Column(Integer, nullable=False)
 
     # Relationships
     user = relationship("User", back_populates="order")

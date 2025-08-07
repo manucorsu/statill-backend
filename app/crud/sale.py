@@ -1,5 +1,5 @@
 from datetime import datetime
-from datetime import timezone as timezone
+from datetime import timezone
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from app.models.products_sales import ProductsSales
