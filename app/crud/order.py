@@ -1,11 +1,10 @@
 from sqlalchemy.orm import Session, object_mapper
 
-from ..models import Order
+from ..models.order import Order
 
 from fastapi import HTTPException
 
 from ..schemas.order import *
-from app.models.order import Order
 from datetime import date
 from email_validator import validate_email, EmailNotValidError
 from typing import overload, Literal
@@ -42,6 +41,7 @@ def get_by_id(id: int, session: Session):
         raise HTTPException(404, detail="Order not found")
 
     return order
+
 
 def get_all_by_store_id(id: int, session: Session):
     """

@@ -61,8 +61,10 @@ def create(store_data: StoreCreate, session: Session):
                 detail="A store's opening time cannot be None if its closing time has a value (and vice-versa)",
             )
 
-        if(ct is not None and ot is not None) and (ct <= ot):
-            raise HTTPException(400, "A store's closing time must be after its opening time.")
+        if (ct is not None and ot is not None) and (ct <= ot):
+            raise HTTPException(
+                400, "A store's closing time must be after its opening time."
+            )
 
     store_dump = store_data.model_dump()
     del store_dump["user_id"]
@@ -101,8 +103,10 @@ def update(id: int, store_data: StoreCreate, session: Session):
                 detail="A store's opening time cannot be None if its closing time has a value (and vice-versa)",
             )
 
-        if(ct is not None and ot is not None) and (ct <= ot):
-            raise HTTPException(400, "A store's closing time must be after its opening time.")
+        if (ct is not None and ot is not None) and (ct <= ot):
+            raise HTTPException(
+                400, "A store's closing time must be after its opening time."
+            )
 
     store = get_by_id(id, session)
 
