@@ -70,4 +70,5 @@ class GetAllProductsResponse(APIResponse):
 
 
 class GetProductResponse(APIResponse):
+    successful: Literal[True]
     data: ProductRead
