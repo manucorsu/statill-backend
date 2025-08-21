@@ -80,10 +80,11 @@ def random_string(min_len: int = 1, max_len: int = 100):
     length = random.randint(min_len, max_len)
     return "".join(random.choice(characters) for _ in range(length))
 
+
 def random_money(min: int = 0, max: int = 99999999.99):
     decimals: Literal[0, 1, 2] = random.choice([0, 1, 2])
-    scale = 10 ** decimals
+    scale = 10**decimals
 
-    randint = random.randint(int(min*scale), int(max*scale))
+    randint = random.randint(int(min * scale), int(max * scale))
 
     return randint / scale

@@ -12,11 +12,13 @@ import random
 
 client = TestClient(app)
 
+
 def _random_product():
     return {
         "name": random_string(),
         "brand": random_string(),
     }
+
 
 def test_get_all_products():
     response = client.get("/api/v1/products/")
