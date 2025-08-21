@@ -8,14 +8,15 @@ from .custom_types import (
     UnsignedInt,
     NonNegativeFloat,
 )
+from typing import Annotated
 from decimal import Decimal
 
 
 class ProductRead(BaseModel):
     id: PositiveInt
     store_id: PositiveInt
-    name: NonEmptyStr
-    brand: NonEmptyStr
+    name: Annotated[str, Field(min_length=1, pattern=r"\S", max_length=100)]
+    brand: Annotated[str, Field(min_length=1, pattern=r"\S", max_length=30)]
     price: Money
     type: UnsignedInt
     quantity: NonNegativeFloat
@@ -35,8 +36,8 @@ class ProductRead(BaseModel):
 
 
 class ProductCreate(BaseModel):
-    name: NonEmptyStr
-    brand: NonEmptyStr
+    name: Annotated[str, Field(min_length=1, pattern=r"\S", max_length=100)]
+    brand: Annotated[str, Field(min_length=1, pattern=r"\S", max_length=30)]
     price: Money
     type: PositiveInt
     quantity: NonNegativeFloat
@@ -50,8 +51,8 @@ class ProductCreate(BaseModel):
 
 
 class ProductUpdate(BaseModel):
-    name: NonEmptyStr | None
-    brand: NonEmptyStr | None
+    name: Annotated[str, Field(min_length=1, pattern=r"\S", max_length=100)] | None
+    brand: Annotated[str, Field(min_length=1, pattern=r"\S", max_length=30)] | None
     price: Money | None
     type: PositiveInt | None
     quantity: NonNegativeFloat | None
