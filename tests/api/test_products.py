@@ -3,8 +3,8 @@ import pytest
 from fastapi.testclient import TestClient
 
 from app.main import app
-from app.schemas.product import GetAllProductsResponse
-from ..utils import generate_json_schema
+from app.schemas.product import GetAllProductsResponse, GetProductResponse
+from ..utils import get_json, schema_test
 
 import jsonschema
 
@@ -17,14 +17,14 @@ def test_get_all_products():
     response = client.get("/api/v1/products/")
     assert response.status_code == 200
 
-    expected_schema = generate_json_schema(GetAllProductsResponse)
-    try:
-        jsonschema.validate(instance=response.json(), schema=expected_schema)
-    except jsonschema.ValidationError as ex:
-        pytest.fail(f"Response did not match expected schema, {ex}")
+    schema_test(response.json(), GetAllProductsResponse)
 
 
 def test_get_product():
-    all_products = (client.get("/api/v1/products")).json()
+    all_products = get_json("/api/v1/products/", client)
+    random_product = random.choice(all_products["data"])
+    url = f"/api/v1/{random_product['id']}"
+    response = client.get(url)
+    assert response.status_code == 200
 
-    response = client.get(f"/api/v1/products/{(random.choice(all_products.data)).id}")
+    schema_test(response.json(), GetProductResponse)
