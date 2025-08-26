@@ -10,6 +10,7 @@ from ..utils import (
     random_string,
     random_money,
     successful_post_response_test,
+    successful_rud_response_test
 )
 
 import json
@@ -73,3 +74,14 @@ def test_get_product():
     assert response.status_code == 200
 
     schema_test(response.json(), GetProductResponse)
+
+def test_update_product():
+    id = random.choice(get_json("/api/v1/products/", client)["data"])["id"]
+    product = _random_product()
+    response = client.put(f"/api/v1/products/{id}", data=product)
+    successful_rud_response_test(response)
+
+def test_delete_product():
+    id = random.choice(get_json("/api/v1/products/", client)["data"])["id"]
+    response = client.delete(f"/api/v1/products/{id}")
+    successful_rud_response_test(response)
