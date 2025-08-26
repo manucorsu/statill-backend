@@ -1,8 +1,8 @@
-"""arreglar received por vez 1000
+"""recievevefedd
 
-Revision ID: a49dac8c68da
-Revises: f02bcc8209e0
-Create Date: 2025-08-07 10:39:34.472571
+Revision ID: 98ac0210479f
+Revises: a49dac8c68da
+Create Date: 2025-08-26 13:42:07.317234
 
 """
 
@@ -13,8 +13,8 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision: str = "a49dac8c68da"
-down_revision: Union[str, None] = "f02bcc8209e0"
+revision: str = "98ac0210479f"
+down_revision: Union[str, None] = "a49dac8c68da"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
@@ -26,6 +26,8 @@ def upgrade() -> None:
         "orders",
         sa.Column("received_at", postgresql.TIME(timezone=True), nullable=True),
     )
+    op.add_column("orders", sa.Column("payment_method", sa.Integer(), nullable=False))
+    op.drop_column("orders", "payement_method")
     op.drop_column("orders", "recieved_at")
     # ### end Alembic commands ###
 
@@ -39,8 +41,13 @@ def downgrade() -> None:
             "recieved_at",
             postgresql.TIME(timezone=True),
             autoincrement=False,
-            nullable=True,
+            nullable=False,
         ),
     )
+    op.add_column(
+        "orders",
+        sa.Column("payement_method", sa.INTEGER(), autoincrement=False, nullable=False),
+    )
+    op.drop_column("orders", "payment_method")
     op.drop_column("orders", "received_at")
     # ### end Alembic commands ###

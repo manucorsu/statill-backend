@@ -56,6 +56,7 @@ def get_all_by_store_id(id: int, session: Session):
     orders = session.query(Order).filter(Order.store_id == id).all()
     return orders
 
+
 def get_all_by_user_id(id: int, session: Session):
     """
     Retrieves all orders from the database by their user ID.
@@ -70,7 +71,8 @@ def get_all_by_user_id(id: int, session: Session):
     orders = session.query(Order).filter(Order.user_id == id).all()
     return orders
 
-def create_order(order_data: OrderCreate, session: Session):
+
+def create(order_data: OrderCreate, session: Session):
     """
     Creates a new order in the database.
     Args:
@@ -115,3 +117,24 @@ def create_order(order_data: OrderCreate, session: Session):
 
     session.commit()
     return int(order.id)
+
+def update_status(id: int, session: Session):
+    """
+    Updates a the status of an order by its ID.
+    Args:
+        id (int): The ID of the order to update.
+        session (Session): The SQLAlchemy session to use for the update.
+    Returns:
+        None
+    Raises:
+        HTTPException(404): If the order with the specified ID does not exist.
+    """
+    order = get_by_id(id, session)
+
+    if (order.status == "pending"):
+        setattr(order, order.status, "accepted")
+
+    if (order.status == "accepted"):
+        setattr(order, order.status, "received")
+    
+    session.commit()

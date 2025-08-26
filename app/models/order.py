@@ -3,8 +3,6 @@ from sqlalchemy import Column, Integer, BigInteger, CheckConstraint, ForeignKey,
 from sqlalchemy.dialects.postgresql import TIME
 from sqlalchemy.orm import relationship
 import enum
-from .user import User
-from .orders_products import OrdersProducts
 
 
 class StatusEnum(enum.Enum):
