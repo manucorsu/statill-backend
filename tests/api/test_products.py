@@ -10,7 +10,9 @@ from ..utils import (
     random_string,
     random_money,
     successful_post_response_test,
-    successful_rud_response_test
+    successful_rud_response_test,
+    not_found_response_test,
+    bad_request_test,
 )
 
 import json
@@ -75,13 +77,44 @@ def test_get_product():
 
     schema_test(response.json(), GetProductResponse)
 
+
 def test_update_product():
     id = random.choice(get_json("/api/v1/products/", client)["data"])["id"]
     product = _random_product()
     response = client.put(f"/api/v1/products/{id}", data=product)
     successful_rud_response_test(response)
 
+
 def test_delete_product():
     id = random.choice(get_json("/api/v1/products/", client)["data"])["id"]
     response = client.delete(f"/api/v1/products/{id}")
+    successful_rud_response_test(response)
+
+
+def test_get_not_existing_product():
+    all_products = (get_json("/api/v1/products/", client))["data"]
+    invalid_id = len(all_products) + 1
+    response = client.get(f"/api/v1/products/{invalid_id}")
+    assert response.status_code == 404
+
+    not_found_response_test(response)
+
+
+def test_product_create_data_hidden_none():
+    product = json.loads(_random_product())
+    product["hidden"] = None
+    response = client.post("/api/v1/products/", data=json.dumps(product))
+    successful_post_response_test(response)
+
+def test_product_create_deleted_product():
+    product = json.loads(_random_product())
+    product["name"] = "Deleted Product"
+    response = client.post("/api/v1/products/", data=json.dumps(product))
+    bad_request_test(response)
+
+def test_product_update_data_hidden_none():
+    id = random.choice(get_json("/api/v1/products/", client)["data"])["id"]
+    product = json.loads(_random_product())
+    product["hidden"] = None
+    response = client.put(f"/api/v1/products/{id}", data=json.dumps(product))
     successful_rud_response_test(response)
