@@ -8,7 +8,7 @@ import enum
 class StatusEnum(enum.Enum):
     PENDING = "pending"
     ACCEPTED = "accepted"
-    RECIEVED = "recieved"
+    RECEIVED = "received"
 
 
 class Order(Base):

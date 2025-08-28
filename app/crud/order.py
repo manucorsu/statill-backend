@@ -118,6 +118,7 @@ def create(order_data: OrderCreate, session: Session):
     session.commit()
     return int(order.id)
 
+
 def update_status(id: int, session: Session):
     """
     Updates a the status of an order by its ID.
@@ -128,13 +129,22 @@ def update_status(id: int, session: Session):
         None
     Raises:
         HTTPException(404): If the order with the specified ID does not exist.
+        HTTPException(400): If the order is already marked "received"
     """
+    statuses = ("pending", "accepted", "received")
     order = get_by_id(id, session)
+    current_status = str(order.status.value)
+    try:
+        if current_status == statuses[-1]:
+            raise HTTPException(400, f"Order already has status {statuses[-1]}")
 
-    if (order.status == "pending"):
-        setattr(order, order.status, "accepted")
-
-    if (order.status == "accepted"):
-        setattr(order, order.status, "received")
-    
-    session.commit()
+        new_status_index = statuses.index(current_status) + 1
+        new_status = statuses[new_status_index]
+        print("new_status", new_status  )
+        order.status = new_status
+        session.commit()
+        return new_status
+    except ValueError:
+        raise HTTPException(
+            500, f"An order in the database has invalid status {current_status}."
+        )

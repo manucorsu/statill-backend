@@ -95,7 +95,8 @@ def create_order(order: OrderCreate, db: Session = Depends(get_db)):
         message=f"Successfully created the Order, which received id {order_id}.",
     )
 
-@router.put("/{id}", response_model=APIResponse)
+
+@router.patch("/{id}", response_model=APIResponse)
 def update_order_status(id: int, db: Session = Depends(get_db)):
     """
     Updates the status of an order by its ID.
@@ -115,5 +116,7 @@ def update_order_status(id: int, db: Session = Depends(get_db)):
     """
     crud.update_status(id, db)
     return APIResponse(
-        successful=True, data=None, message="Successfully updated the status of the Order."
+        successful=True,
+        data=None,
+        message="Successfully updated the status of the Order.",
     )
