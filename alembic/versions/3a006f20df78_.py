@@ -1,8 +1,8 @@
-"""received estaba mal en el enum
+"""?
 
-Revision ID: 02312da9e07c
-Revises: 98ac0210479f
-Create Date: 2025-08-28 08:55:03.823611
+Revision ID: 3a006f20df78
+Revises: 02312da9e07c
+Create Date: 2025-08-28 17:17:05.714717
 
 """
 
@@ -13,8 +13,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = "02312da9e07c"
-down_revision: Union[str, None] = "98ac0210479f"
+revision: str = "3a006f20df78"
+down_revision: Union[str, None] = "02312da9e07c"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 

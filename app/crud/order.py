@@ -129,21 +129,24 @@ def update_status(id: int, session: Session):
         None
     Raises:
         HTTPException(404): If the order with the specified ID does not exist.
-        HTTPException(400): If the order is already marked "received"
+        HTTPException(400): If the order is already marked "received".
+        HTTPException(500): If an order in the database somehow has a status that isn't "pending", "accepted" or "received"
     """
-    statuses = ("pending", "accepted", "received")
+    statuses = [StatusEnum.PENDING, StatusEnum.ACCEPTED, StatusEnum.RECEIVED]
     order = get_by_id(id, session)
-    current_status = str(order.status.value)
+    current_status = order.status
+
     try:
-        if current_status == statuses[-1]:
-            raise HTTPException(400, f"Order already has status {statuses[-1]}")
+        if current_status == StatusEnum.RECEIVED:
+            raise HTTPException(
+                400, f"Order already has status {StatusEnum.RECEIVED.value}"
+            )
 
         new_status_index = statuses.index(current_status) + 1
         new_status = statuses[new_status_index]
-        print("new_status", new_status  )
         order.status = new_status
         session.commit()
-        return new_status
+        return new_status.value
     except ValueError:
         raise HTTPException(
             500, f"An order in the database has invalid status {current_status}."
