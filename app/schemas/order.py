@@ -15,7 +15,7 @@ class OrderRead(BaseModel):
     store_id: PositiveInt
     created_at: NonEmptyStr
     status: Literal["pending", "accepted", "received"]
-    received_at: NonEmptyStr
+    received_at: NonEmptyStr | None
     payment_method: Annotated[int, Field(ge=0, le=3)]
     products: list[ProductOrder]
 
@@ -27,7 +27,7 @@ class OrderCreate(BaseModel):
     store_id: PositiveInt
     products: list[ProductOrder]
     payment_method: Annotated[int, Field(ge=0, le=3)]
-    user_id: PositiveInt | None
+    user_id: PositiveInt
 
     class Config:
         from_attributes = True

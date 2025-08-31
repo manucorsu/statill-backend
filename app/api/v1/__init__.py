@@ -1,5 +1,5 @@
 from fastapi import APIRouter, responses
-from . import status, products, sales, users, stores
+from . import status, products, sales, users, stores, orders
 
 router = APIRouter()
 
@@ -8,6 +8,7 @@ router.include_router(products.router, prefix="/products", tags=["products"])
 router.include_router(sales.router, prefix="/sales", tags=["sales"])
 router.include_router(stores.router, prefix="/stores", tags=["stores"])
 router.include_router(users.router, prefix="/users", tags=["users"])
+router.include_router(orders.router, prefix="/orders", tags=["orders"])
 
 
 @router.get("/docs", response_class=responses.RedirectResponse, status_code=308)

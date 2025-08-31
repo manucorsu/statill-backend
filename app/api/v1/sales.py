@@ -65,7 +65,7 @@ def get_sale_by_id(id: int, db: Session = Depends(get_db)):
         db (Session): The SQLAlchemy session to use for the query.
 
     Returns:
-        GetProductResponse: A response containing the sale with the specified ID.
+        GetSaleResponse: A response containing the sale with the specified ID.
 
     Raises:
         HTTPException(400): If the provided ID is invalid (less than or equal to 0).
