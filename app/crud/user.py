@@ -51,8 +51,12 @@ def get_by_id(id: int, session: Session, allow_anonymized: bool = False):
 @overload
 def get_by_email(email: str, session: Session, raise_404: Literal[True]) -> User: ...
 
+
 @overload
-def get_by_email(email: str, session: Session, raise_404: Literal[False]) -> User | None: ...
+def get_by_email(
+    email: str, session: Session, raise_404: Literal[False]
+) -> User | None: ...
+
 
 def get_by_email(email: str, session: Session, raise_404: bool = True):
     """
