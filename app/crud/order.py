@@ -42,6 +42,7 @@ def get_by_id(id: int, session: Session):
     return order
 
 
+
 def get_all_by_store_id(id: int, session: Session):
     """
     Retrieves all orders from the database by their store ID.
