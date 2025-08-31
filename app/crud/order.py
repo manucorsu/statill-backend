@@ -145,6 +145,8 @@ def update_status(id: int, session: Session):
         new_status_index = statuses.index(current_status) + 1
         new_status = statuses[new_status_index]
         order.status = new_status
+        if order.status == StatusEnum.RECEIVED:
+            order.received_at = datetime.now(timezone.utc)
         session.commit()
         return new_status.value
     except ValueError:
