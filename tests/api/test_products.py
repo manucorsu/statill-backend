@@ -106,11 +106,20 @@ def test_product_create_data_hidden_none():
     response = client.post("/api/v1/products/", data=json.dumps(product))
     successful_post_response_test(response)
 
-def test_product_create_deleted_product():
+
+def test_product_create_deleted_product_400():
     product = json.loads(_random_product())
     product["name"] = "Deleted Product"
     response = client.post("/api/v1/products/", data=json.dumps(product))
     bad_request_test(response)
+
+
+def test_product_create_invalid_qty_422():
+    product = json.loads(_random_product())
+    product["quantity"] = random.randint(-9999, 0)
+    response = client.post("/api/v1/products/", data=json.dumps(product))
+    bad_request_test(response, code=422)
+
 
 def test_product_update_data_hidden_none():
     id = random.choice(get_json("/api/v1/products/", client)["data"])["id"]
