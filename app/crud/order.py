@@ -7,7 +7,8 @@ from fastapi import HTTPException
 
 from ..schemas.order import *
 from datetime import datetime, timezone
-from . import store as stores_crud, product as products_crud
+from . import store as stores_crud, product as products_crud, sale as sales_crud
+from ..schemas.sale import SaleCreate, ProductSale
 
 
 def get_all(session: Session):
@@ -40,7 +41,6 @@ def get_by_id(id: int, session: Session):
         raise HTTPException(404, detail="Order not found")
 
     return order
-
 
 
 def get_all_by_store_id(id: int, session: Session):
@@ -145,9 +145,23 @@ def update_status(id: int, session: Session):
 
         new_status_index = statuses.index(current_status) + 1
         new_status = statuses[new_status_index]
-        order.status = new_status
-        if order.status == StatusEnum.RECEIVED:
+        print([ProductSale(**ps.__dict__) for ps in order.orders_products])
+
+        if new_status == StatusEnum.RECEIVED:
+            sales_crud.create_sale(
+                SaleCreate(
+                    store_id=order.store_id,
+                    products=[
+                        ProductSale(**ps.__dict__) for ps in order.orders_products
+                    ],
+                    payment_method=order.payment_method,
+                    user_id=order.user_id,
+                ),
+                session,
+            )
             order.received_at = datetime.now(timezone.utc)
+
+        order.status = new_status
         session.commit()
         return new_status.value
     except ValueError:

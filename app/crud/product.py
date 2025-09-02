@@ -4,8 +4,9 @@ from sqlalchemy.orm import Session
 
 from app.models.product import Product
 from app.models.products_sales import ProductsSales
+from app.models.orders_products import OrdersProducts
 from app.schemas.product import ProductCreate, ProductUpdate
-from . import store as stores_crud
+from . import store as stores_crud, order as orders_crud
 
 
 def get_all(session: Session, include_anonymized: bool = False):
@@ -116,8 +117,17 @@ def delete(id: int, session: Session):
         HTTPException(404): If the product with the specified ID does not exist.
     """
     item = get_by_id(id, session)
-    in_sales = session.query(ProductsSales)
+    orders = session.query(OrdersProducts).filter(OrdersProducts.product_id==id).all()
+    in_sales = session.query(ProductsSales).filter(ProductsSales.product_id==id).all()
 
+
+    if orders:
+        for order in orders:
+            for op in orders.orders_products:
+                if op.id == id:
+                    orders.orders_products.remove(op)
+                    if orders.orders_products == []:
+                        session.delete(order)
     if in_sales:
         item.name = "Deleted Product"
         item.brand = "Deleted Product"
