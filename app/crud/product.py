@@ -43,6 +43,23 @@ def get_by_id(id: int, session: Session, allow_anonymized: bool = False):
         raise HTTPException(status_code=404, detail="Product not found")
     return product
 
+def get_all_by_store_id(id: int, session: Session, include_anonymized: bool = False):
+    """
+    Retrieves all products from the database by their store ID.
+    Args:
+        id (int): The ID of the store.
+        session (Session): The SQLAlchemy session to use for the query.
+    Returns:
+        list[Product]: A list for the products with the store ID.
+    Raises:
+        HTTPException(404): If the store with the specified ID does not exist.
+    """
+    products = session.query(Product).filter(Product.store_id == id)
+
+    if not include_anonymized:
+        products = products.filter(Product.name != "Deleted Product")
+
+    return products.all()
 
 def create(product_data: ProductCreate, session: Session):
     """
