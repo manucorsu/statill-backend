@@ -33,6 +33,14 @@ class OrderCreate(BaseModel):
         from_attributes = True
 
 
+class OrderUpdate(BaseModel):
+    order_id: PositiveInt
+    products: list[ProductOrder]
+
+    class Config:
+        from_attributes = True
+
+
 class GetAllOrdersResponse(APIResponse):
     data: list[OrderRead]
 

@@ -168,3 +168,35 @@ def update_status(id: int, session: Session):
         raise HTTPException(
             500, f"An order in the database has invalid status {current_status}."
         )
+
+
+def update_order_products(updates: OrderUpdate, session: Session):
+    order = get_by_id(updates.order_id, session)
+    if order.status != StatusEnum.PENDING:
+        raise HTTPException(400, "Only 'pending' orders can be updated.")
+
+    for product_data in updates.products:
+        product = products_crud.get_by_id(product_data.product_id, session)
+        if product.store_id != order.store_id:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Product with id {product_data.product_id} does not belong to this store",
+            )
+
+        if (product.quantity - product_data.quantity) < 0:
+            raise HTTPException(
+                status_code=400, detail=f"Not enough {product.name} in stock"
+            )
+
+        new_op = OrdersProducts(
+            order_id=order.id,
+            product_id=product_data.product_id,
+            quantity=product_data.quantity,
+        )
+
+        session.add(new_op)
+    for old_op in (
+        session.query(OrdersProducts).filter(OrdersProducts.order_id == order.id).all()
+    ):
+        session.delete(old_op)
+    session.commit()

@@ -43,6 +43,7 @@ def get_by_id(id: int, session: Session, allow_anonymized: bool = False):
         raise HTTPException(status_code=404, detail="Product not found")
     return product
 
+
 def get_all_by_store_id(id: int, session: Session, include_anonymized: bool = False):
     """
     Retrieves all products from the database by their store ID.
@@ -60,6 +61,7 @@ def get_all_by_store_id(id: int, session: Session, include_anonymized: bool = Fa
         products = products.filter(Product.name != "Deleted Product")
 
     return products.all()
+
 
 def create(product_data: ProductCreate, session: Session):
     """
@@ -134,9 +136,8 @@ def delete(id: int, session: Session):
         HTTPException(404): If the product with the specified ID does not exist.
     """
     item = get_by_id(id, session)
-    orders = session.query(OrdersProducts).filter(OrdersProducts.product_id==id).all()
-    in_sales = session.query(ProductsSales).filter(ProductsSales.product_id==id).all()
-
+    orders = session.query(OrdersProducts).filter(OrdersProducts.product_id == id).all()
+    in_sales = session.query(ProductsSales).filter(ProductsSales.product_id == id).all()
 
     if orders:
         for order in orders:

@@ -63,6 +63,7 @@ def get_product_by_id(
         message=f"Successfully retrieved the Product with id {result.id}.",
     )
 
+
 @router.get("/store/{id}", response_model=GetAllProductsResponse)
 def get_product_by_store_id(
     id: int, session: Session = Depends(get_db), include_anonymized: bool = False
@@ -85,12 +86,15 @@ def get_product_by_store_id(
         HTTPException(404): If the store with the specified ID does not exist.
     """
 
-    result = crud.get_all_by_store_id(id, session, include_anonymized=include_anonymized)
+    result = crud.get_all_by_store_id(
+        id, session, include_anonymized=include_anonymized
+    )
     return GetAllProductsResponse(
         successful=True,
         data=result,
         message=f"Successfully retrieved all Products with store id {id}.",
     )
+
 
 @router.post("/", response_model=APIResponse, status_code=201)
 def create_product(product: ProductCreate, session: Session = Depends(get_db)):

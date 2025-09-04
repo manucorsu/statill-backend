@@ -106,11 +106,13 @@ def test_product_create_data_hidden_none():
     response = client.post("/api/v1/products/", data=json.dumps(product))
     successful_post_response_test(response)
 
+
 def test_product_create_deleted_product():
     product = json.loads(_random_product())
     product["name"] = "Deleted Product"
     response = client.post("/api/v1/products/", data=json.dumps(product))
     bad_request_test(response)
+
 
 def test_product_update_data_hidden_none():
     id = random.choice(get_json("/api/v1/products/", client)["data"])["id"]
