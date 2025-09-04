@@ -24,7 +24,7 @@ client = TestClient(app)
 
 def _random_product():
     """
-    Generate a JSON string representing a random product with various attributes.
+    Generate a JSON string representing a random order with various attributes.
 
     Returns:
         dict[str, Any]: A JSON-formatted string containing randomly generated product data, including
@@ -92,7 +92,9 @@ def test_delete_product():
 
 def test_get_not_existing_product():
     all_products = (get_json("/api/v1/products/", client))["data"]
-    invalid_id = len(all_products) + 1
+    invalid_id: int = 1
+    while invalid_id in [p["id"] for p in all_products]:
+        invalid_id += 1
     response = client.get(f"/api/v1/products/{invalid_id}")
     assert response.status_code == 404
 
@@ -118,7 +120,7 @@ def test_product_create_invalid_qty_422():
     product["quantity"] = random.randint(-9999, 0)
     response = client.post("/api/v1/products/", data=json.dumps(product))
     bad_request_test(response, code=422)
-    
+
 
 def test_product_update_data_hidden_none():
     id = random.choice(get_json("/api/v1/products/", client)["data"])["id"]
