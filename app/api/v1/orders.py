@@ -141,7 +141,7 @@ def create_order(order: OrderCreate, db: Session = Depends(get_db)):
     )
 
 
-@router.patch("/{id}", response_model=APIResponse)
+@router.patch("/{id}/status", response_model=APIResponse)
 def update_order_status(id: int, db: Session = Depends(get_db)):
     """
     Updates the status of an order by its ID.

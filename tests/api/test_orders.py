@@ -27,10 +27,10 @@ def _random_order():
     random.shuffle(all_products)
     return {
         "user_id": temp_user_id,
-        "store_id": store_id, #temp!!
+        "store_id": store_id,  # temp!!
         "payment_method": random.randint(0, 3),
         "products": [
-            {"product_id": p["id"], "quantity": random.randint(1, p["quantity"])}
+            {"product_id": p["id"], "quantity": random.randint(1, int(p["quantity"]))}
             for p in all_products[: random.randint(1, len(all_products))]
         ],
     }
@@ -57,14 +57,6 @@ def test_get_order():
 
     response = client.get(f"/api/v1/orders/{id}")
     successful_rud_response_test(response)
-
-
-# def test_get_all_orders_by_store_id():
-# id = random.choice(get_json("/api/v1/stores/", client)["data"])["id"]
-
-# response = client.get(f"/api/v1/orders/store/{id}")
-
-# def test_get_all_by_user_id():
 
 
 def test_create_order():
