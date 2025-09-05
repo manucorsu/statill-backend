@@ -196,3 +196,11 @@ def update_order_products(
     return APIResponse(
         successful=True, data=None, message="Successfully updated the Order's products."
     )
+
+
+@router.patch("/{id}/cancel", response_model=APIResponse)
+def cancel_order(id: int, session: Session = Depends(get_db)):
+    crud.cancel(id, session)
+    return APIResponse(
+        successful=True, data=None, message="Successfully cancelled the order"
+    )

@@ -9,6 +9,7 @@ class StatusEnum(enum.Enum):
     PENDING = "pending"
     ACCEPTED = "accepted"
     RECEIVED = "received"
+    CANCELLED = "cancelled"
 
 
 class Order(Base):

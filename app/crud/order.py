@@ -168,9 +168,12 @@ def update_status(id: int, session: Session):
         session.commit()
         return new_status.value
     except ValueError:
-        raise HTTPException(
-            500, f"An order in the database has invalid status {current_status}."
-        )
+        if current_status == StatusEnum.CANCELLED:
+            raise HTTPException(400, "Cancelled orders cannot be updated.")
+        else:
+            raise HTTPException(
+                500, f"An order in the database has invalid status {current_status}."
+            )
 
 
 def update_order_products(id: int, updates: OrderUpdate, session: Session):
@@ -220,3 +223,14 @@ def update_order_products(id: int, updates: OrderUpdate, session: Session):
     ):
         session.delete(old_op)
     session.commit()
+
+
+def cancel(id: int, session: Session):
+    order = get_by_id(id, session)
+    if order.status == StatusEnum.RECEIVED:
+        raise HTTPException(400, "Received orders cannot be cancelled.")
+
+    order.status = StatusEnum.CANCELLED
+    session.commit()
+
+    # todo: notificar al usuario
