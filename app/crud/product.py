@@ -125,7 +125,7 @@ def delete(id: int, session: Session):
     If any sale contains any amount of the product, it will be anonymized instead, meaning:
         * Its name, brand and description will be set to `"Deleted Product"`.
         * Its barcode data will be set to None.
-        * Its quantity will permanently be 0.
+        * Its quantity will permanently become 0.
 
     Args:
         id (int): The ID of the product to delete.
@@ -134,19 +134,23 @@ def delete(id: int, session: Session):
         None
     Raises:
         HTTPException(404): If the product with the specified ID does not exist.
+        HTTPException(400): If the product is part of any pending or accepted (but not received) order.
     """
     item = get_by_id(id, session)
     orders = session.query(OrdersProducts).filter(OrdersProducts.product_id == id).all()
-    in_sales = session.query(ProductsSales).filter(ProductsSales.product_id == id).all()
+    sales = session.query(ProductsSales).filter(ProductsSales.product_id == id).all()
 
-    if orders:
-        for order in orders:
-            for op in orders.orders_products:
-                if op.id == id:
-                    orders.orders_products.remove(op)
-                    if orders.orders_products == []:
-                        session.delete(order)
-    if in_sales:
+    # Checks if the product is part of any pending or accepted order, and blocks deletion if so
+    for op in orders:
+        order = orders_crud.get_by_id(op.order_id, session)
+        if order.status != orders_crud.StatusEnum.RECEIVED:
+            raise HTTPException(
+                400,
+                "Cannot delete product that is part of a pending or accepted order. Please fulfill or cancel the order first.",
+            )
+
+    # If the product is part of any sale, anonymize it instead of deleting it
+    if len(sales) > 0:
         item.name = "Deleted Product"
         item.brand = "Deleted Product"
         item.desc = "Deleted Product"

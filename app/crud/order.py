@@ -95,6 +95,10 @@ def create(order_data: OrderCreate, session: Session):
     )
     session.add(order)
     session.commit()
+    if len(order_data.products) == 0:
+        raise HTTPException(
+            status_code=400, detail="Order must have at least 1 product"
+        )
 
     for product_data in order_data.products:
         product = products_crud.get_by_id(product_data.product_id, session)
@@ -145,7 +149,6 @@ def update_status(id: int, session: Session):
 
         new_status_index = statuses.index(current_status) + 1
         new_status = statuses[new_status_index]
-        print([ProductSale(**ps.__dict__) for ps in order.orders_products])
 
         if new_status == StatusEnum.RECEIVED:
             sales_crud.create_sale(
@@ -170,11 +173,28 @@ def update_status(id: int, session: Session):
         )
 
 
-def update_order_products(updates: OrderUpdate, session: Session):
-    order = get_by_id(updates.order_id, session)
-    if order.status != StatusEnum.PENDING:
-        raise HTTPException(400, "Only 'pending' orders can be updated.")
+def update_order_products(id: int, updates: OrderUpdate, session: Session):
+    """
+    Updates the products associated with an order.
+    Args:
+        id (int): The ID of the order to update.
+        updates (OrderUpdate): An object containing the list of products to update.
+        session (Session): The SQLAlchemy session used for database operations.
 
+    Raises:
+        HTTPException(404): If the order with the specified ID does not exist.
+        HTTPException(400): If the order has no products.
+        HTTPException(400): If the order is not pending.
+        HTTPException(400): If a product does not belong to the store.
+        HTTPException(400): If there is insufficient stock for a product.
+    """
+    order = get_by_id(id, session)
+    if order.status != StatusEnum.PENDING:
+        raise HTTPException(400, "Only pending orders can be updated.")
+    if len(updates.products) == 0:
+        raise HTTPException(
+            status_code=400, detail="Order must have at least 1 product"
+        )
     for product_data in updates.products:
         product = products_crud.get_by_id(product_data.product_id, session)
         if product.store_id != order.store_id:

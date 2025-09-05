@@ -34,7 +34,6 @@ class OrderCreate(BaseModel):
 
 
 class OrderUpdate(BaseModel):
-    order_id: PositiveInt
     products: list[ProductOrder]
 
     class Config:
