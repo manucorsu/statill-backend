@@ -107,8 +107,6 @@ def create_product(product: ProductCreate, session: Session = Depends(get_db)):
         product (ProductCreate): The product data.
         session (Session): The SQLAlchemy session to use for the query.
     """
-    if product.quantity <= 0:
-        raise HTTPException(status_code=400, detail="Invalid product quantity.")
 
     product_id = crud.create(product, session)
     return APIResponse(
