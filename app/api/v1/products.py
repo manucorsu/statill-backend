@@ -64,6 +64,38 @@ def get_product_by_id(
     )
 
 
+@router.get("/store/{id}", response_model=GetAllProductsResponse)
+def get_product_by_store_id(
+    id: int, session: Session = Depends(get_db), include_anonymized: bool = False
+):
+    """
+    Retrieves a product by its store ID.
+
+    (Will require auth in the future)
+
+    Args:
+        id (int): The ID of the store to retrieve its products.
+        allow_anonymized (bool): If set to `False`, a 404 error will be raised if the product with the specified ID is marked as `"Deleted Product"`, just as if the product did not exist in the database. Default is `False`.
+        session (Session): The SQLAlchemy session to use for the query.
+
+    Returns:
+        GetProductResponse: A response containing a list of products with the specified store ID.
+
+    Raises:
+        HTTPException(400): If the provided ID is invalid (less than or equal to 0).
+        HTTPException(404): If the store with the specified ID does not exist.
+    """
+
+    result = crud.get_all_by_store_id(
+        id, session, include_anonymized=include_anonymized
+    )
+    return GetAllProductsResponse(
+        successful=True,
+        data=result,
+        message=f"Successfully retrieved all Products with store id {id}.",
+    )
+
+
 @router.post("/", response_model=APIResponse, status_code=201)
 def create_product(product: ProductCreate, session: Session = Depends(get_db)):
     """

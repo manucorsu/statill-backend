@@ -4,8 +4,9 @@ from sqlalchemy.orm import Session
 
 from app.models.product import Product
 from app.models.products_sales import ProductsSales
+from app.models.orders_products import OrdersProducts
 from app.schemas.product import ProductCreate, ProductUpdate
-from . import store as stores_crud
+from . import store as stores_crud, order as orders_crud
 
 
 def get_all(session: Session, include_anonymized: bool = False):
@@ -41,6 +42,25 @@ def get_by_id(id: int, session: Session, allow_anonymized: bool = False):
     if product is None or (product.name == "Deleted Product" and not allow_anonymized):
         raise HTTPException(status_code=404, detail="Product not found")
     return product
+
+
+def get_all_by_store_id(id: int, session: Session, include_anonymized: bool = False):
+    """
+    Retrieves all products from the database by their store ID.
+    Args:
+        id (int): The ID of the store.
+        session (Session): The SQLAlchemy session to use for the query.
+    Returns:
+        list[Product]: A list for the products with the store ID.
+    Raises:
+        HTTPException(404): If the store with the specified ID does not exist.
+    """
+    products = session.query(Product).filter(Product.store_id == id)
+
+    if not include_anonymized:
+        products = products.filter(Product.name != "Deleted Product")
+
+    return products.all()
 
 
 def create(product_data: ProductCreate, session: Session):
@@ -105,7 +125,7 @@ def delete(id: int, session: Session):
     If any sale contains any amount of the product, it will be anonymized instead, meaning:
         * Its name, brand and description will be set to `"Deleted Product"`.
         * Its barcode data will be set to None.
-        * Its quantity will permanently be 0.
+        * Its quantity will permanently become 0.
 
     Args:
         id (int): The ID of the product to delete.
@@ -114,11 +134,23 @@ def delete(id: int, session: Session):
         None
     Raises:
         HTTPException(404): If the product with the specified ID does not exist.
+        HTTPException(400): If the product is part of any pending or accepted (but not received) order.
     """
     item = get_by_id(id, session)
-    in_sales = session.query(ProductsSales)
+    orders = session.query(OrdersProducts).filter(OrdersProducts.product_id == id).all()
+    sales = session.query(ProductsSales).filter(ProductsSales.product_id == id).all()
 
-    if in_sales:
+    # Checks if the product is part of any pending or accepted order, and blocks deletion if so
+    for op in orders:
+        order = orders_crud.get_by_id(op.order_id, session)
+        if order.status != orders_crud.StatusEnum.RECEIVED:
+            raise HTTPException(
+                400,
+                "Cannot delete product that is part of a pending or accepted order. Please fulfill or cancel the order first.",
+            )
+
+    # If the product is part of any sale, anonymize it instead of deleting it
+    if len(sales) > 0:
         item.name = "Deleted Product"
         item.brand = "Deleted Product"
         item.desc = "Deleted Product"

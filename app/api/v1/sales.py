@@ -90,7 +90,17 @@ def create_sale(sale: SaleCreate, db: Session = Depends(get_db)):
     Args:
         sale (SaleCreate): The sale data.
         db (Session): The SQLAlchemy session to use for the query.
+    Raises:
+        HTTPException(404): If the store with the specified ID does not exist.
+        HTTPException(404): If the user with the specified ID does not exist.
+        HTTPException(400): If a product does not belong to the store.
+        HTTPException(400): If there is insufficient stock for a product.
+        HTTPException(400): If the sale has no products.
+    Returns:
+        APIResponse: A response containing the ID of the created sale.
     """
+    if len(sale.products) == 0:
+        raise HTTPException(status_code=400, detail="Sale must have at least 1 product")
     sale_id = crud.create_sale(sale, db)
     return APIResponse(
         successful=True,

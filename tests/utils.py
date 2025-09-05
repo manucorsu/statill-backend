@@ -164,7 +164,6 @@ def not_found_response_test(response: httpx.Response):
     assert not jsonr["successful"]
     assert isinstance(jsonr["message"], str)
 
-
 def bad_request_test(response: httpx.Response, code: int = 400):
     assert response.status_code == code
     jsonr = response.json()

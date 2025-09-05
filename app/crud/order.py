@@ -7,7 +7,8 @@ from fastapi import HTTPException
 
 from ..schemas.order import *
 from datetime import datetime, timezone
-from . import store as stores_crud, product as products_crud
+from . import store as stores_crud, product as products_crud, sale as sales_crud
+from ..schemas.sale import SaleCreate, ProductSale
 
 
 def get_all(session: Session):
@@ -94,6 +95,10 @@ def create(order_data: OrderCreate, session: Session):
     )
     session.add(order)
     session.commit()
+    if len(order_data.products) == 0:
+        raise HTTPException(
+            status_code=400, detail="Order must have at least 1 product"
+        )
 
     for product_data in order_data.products:
         product = products_crud.get_by_id(product_data.product_id, session)
@@ -144,12 +149,88 @@ def update_status(id: int, session: Session):
 
         new_status_index = statuses.index(current_status) + 1
         new_status = statuses[new_status_index]
-        order.status = new_status
-        if order.status == StatusEnum.RECEIVED:
+
+        if new_status == StatusEnum.RECEIVED:
+            sales_crud.create_sale(
+                SaleCreate(
+                    store_id=order.store_id,
+                    products=[
+                        ProductSale(**ps.__dict__) for ps in order.orders_products
+                    ],
+                    payment_method=order.payment_method,
+                    user_id=order.user_id,
+                ),
+                session,
+            )
             order.received_at = datetime.now(timezone.utc)
+
+        order.status = new_status
         session.commit()
         return new_status.value
     except ValueError:
+        if current_status == StatusEnum.CANCELLED:
+            raise HTTPException(400, "Cancelled orders cannot be updated.")
+        else:
+            raise HTTPException(
+                500, f"An order in the database has invalid status {current_status}."
+            )
+
+
+def update_order_products(id: int, updates: OrderUpdate, session: Session):
+    """
+    Updates the products associated with an order.
+    Args:
+        id (int): The ID of the order to update.
+        updates (OrderUpdate): An object containing the list of products to update.
+        session (Session): The SQLAlchemy session used for database operations.
+
+    Raises:
+        HTTPException(404): If the order with the specified ID does not exist.
+        HTTPException(400): If the order has no products.
+        HTTPException(400): If the order is not pending.
+        HTTPException(400): If a product does not belong to the store.
+        HTTPException(400): If there is insufficient stock for a product.
+    """
+    order = get_by_id(id, session)
+    if order.status != StatusEnum.PENDING:
+        raise HTTPException(400, "Only pending orders can be updated.")
+    if len(updates.products) == 0:
         raise HTTPException(
-            500, f"An order in the database has invalid status {current_status}."
+            status_code=400, detail="Order must have at least 1 product"
         )
+    for product_data in updates.products:
+        product = products_crud.get_by_id(product_data.product_id, session)
+        if product.store_id != order.store_id:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Product with id {product_data.product_id} does not belong to this store",
+            )
+
+        if (product.quantity - product_data.quantity) < 0:
+            raise HTTPException(
+                status_code=400, detail=f"Not enough {product.name} in stock"
+            )
+
+        new_op = OrdersProducts(
+            order_id=order.id,
+            product_id=product_data.product_id,
+            quantity=product_data.quantity,
+        )
+
+        session.add(new_op)
+    for old_op in (
+        session.query(OrdersProducts).filter(OrdersProducts.order_id == order.id).all()
+    ):
+        session.delete(old_op)
+    session.commit()
+
+
+def cancel(id: int, session: Session):
+    order = get_by_id(id, session)
+    if order.status == StatusEnum.RECEIVED:
+        raise HTTPException(400, "Received orders cannot be cancelled.")
+
+    order.status = StatusEnum.CANCELLED
+    session.commit()
+
+    # todo: notificar al usuario

@@ -8,6 +8,7 @@ from ...schemas.order import (
     GetOrderResponse,
     OrderCreate,
     OrderRead,
+    OrderUpdate,
     ProductOrder,
 )
 from ...models.order import Order
@@ -77,6 +78,50 @@ def get_order_by_id(id: int, db: Session = Depends(get_db)):
     )
 
 
+@router.get("/store/{store_id}", response_model=GetAllOrdersResponse)
+def get_orders_by_store_id(store_id: int, db: Session = Depends(get_db)):
+    """
+    Retrieves all orders for a specific store.
+
+    (Will require auth in the future)
+
+    Args:
+        store_id (int): The ID of the store to retrieve orders for.
+        db (Session): The SQLAlchemy session to use for the query.
+
+    Returns:
+        GetAllOrdersResponse: A response containing all orders for the specified store.
+    """
+    result = crud.get_all_by_store_id(store_id, db)
+    return GetAllOrdersResponse(
+        successful=True,
+        data=[__order_to_orderread(o) for o in result],
+        message=f"Successfully retrieved all Orders for store with id {store_id}.",
+    )
+
+
+@router.get("/user/{user_id}", response_model=GetAllOrdersResponse)
+def get_orders_by_user_id(user_id: int, db: Session = Depends(get_db)):
+    """
+    Retrieves all orders for a specific user.
+
+    (Will require auth in the future)
+
+    Args:
+        user_id (int): The ID of the user to retrieve orders for.
+        db (Session): The SQLAlchemy session to use for the query.
+
+    Returns:
+        GetAllOrdersResponse: A response containing all orders for the specified user.
+    """
+    result = crud.get_all_by_user_id(user_id, db)
+    return GetAllOrdersResponse(
+        successful=True,
+        data=[__order_to_orderread(o) for o in result],
+        message=f"Successfully retrieved all Orders for user with id {user_id}.",
+    )
+
+
 @router.post("/", response_model=APIResponse, status_code=201)
 def create_order(order: OrderCreate, db: Session = Depends(get_db)):
     """
@@ -118,5 +163,44 @@ def update_order_status(id: int, db: Session = Depends(get_db)):
     return APIResponse(
         successful=True,
         data=None,
-        message="Successfully updated the status of the Order.",
+        message="Successfully updated the Order's status.",
+    )
+
+
+@router.patch("/{id}/products", response_model=APIResponse)
+def update_order_products(
+    id: int, updates: OrderUpdate, session: Session = Depends(get_db)
+):
+    """
+    Updates the products of an order by its ID.
+
+    (Will require auth in the future)
+
+    Args:
+        id (int): The ID of the order to update.
+        updates (OrderUpdate): The order updates.
+        session (Session): The SQLAlchemy session to use for the update.
+
+    Args:
+        updates (OrderUpdate): The order updates.
+        session (Session): The SQLAlchemy session to use for the update.
+
+    Returns:
+        APIResponse: A response indicating the success of the update operation.
+
+    Raises:
+        HTTPException(400): If the order's status was not 'pending'.
+        HTTPException(404): If the order with the specified ID does not exist.
+    """
+    crud.update_order_products(id, updates, session)
+    return APIResponse(
+        successful=True, data=None, message="Successfully updated the Order's products."
+    )
+
+
+@router.patch("/{id}/cancel", response_model=APIResponse)
+def cancel_order(id: int, session: Session = Depends(get_db)):
+    crud.cancel(id, session)
+    return APIResponse(
+        successful=True, data=None, message="Successfully cancelled the order"
     )
