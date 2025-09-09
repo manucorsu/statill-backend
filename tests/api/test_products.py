@@ -4,6 +4,7 @@ from fastapi.testclient import TestClient
 
 from app.main import app
 from app.schemas.product import GetAllProductsResponse, GetProductResponse
+
 from ..utils import (
     get_json,
     get_json_data,
@@ -91,7 +92,15 @@ def test_update_product():
 
 
 def test_delete_product():
-    id = random.choice(get_json("/api/v1/products/", client)["data"])["id"]
+    all_orders = get_json("/api/v1/orders", client)["data"]
+    all_products =get_json("/api/v1/products/", client)["data"]
+    id = random.choice(all_products)["id"]
+    ids_in_orders = []
+    for order in all_orders:
+        for product in order["products"]:
+            ids_in_orders.append(product["product_id"])
+    while id in ids_in_orders:
+        id = random.choice(all_products)["id"]
     response = client.delete(f"/api/v1/products/{id}")
     successful_rud_response_test(response)
 
@@ -130,7 +139,7 @@ def test_product_update_data_hidden_none():
 
 
 def test_delete_product_when_in_pa_orders():
-    product = get_json_data(f"/api/v1/products{_random_product_id()}", client)
+    product = get_json_data(f"/api/v1/products/{_random_product_id()}", client)
     # add a random amount to it to an order
     order_post_response = client.post(
         "/api/v1/orders/",
@@ -140,7 +149,7 @@ def test_delete_product_when_in_pa_orders():
                 "products": [
                     {
                         "product_id": product["id"],
-                        "quantity": random.randint(1, float(product["quantity"])),
+                        "quantity": random.randint(1, int(product["quantity"])),
                     }
                 ],
                 "payment_method": random.randint(0, 3),
@@ -152,7 +161,7 @@ def test_delete_product_when_in_pa_orders():
     # 50% chance of it being set to accepted
     if random.choice((False, True)):
         opr_json = order_post_response.json()
-        id = opr_json["id"]
+        id = opr_json["data"]["id"]
         client.patch(f"/api/v1/orders/{id}/status")
 
     response = client.delete(f"/api/v1/products/{product["id"]}")
