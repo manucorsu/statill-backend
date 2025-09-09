@@ -154,6 +154,6 @@ def test_delete_product_when_in_pa_orders():
         opr_json = order_post_response.json()
         id = opr_json["id"]
         client.patch(f"/api/v1/orders/{id}/status")
-    
+
     response = client.delete(f"/api/v1/products/{product["id"]}")
     bad_request_test(response)

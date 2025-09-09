@@ -9,6 +9,7 @@ from ..utils import (
     not_found_response_test,
     successful_rud_response_test,
     successful_post_response_test,
+    bad_request_test,
 )
 from app.schemas.order import GetAllOrdersResponse, GetOrderResponse
 
@@ -45,7 +46,7 @@ def test_get_all_orders():
 def test_get_order_invalid_id():
     all_orders = (get_json("/api/v1/orders/", client))["data"]
     invalid_id = 1
-    while invalid_id in (p["id"] for p in all_orders):
+    while invalid_id in [p["id"] for p in all_orders]:
         invalid_id += 1
 
     response = client.get(f"/api/v1/orders/{invalid_id}")
@@ -63,3 +64,32 @@ def test_create_order():
     order = _random_order()
     response = client.post("/api/v1/orders/", data=json.dumps(order))
     successful_post_response_test(response)
+
+
+def test_create_order_invalid_store():
+    all_stores = (get_json("/api/v1/stores/", client))["data"]
+    invalid_store_id = 1
+    while invalid_store_id in [p["id"] for p in all_stores]:
+        invalid_store_id += 1
+
+    order = _random_order()
+    order["store_id"] = invalid_store_id
+    response = client.post("/api/v1/orders/", data=json.dumps(order))
+    not_found_response_test(response)
+
+
+def test_create_order_with_no_products():
+    order = _random_order()
+    order["products"] = []
+    response = client.post("/api/v1/orders/", data=json.dumps(order))
+    bad_request_test(response)
+
+def test_create_order_with_too_high_qty_products():
+    order = _random_order()
+    product_id = order["products"][0]["product_id"]
+    product_max_qty = get_json(f"/api/v1/products/{product_id}", client)["data"]["quantity"]
+    
+    order["products"][0]["quantity"] = product_max_qty + 23.24
+
+    response = client.post("/api/v1/orders/", data=json.dumps(order))
+    bad_request_test(response)

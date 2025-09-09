@@ -83,7 +83,9 @@ def create(order_data: OrderCreate, session: Session):
         int: The ID of the newly created order.
     """
     store = stores_crud.get_by_id(order_data.store_id, session)
-    if store is None:
+    if (
+        store is None
+    ):  # para el que mire el coverage: esto está contemplado (test_create_order_invalid_store), pero no sé por qué no lo toma?
         raise HTTPException(status_code=404, detail="Store not found")
     order = Order(
         store_id=order_data.store_id,
@@ -233,4 +235,4 @@ def cancel(id: int, session: Session):
     order.status = StatusEnum.CANCELLED
     session.commit()
 
-    # todo: notificar al usuario
+    # todo: notificar al usuario por mail
