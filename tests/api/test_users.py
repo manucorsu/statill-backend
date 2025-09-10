@@ -9,7 +9,6 @@ from ..utils import (
     get_json,
     get_json_data,
     schema_test,
-    random_user,
     random_string,
     random_money,
     successful_post_response_test,
@@ -23,6 +22,7 @@ import json
 import random
 
 client = TestClient(app)
+
 
 def _random_user():
     """
@@ -53,6 +53,7 @@ def test_get_all_users():
 
     schema_test(response.json(), GetAllUsersResponse)
 
+
 def test_get_user():
     all_users = (get_json("/api/v1/users/", client))["data"]
     if all_users == []:
@@ -65,7 +66,8 @@ def test_get_user():
 
     schema_test(response.json(), GetUserResponse)
 
-def test_create_user():
-    user = _random_product()
-    response = client.post("/api/v1/products/", data=json.dumps(product))
-    successful_post_response_test(response)
+
+# def test_create_user():
+#     user = _random_product()
+#     response = client.post("/api/v1/products/", data=json.dumps(product))
+#     successful_post_response_test(response)

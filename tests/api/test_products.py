@@ -93,7 +93,7 @@ def test_update_product():
 
 def test_delete_product():
     all_orders = get_json("/api/v1/orders", client)["data"]
-    all_products =get_json("/api/v1/products/", client)["data"]
+    all_products = get_json("/api/v1/products/", client)["data"]
     id = random.choice(all_products)["id"]
     ids_in_orders = []
     for order in all_orders:

@@ -57,7 +57,7 @@ def test_get_order():
     id = random.choice(get_json("/api/v1/orders/", client)["data"])["id"]
 
     response = client.get(f"/api/v1/orders/{id}")
-    successful_rud_response_test(response)
+    schema_test(response.json(), GetOrderResponse)
 
 
 def test_create_order():
@@ -84,12 +84,32 @@ def test_create_order_with_no_products():
     response = client.post("/api/v1/orders/", data=json.dumps(order))
     bad_request_test(response)
 
+
 def test_create_order_with_too_high_qty_products():
     order = _random_order()
     product_id = order["products"][0]["product_id"]
-    product_max_qty = get_json(f"/api/v1/products/{product_id}", client)["data"]["quantity"]
-    
+    product_max_qty = get_json(f"/api/v1/products/{product_id}", client)["data"][
+        "quantity"
+    ]
+
     order["products"][0]["quantity"] = product_max_qty + 23.24
 
     response = client.post("/api/v1/orders/", data=json.dumps(order))
     bad_request_test(response)
+
+
+def test_get_orders_by_store_id():
+    all_stores = (get_json("/api/v1/stores", client))["data"]
+    random_store_id = (random.choice(all_stores))["id"]
+
+    response = client.get(f"/api/v1/orders/store/{random_store_id}")
+    schema_test(response.json(), GetAllOrdersResponse)
+
+
+def test_get_orders_by_user_id():
+    all_users = (get_json("/api/v1/users", client))["data"]
+    random_user_id = (random.choice(all_users))["id"]
+
+    response = client.get(f"/api/v1/orders/user/{random_user_id}")
+    schema_test(response.json(), GetAllOrdersResponse)
+
