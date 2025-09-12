@@ -113,3 +113,41 @@ def test_get_orders_by_user_id():
     response = client.get(f"/api/v1/orders/user/{random_user_id}")
     schema_test(response.json(), GetAllOrdersResponse)
 
+
+def test_update_order_products():
+    id = random.choice(get_json("/api/v1/orders/", client)["data"])["id"]
+    order = _random_order()
+    response = client.patch(
+        f"/api/v1/orders/{id}/products", data=json.dumps({"products": order["products"]})
+    )
+    successful_rud_response_test(response)
+
+def test_update_order_status():
+    all_orders = (get_json("/api/v1/orders/", client))["data"]
+    order = None
+    for o in all_orders:
+        if o["status"] not in ["received", "cancelled"]:
+            order = o
+            break
+    
+    assert order is not None
+
+    response = client.patch(
+        f"/api/v1/orders/{order['id']}/status"
+    )
+    successful_rud_response_test(response)
+
+def test_order_cancel():
+    all_orders = (get_json("/api/v1/orders/", client))["data"]
+    order = None
+    for o in all_orders:
+        if o["status"] not in ["received", "cancelled"]:
+            order = o
+            break
+    
+    assert order is not None
+
+    response = client.patch(
+        f"/api/v1/orders/{order['id']}/cancel"
+    )
+    successful_rud_response_test(response)
