@@ -151,3 +151,17 @@ def test_order_cancel():
         f"/api/v1/orders/{order['id']}/cancel"
     )
     successful_rud_response_test(response)
+
+def test_create_order_product_from_other_store():
+    invalid_product_id = 1
+    order = _random_order()
+
+    all_products = (get_json("/api/v1/products/", client))["data"]
+    for product in all_products:
+        if product["store_id"] != order["store_id"]:
+            invalid_product_id = product["id"]
+            break
+
+    order["products"].append({"product_id": invalid_product_id, "quantity": 1})
+    response = client.post("/api/v1/orders/", data=json.dumps(order))
+    bad_request_test(response)
