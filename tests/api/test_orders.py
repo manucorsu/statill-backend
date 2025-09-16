@@ -118,9 +118,11 @@ def test_update_order_products():
     id = random.choice(get_json("/api/v1/orders/", client)["data"])["id"]
     order = _random_order()
     response = client.patch(
-        f"/api/v1/orders/{id}/products", data=json.dumps({"products": order["products"]})
+        f"/api/v1/orders/{id}/products",
+        data=json.dumps({"products": order["products"]}),
     )
     successful_rud_response_test(response)
+
 
 def test_update_order_status():
     all_orders = (get_json("/api/v1/orders/", client))["data"]
@@ -129,13 +131,12 @@ def test_update_order_status():
         if o["status"] not in ["received", "cancelled"]:
             order = o
             break
-    
+
     assert order is not None
 
-    response = client.patch(
-        f"/api/v1/orders/{order['id']}/status"
-    )
+    response = client.patch(f"/api/v1/orders/{order['id']}/status")
     successful_rud_response_test(response)
+
 
 def test_order_cancel():
     all_orders = (get_json("/api/v1/orders/", client))["data"]
@@ -144,20 +145,19 @@ def test_order_cancel():
         if o["status"] not in ["received", "cancelled"]:
             order = o
             break
-    
+
     assert order is not None
 
-    response = client.patch(
-        f"/api/v1/orders/{order['id']}/cancel"
-    )
+    response = client.patch(f"/api/v1/orders/{order['id']}/cancel")
     successful_rud_response_test(response)
+
 
 def test_create_order_product_from_other_store():
     invalid_product_id = 1
     order = _random_order()
 
     all_products = (get_json("/api/v1/products/", client))["data"]
-    
+
     for product in all_products:
         if product["store_id"] == order["store_id"]:
             continue
@@ -167,4 +167,52 @@ def test_create_order_product_from_other_store():
 
     order["products"].append({"product_id": invalid_product_id, "quantity": 1})
     response = client.post("/api/v1/orders/", data=json.dumps(order))
+    bad_request_test(response)
+
+
+def test_update_order_status_received():
+    all_orders = (get_json("/api/v1/orders/", client))["data"]
+    order = None
+    for o in all_orders:
+        if o["status"] not in ["pending", "cancelled", "accepted"]:
+            order = o
+            break
+
+    response = client.patch(f"/api/v1/orders/{order['id']}/status")
+    bad_request_test(response)
+
+
+def test_update_order_status_cancelled():
+    all_orders = (get_json("/api/v1/orders/", client))["data"]
+    order = None
+    for o in all_orders:
+        if o["status"] not in ["pending", "received", "accepted"]:
+            order = o
+            break
+
+    response = client.patch(f"/api/v1/orders/{order['id']}/status")
+    bad_request_test(response)
+
+
+def test_update_order_status_accepted():
+    all_orders = (get_json("/api/v1/orders/", client))["data"]
+    order = None
+    for o in all_orders:
+        if o["status"] not in ["received", "cancelled", "pending"]:
+            order = o
+            break
+    #assert order == object()
+    response = client.patch(f"/api/v1/orders/{order['id']}/status")
+    successful_rud_response_test(response)
+
+
+def test_update_order_status_received():
+    all_orders = (get_json("/api/v1/orders/", client))["data"]
+    order = None
+    for o in all_orders:
+        if o["status"] not in ["pending", "cancelled", "accepted"]:
+            order = o
+            break
+
+    response = client.patch(f"/api/v1/orders/{order['id']}/status")
     bad_request_test(response)
