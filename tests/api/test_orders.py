@@ -157,8 +157,11 @@ def test_create_order_product_from_other_store():
     order = _random_order()
 
     all_products = (get_json("/api/v1/products/", client))["data"]
+    
     for product in all_products:
-        if product["store_id"] != order["store_id"]:
+        if product["store_id"] == order["store_id"]:
+            continue
+        else:
             invalid_product_id = product["id"]
             break
 
