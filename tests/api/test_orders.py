@@ -152,7 +152,7 @@ def test_update_order_status():
     successful_rud_response_test(response)
 
 
-def test_order_cancel():
+def test_cancel_order():
     all_orders = (get_json("/api/v1/orders/", client))["data"]
     order = None
     for o in all_orders:
@@ -184,7 +184,7 @@ def test_create_order_product_from_other_store():
     bad_request_test(response)
 
 
-def test_update_order_status_received():
+def test_update_received_order_status():
     all_orders = (get_json("/api/v1/orders/", client))["data"]
     order = None
     for o in all_orders:
@@ -196,7 +196,7 @@ def test_update_order_status_received():
     bad_request_test(response)
 
 
-def test_update_order_status_cancelled():
+def test_update_cancelled_order_status():
     all_orders = (get_json("/api/v1/orders/", client))["data"]
     order = None
     for o in all_orders:
@@ -208,7 +208,7 @@ def test_update_order_status_cancelled():
     bad_request_test(response)
 
 
-def test_update_order_status_accepted():
+def test_update_accepted_order_status():
     all_orders = (get_json("/api/v1/orders/", client))["data"]
     order = None
     for o in all_orders:
@@ -216,11 +216,11 @@ def test_update_order_status_accepted():
             order = o
             break
     response = client.patch(f"/api/v1/orders/{order['id']}/status")
-    #assert response.json() == object()
+    # assert response.json() == object()
     successful_rud_response_test(response)
 
 
-def test_update_order_status_received():
+def test_update_received_order_status():
     all_orders = (get_json("/api/v1/orders/", client))["data"]
     order = None
     for o in all_orders:
@@ -229,5 +229,5 @@ def test_update_order_status_received():
             break
 
     response = client.patch(f"/api/v1/orders/{order['id']}/status")
-    #assert response.json() == object()
+    # assert response.json() == object()
     bad_request_test(response)
