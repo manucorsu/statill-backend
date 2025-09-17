@@ -115,12 +115,26 @@ def test_get_orders_by_user_id():
 
 
 def test_update_order_products():
-    id = random.choice(get_json("/api/v1/orders/", client)["data"])["id"]
-    order = _random_order()
+    all_orders = (get_json("/api/v1/orders/", client))["data"]
+    order = None
+    for o in all_orders:
+        if o["status"] == "pending":
+            order = o
+            break
+
+    all_products = (get_json(f"/api/v1/products/store/{order['store_id']}", client))[
+        "data"
+    ]
+    products = [
+        {"product_id": p["id"], "quantity": random.randint(1, int(p["quantity"]))}
+        for p in all_products[: random.randint(1, len(all_products))]
+    ]
+
     response = client.patch(
-        f"/api/v1/orders/{id}/products",
-        data=json.dumps({"products": order["products"]}),
+        f"/api/v1/orders/{order['id']}/products",
+        data=json.dumps({"products": products}),
     )
+
     successful_rud_response_test(response)
 
 
@@ -186,7 +200,7 @@ def test_update_order_status_cancelled():
     all_orders = (get_json("/api/v1/orders/", client))["data"]
     order = None
     for o in all_orders:
-        if o["status"] not in ["pending", "received", "accepted"]:
+        if o["status"] == "cancelled":
             order = o
             break
 
@@ -198,11 +212,11 @@ def test_update_order_status_accepted():
     all_orders = (get_json("/api/v1/orders/", client))["data"]
     order = None
     for o in all_orders:
-        if o["status"] not in ["received", "cancelled", "pending"]:
+        if o["status"] == "accepted":
             order = o
             break
-    #assert order == object()
     response = client.patch(f"/api/v1/orders/{order['id']}/status")
+    #assert response.json() == object()
     successful_rud_response_test(response)
 
 
@@ -210,9 +224,10 @@ def test_update_order_status_received():
     all_orders = (get_json("/api/v1/orders/", client))["data"]
     order = None
     for o in all_orders:
-        if o["status"] not in ["pending", "cancelled", "accepted"]:
+        if o["status"] == "received":
             order = o
             break
 
     response = client.patch(f"/api/v1/orders/{order['id']}/status")
+    #assert response.json() == object()
     bad_request_test(response)
