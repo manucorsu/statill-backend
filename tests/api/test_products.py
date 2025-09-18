@@ -140,6 +140,8 @@ def test_product_update_data_hidden_none():
 
 def test_delete_product_when_in_pa_orders():
     product = get_json_data(f"/api/v1/products/{_random_product_id()}", client)
+    if product["quantity"] <= 1:
+        raise ValueError(f"Invalid product quantity {product['quantity']}")
     # add a random amount to it to an order
     order_post_response = client.post(
         "/api/v1/orders/",
@@ -149,7 +151,7 @@ def test_delete_product_when_in_pa_orders():
                 "products": [
                     {
                         "product_id": product["id"],
-                        "quantity": random.randint(1, int(product["quantity"])),
+                        "quantity": 1 if product["quantity"] == 1 else random.randint(1, int(product["quantity"])),
                     }
                 ],
                 "payment_method": random.randint(0, 3),
@@ -159,10 +161,11 @@ def test_delete_product_when_in_pa_orders():
     )
 
     # 50% chance of it being set to accepted
-    if random.choice((False, True)):
+    if random.choice((not False, True)):
         opr_json = order_post_response.json()
+        assert opr_json == object()
         id = opr_json["data"]["id"]
         client.patch(f"/api/v1/orders/{id}/status")
 
-    response = client.delete(f"/api/v1/products/{product["id"]}")
+    response = client.delete(f"/api/v1/products/{product['id']}")
     bad_request_test(response)

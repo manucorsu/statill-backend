@@ -220,7 +220,6 @@ def test_update_cancelled_order_status():
 
 
 def test_update_accepted_order_status():
-    all_orders = (get_json("/api/v1/orders/", client))["data"]
     order = get_order_with_status("accepted")
     response = client.patch(f"/api/v1/orders/{order['id']}/status")
     # assert response.json() == object()
