@@ -17,6 +17,8 @@ import random
 
 import json
 
+from typing import Literal
+
 client = TestClient(app)
 
 
@@ -36,6 +38,14 @@ def _random_order():
         ],
     }
 
+
+def get_order_with_status(status: Literal["pending","accepted","received","cancelled"]):
+    all_orders = (get_json("/api/v1/orders/", client))["data"]
+    for o in all_orders:
+        if o["status"] == status:
+            return o
+    
+    raise Exception(f"Found no orders with status {status}")
 
 def test_get_all_orders():
     response = client.get("/api/v1/orders/")
@@ -149,6 +159,7 @@ def test_update_order_status():
     assert order is not None
 
     response = client.patch(f"/api/v1/orders/{order['id']}/status")
+    assert response.json() == object()
     successful_rud_response_test(response)
 
 
@@ -210,11 +221,7 @@ def test_update_cancelled_order_status():
 
 def test_update_accepted_order_status():
     all_orders = (get_json("/api/v1/orders/", client))["data"]
-    order = None
-    for o in all_orders:
-        if o["status"] == "accepted":
-            order = o
-            break
+    order = get_order_with_status("accepted")
     response = client.patch(f"/api/v1/orders/{order['id']}/status")
     # assert response.json() == object()
     successful_rud_response_test(response)
