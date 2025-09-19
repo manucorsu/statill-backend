@@ -139,7 +139,7 @@ def test_product_update_data_hidden_none():
 
 
 def test_delete_product_when_in_pa_orders():
-    product = get_json_data(f"/api/v1/products/{_random_product_id()}", client)
+    product = random.choice(get_json_data("/api/v1/products/", client))
     if product["quantity"] <= 1:
         raise ValueError(f"Invalid product quantity {product['quantity']}")
     # add a random amount to it to an order
@@ -147,11 +147,11 @@ def test_delete_product_when_in_pa_orders():
         "/api/v1/orders/",
         data=json.dumps(
             {
-                "store_id": 1,
+                "store_id": product["store_id"],
                 "products": [
                     {
                         "product_id": product["id"],
-                        "quantity": 1 if product["quantity"] == 1 else random.randint(1, int(product["quantity"])),
+                        "quantity": random.randint(1, int(product["quantity"])),
                     }
                 ],
                 "payment_method": random.randint(0, 3),

@@ -10,6 +10,7 @@ from ..utils import (
     successful_rud_response_test,
     successful_post_response_test,
     bad_request_test,
+    get_json_data
 )
 from app.schemas.order import GetAllOrdersResponse, GetOrderResponse
 
@@ -23,18 +24,27 @@ client = TestClient(app)
 
 
 def _random_order():
-    store_id = random.choice(client.get("/api/v1/stores/").json()["data"])["id"]
-    all_products = ((client.get(f"/api/v1/products/store/{store_id}")).json())["data"]
-    temp_user_id = random.choice(client.get("/api/v1/users/").json()["data"])["id"]
+    def find_product(all_products):
+        random.shuffle(all_products)
+        for p in all_products:
+            if p["quantity"] > 1:
+                return p
+        raise ValueError("No products have enough qty")
+    
+    store_id = random.choice(get_json_data("/api/v1/stores/", client))["id"]
+    all_products = get_json_data("/api/v1/products/")
+    temp_user_id = random.choice(get_json_data("/api/v1/users/", client))["id"]
 
-    random.shuffle(all_products)
+    product = find_product(all_products)
     return {
         "user_id": temp_user_id,
         "store_id": store_id,  # temp!!
         "payment_method": random.randint(0, 3),
         "products": [
-            {"product_id": p["id"], "quantity": random.randint(1, int(p["quantity"]))}
-            for p in all_products[: random.randint(1, len(all_products))]
+            {
+                "product_id": product["id"],
+                "quantity": random.randint(1, int(product["quantity"]))
+            }
         ],
     }
 
@@ -124,13 +134,8 @@ def test_get_orders_by_user_id():
     schema_test(response.json(), GetAllOrdersResponse)
 
 
-def test_update_order_products():
-    all_orders = (get_json("/api/v1/orders/", client))["data"]
-    order = None
-    for o in all_orders:
-        if o["status"] == "pending":
-            order = o
-            break
+def test_update_pending_order_products():
+    order = get_order_with_status("pending")
 
     all_products = (get_json(f"/api/v1/products/store/{order['store_id']}", client))[
         "data"
