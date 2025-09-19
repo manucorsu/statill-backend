@@ -10,7 +10,7 @@ from ..utils import (
     successful_rud_response_test,
     successful_post_response_test,
     bad_request_test,
-    get_json_data
+    get_json_data,
 )
 from app.schemas.order import GetAllOrdersResponse, GetOrderResponse
 
@@ -23,19 +23,21 @@ from typing import Literal
 client = TestClient(app)
 
 
+# random valid qty product
+def fp(all_products):
+    random.shuffle(all_products)
+    for p in all_products:
+        if int(p["quantity"]) > 1:
+            return p
+    raise Exception("No products have enough qty")
+
+
 def _random_order():
-    def find_product(all_products):
-        random.shuffle(all_products)
-        for p in all_products:
-            if p["quantity"] > 1:
-                return p
-        raise ValueError("No products have enough qty")
-    
     store_id = random.choice(get_json_data("/api/v1/stores/", client))["id"]
-    all_products = get_json_data("/api/v1/products/")
+    all_products = get_json_data("/api/v1/products/", client)
     temp_user_id = random.choice(get_json_data("/api/v1/users/", client))["id"]
 
-    product = find_product(all_products)
+    product = fp(all_products)
     return {
         "user_id": temp_user_id,
         "store_id": store_id,  # temp!!
@@ -43,19 +45,22 @@ def _random_order():
         "products": [
             {
                 "product_id": product["id"],
-                "quantity": random.randint(1, int(product["quantity"]))
+                "quantity": random.randint(1, int(product["quantity"])),
             }
         ],
     }
 
 
-def get_order_with_status(status: Literal["pending","accepted","received","cancelled"]):
+def get_order_with_status(
+    status: Literal["pending", "accepted", "received", "cancelled"],
+):
     all_orders = (get_json("/api/v1/orders/", client))["data"]
     for o in all_orders:
         if o["status"] == status:
             return o
-    
+
     raise Exception(f"Found no orders with status {status}")
+
 
 def test_get_all_orders():
     response = client.get("/api/v1/orders/")
@@ -64,7 +69,8 @@ def test_get_all_orders():
 
 
 def test_get_order_invalid_id():
-    all_orders = (get_json("/api/v1/orders/", client))["data"]
+    all_orders = get_json_data("/api/v1/orders/", client)
+    random.shuffle(all_orders)
     invalid_id = 1
     while invalid_id in [p["id"] for p in all_orders]:
         invalid_id += 1
@@ -74,7 +80,7 @@ def test_get_order_invalid_id():
 
 
 def test_get_order():
-    id = random.choice(get_json("/api/v1/orders/", client)["data"])["id"]
+    id = random.choice(get_json_data("/api/v1/orders/", client))["id"]
 
     response = client.get(f"/api/v1/orders/{id}")
     schema_test(response.json(), GetOrderResponse)
@@ -137,12 +143,10 @@ def test_get_orders_by_user_id():
 def test_update_pending_order_products():
     order = get_order_with_status("pending")
 
-    all_products = (get_json(f"/api/v1/products/store/{order['store_id']}", client))[
-        "data"
-    ]
+    all_products = get_json_data(f"/api/v1/products/store/{order['store_id']}/", client)
     products = [
         {"product_id": p["id"], "quantity": random.randint(1, int(p["quantity"]))}
-        for p in all_products[: random.randint(1, len(all_products))]
+        for p in fp(all_products[: random.randint(1, len(all_products))])
     ]
 
     response = client.patch(
@@ -154,7 +158,7 @@ def test_update_pending_order_products():
 
 
 def test_update_order_status():
-    all_orders = (get_json("/api/v1/orders/", client))["data"]
+    all_orders = get_json_data("/api/v1/orders", client)
     order = None
     for o in all_orders:
         if o["status"] not in ["received", "cancelled"]:
