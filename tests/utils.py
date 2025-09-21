@@ -40,6 +40,11 @@ def get_json(url: str, client: fastapi.testclient.TestClient):
     return response.json()
 
 
+def get_json_data(url: str, client: fastapi.testclient.TestClient):
+    rjson = get_json(url, client)
+    return rjson["data"]
+
+
 def schema_test(instance: Any, schema: dict[str, Any] | type[pydantic.BaseModel]):
     """
     Validate a JSON instance against a given schema or Pydantic model,
@@ -151,7 +156,7 @@ def successful_post_response_test(response: httpx.Response):
     assert isinstance(json_response["message"], str)
 
 
-def successful_rud_response_test(response: httpx.Response):
+def successful_ud_response_test(response: httpx.Response):
     assert response.status_code == 200
     jsonr = response.json()
     assert jsonr["successful"]
@@ -163,6 +168,7 @@ def not_found_response_test(response: httpx.Response):
     jsonr = response.json()
     assert not jsonr["successful"]
     assert isinstance(jsonr["message"], str)
+
 
 def bad_request_test(response: httpx.Response, code: int = 400):
     assert response.status_code == code

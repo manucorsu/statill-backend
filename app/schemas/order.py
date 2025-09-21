@@ -46,3 +46,7 @@ class GetAllOrdersResponse(APIResponse):
 
 class GetOrderResponse(APIResponse):
     data: OrderRead
+
+
+class GetOrderProductsResponse(APIResponse):
+    data: list[ProductOrder]

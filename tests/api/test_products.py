@@ -4,13 +4,15 @@ from fastapi.testclient import TestClient
 
 from app.main import app
 from app.schemas.product import GetAllProductsResponse, GetProductResponse
+
 from ..utils import (
     get_json,
+    get_json_data,
     schema_test,
     random_string,
     random_money,
     successful_post_response_test,
-    successful_rud_response_test,
+    successful_ud_response_test,
     not_found_response_test,
     bad_request_test,
 )
@@ -43,6 +45,11 @@ def _random_product():
         "barcode": random_string(64, 128) if random.choice((True, False)) else None,
         "store_id": temp_store_id,
     }
+
+
+def _random_product_id():
+    all_products = get_json("/api/v1/products/", client)["data"]
+    return int(random.choice(all_products)["id"])
 
 
 def test_get_all_products():
@@ -81,13 +88,21 @@ def test_update_product():
     id = random.choice(get_json("/api/v1/products/", client)["data"])["id"]
     product = _random_product()
     response = client.put(f"/api/v1/products/{id}", data=json.dumps(product))
-    successful_rud_response_test(response)
+    successful_ud_response_test(response)
 
 
 def test_delete_product():
-    id = random.choice(get_json("/api/v1/products/", client)["data"])["id"]
+    all_orders = get_json("/api/v1/orders", client)["data"]
+    all_products = get_json("/api/v1/products/", client)["data"]
+    id = random.choice(all_products)["id"]
+    ids_in_orders = []
+    for order in all_orders:
+        for product in order["products"]:
+            ids_in_orders.append(product["product_id"])
+    while id in ids_in_orders:
+        id = random.choice(all_products)["id"]
     response = client.delete(f"/api/v1/products/{id}")
-    successful_rud_response_test(response)
+    successful_ud_response_test(response)
 
 
 def test_get_not_existing_product():
@@ -114,9 +129,43 @@ def test_product_create_deleted_product_400():
     response = client.post("/api/v1/products/", data=json.dumps(product))
     bad_request_test(response)
 
+
 def test_product_update_data_hidden_none():
     id = random.choice(get_json("/api/v1/products/", client)["data"])["id"]
     product = _random_product()
     product["hidden"] = None
     response = client.put(f"/api/v1/products/{id}", data=json.dumps(product))
-    successful_rud_response_test(response)
+    successful_ud_response_test(response)
+
+
+def test_delete_product_when_in_pa_orders():
+    product = random.choice(get_json_data("/api/v1/products/", client))
+    if product["quantity"] <= 1:
+        pytest.skip(f"Invalid product quantity")
+    # add a random amount to it to an order
+    order_post_response = client.post(
+        "/api/v1/orders/",
+        data=json.dumps(
+            {
+                "store_id": product["store_id"],
+                "products": [
+                    {
+                        "product_id": product["id"],
+                        "quantity": random.randint(1, int(product["quantity"])),
+                    }
+                ],
+                "payment_method": random.randint(0, 3),
+                "user_id": 1,
+            }
+        ),
+    )
+
+    # 50% chance of it being set to accepted
+    if random.choice((False, True)):
+        opr_json = order_post_response.json()
+        # assert opr_json == object()
+        id = opr_json["data"]["id"]
+        client.patch(f"/api/v1/orders/{id}/status")
+
+    response = client.delete(f"/api/v1/products/{product['id']}")
+    bad_request_test(response)

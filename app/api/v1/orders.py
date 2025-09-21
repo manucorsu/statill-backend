@@ -10,6 +10,7 @@ from ...schemas.order import (
     OrderRead,
     OrderUpdate,
     ProductOrder,
+    GetOrderProductsResponse,
 )
 from ...models.order import Order
 from ...dependencies.db import get_db
@@ -122,6 +123,28 @@ def get_orders_by_user_id(user_id: int, db: Session = Depends(get_db)):
     )
 
 
+@router.get("/{id}/products", response_model=GetOrderProductsResponse)
+def get_order_products(id: int, db: Session = Depends(get_db)):
+    """
+    Retrieves all products for a specific order.
+
+    (Will require auth in the future)
+
+    Args:
+        id (int): The ID of the order to retrieve products for.
+        db (Session): The SQLAlchemy session to use for the query.
+    Returns:
+        GetOrderProductsResponse: A response containing all products for the specified order.
+    """
+    order = crud.get_by_id(id, db)
+    products = [ProductOrder(**op.__dict__) for op in order.orders_products]
+    return GetOrderProductsResponse(
+        successful=True,
+        data=products,
+        message=f"Successfully retrieved all Products for order with id {id}.",
+    )
+
+
 @router.post("/", response_model=APIResponse, status_code=201)
 def create_order(order: OrderCreate, db: Session = Depends(get_db)):
     """
@@ -141,7 +164,7 @@ def create_order(order: OrderCreate, db: Session = Depends(get_db)):
     )
 
 
-@router.patch("/{id}", response_model=APIResponse)
+@router.patch("/{id}/status", response_model=APIResponse)
 def update_order_status(id: int, db: Session = Depends(get_db)):
     """
     Updates the status of an order by its ID.
@@ -192,7 +215,7 @@ def update_order_products(
         HTTPException(400): If the order's status was not 'pending'.
         HTTPException(404): If the order with the specified ID does not exist.
     """
-    crud.update_order_products(id, updates, session)
+    crud.update_products(id, updates, session)
     return APIResponse(
         successful=True, data=None, message="Successfully updated the Order's products."
     )
