@@ -12,7 +12,7 @@ from ..utils import (
     random_string,
     random_money,
     successful_post_response_test,
-    successful_rud_response_test,
+    successful_ud_response_test,
     not_found_response_test,
     bad_request_test,
 )

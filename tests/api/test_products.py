@@ -12,7 +12,7 @@ from ..utils import (
     random_string,
     random_money,
     successful_post_response_test,
-    successful_rud_response_test,
+    successful_ud_response_test,
     not_found_response_test,
     bad_request_test,
 )
@@ -88,7 +88,7 @@ def test_update_product():
     id = random.choice(get_json("/api/v1/products/", client)["data"])["id"]
     product = _random_product()
     response = client.put(f"/api/v1/products/{id}", data=json.dumps(product))
-    successful_rud_response_test(response)
+    successful_ud_response_test(response)
 
 
 def test_delete_product():
@@ -102,7 +102,7 @@ def test_delete_product():
     while id in ids_in_orders:
         id = random.choice(all_products)["id"]
     response = client.delete(f"/api/v1/products/{id}")
-    successful_rud_response_test(response)
+    successful_ud_response_test(response)
 
 
 def test_get_not_existing_product():
@@ -135,13 +135,13 @@ def test_product_update_data_hidden_none():
     product = _random_product()
     product["hidden"] = None
     response = client.put(f"/api/v1/products/{id}", data=json.dumps(product))
-    successful_rud_response_test(response)
+    successful_ud_response_test(response)
 
 
 def test_delete_product_when_in_pa_orders():
     product = random.choice(get_json_data("/api/v1/products/", client))
     if product["quantity"] <= 1:
-        raise ValueError(f"Invalid product quantity {product['quantity']}")
+        pytest.skip(f"Invalid product quantity")
     # add a random amount to it to an order
     order_post_response = client.post(
         "/api/v1/orders/",
@@ -161,9 +161,9 @@ def test_delete_product_when_in_pa_orders():
     )
 
     # 50% chance of it being set to accepted
-    if random.choice((not False, True)):
+    if random.choice((False, True)):
         opr_json = order_post_response.json()
-        assert opr_json == object()
+        # assert opr_json == object()
         id = opr_json["data"]["id"]
         client.patch(f"/api/v1/orders/{id}/status")
 

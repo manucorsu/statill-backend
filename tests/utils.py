@@ -156,7 +156,7 @@ def successful_post_response_test(response: httpx.Response):
     assert isinstance(json_response["message"], str)
 
 
-def successful_rud_response_test(response: httpx.Response):
+def successful_ud_response_test(response: httpx.Response):
     assert response.status_code == 200
     jsonr = response.json()
     assert jsonr["successful"]

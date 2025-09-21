@@ -7,7 +7,7 @@ from ..utils import (
     schema_test,
     get_json,
     not_found_response_test,
-    successful_rud_response_test,
+    successful_ud_response_test,
     successful_post_response_test,
     bad_request_test,
     get_json_data,
@@ -24,29 +24,47 @@ client = TestClient(app)
 
 
 # random valid qty product
-def fp(all_products):
-    random.shuffle(all_products)
-    for p in all_products:
+def fp(products_list):
+    random.shuffle(products_list)
+    for p in products_list:
         if int(p["quantity"]) > 1:
             return p
-    raise Exception("No products have enough qty")
+    pytest.skip("No products have enough qty")
+
+
+def usable_products_list(products_list):
+    random.shuffle(products_list)
+    usable_products = []
+    for p in products_list:
+        if int(p["quantity"]) > 1 and p not in usable_products:
+            usable_products.append(p)
+
+    match (len(usable_products)):
+        case 0:
+            pytest.skip("Not enough usable products")
+        case 1:
+            return usable_products
+        case _:
+            return [
+                p for p in usable_products[: random.randint(1, len(usable_products))]
+            ]
 
 
 def _random_order():
     store_id = random.choice(get_json_data("/api/v1/stores/", client))["id"]
-    all_products = get_json_data("/api/v1/products/", client)
+    all_products = get_json_data(f"/api/v1/products/store/{store_id}", client)
     temp_user_id = random.choice(get_json_data("/api/v1/users/", client))["id"]
 
-    product = fp(all_products)
     return {
-        "user_id": temp_user_id,
-        "store_id": store_id,  # temp!!
+        "user_id": temp_user_id,  # temp!!
+        "store_id": store_id,
         "payment_method": random.randint(0, 3),
         "products": [
             {
                 "product_id": product["id"],
                 "quantity": random.randint(1, int(product["quantity"])),
             }
+            for product in usable_products_list(all_products)
         ],
     }
 
@@ -54,12 +72,12 @@ def _random_order():
 def get_order_with_status(
     status: Literal["pending", "accepted", "received", "cancelled"],
 ):
-    all_orders = (get_json("/api/v1/orders/", client))["data"]
+    all_orders = get_json_data("/api/v1/orders/", client)
     for o in all_orders:
         if o["status"] == status:
             return o
 
-    raise Exception(f"Found no orders with status {status}")
+    pytest.skip(f"Found no orders with status {status}")
 
 
 def test_get_all_orders():
@@ -80,8 +98,11 @@ def test_get_order_invalid_id():
 
 
 def test_get_order():
-    id = random.choice(get_json_data("/api/v1/orders/", client))["id"]
+    all_orders = get_json_data("/api/v1/orders", client)
+    if len(all_orders) == 0:
+        pytest.skip("There are no orders.")
 
+    id = random.choice(all_orders)["id"]
     response = client.get(f"/api/v1/orders/{id}")
     schema_test(response.json(), GetOrderResponse)
 
@@ -89,6 +110,7 @@ def test_get_order():
 def test_create_order():
     order = _random_order()
     response = client.post("/api/v1/orders/", data=json.dumps(order))
+    # assert response.json() == object()
     successful_post_response_test(response)
 
 
@@ -146,15 +168,107 @@ def test_update_pending_order_products():
     all_products = get_json_data(f"/api/v1/products/store/{order['store_id']}/", client)
     products = [
         {"product_id": p["id"], "quantity": random.randint(1, int(p["quantity"]))}
-        for p in fp(all_products[: random.randint(1, len(all_products))])
+        for p in usable_products_list(all_products)
     ]
-
     response = client.patch(
         f"/api/v1/orders/{order['id']}/products",
         data=json.dumps({"products": products}),
     )
 
-    successful_rud_response_test(response)
+    successful_ud_response_test(response)
+
+
+def test_update_non_pending_order_products():
+    order = None
+    for o in get_json_data("/api/v1/orders/", client):
+        if o["status"] != "pending":
+            order = o
+    if order is None:
+        pytest.skip("Found no orders that weren't pending.")
+
+    products = [
+        {"product_id": p["id"], "quantity": random.randint(1, int(p["quantity"]))}
+        for p in usable_products_list(
+            get_json_data(f"/api/v1/products/store/{order['store_id']}/", client)
+        )
+    ]
+    response = client.patch(
+        f"/api/v1/orders/{order['id']}/products",
+        data=json.dumps({"products": products}),
+    )
+    bad_request_test(response)
+
+
+def test_update_order_products_with_empty_products_list():
+    order = get_order_with_status("pending")
+    response = client.patch(
+        f"/api/v1/orders/{order['id']}/products", data=json.dumps({"products": []})
+    )
+    bad_request_test(response)
+
+
+def test_update_order_products_with_product_from_other_store():
+    order = get_order_with_status("pending")
+
+    all_stores = get_json_data("/api/v1/stores/", client)
+    random.shuffle(all_stores)
+    other_store_id = None
+    for store in all_stores:
+        id = store["id"]
+        if id != order["store_id"]:
+            other_store_id = id
+    if other_store_id is None:
+        pytest.skip(f"No other stores apart from {order['store_id']}")
+
+    product = fp(get_json_data(f"/api/v1/products/store/{other_store_id}/", client))
+    response = client.patch(
+        f"/api/v1/orders/{order['id']}/products/",
+        data=json.dumps(
+            {
+                "products": [
+                    {
+                        "product_id": product["id"],
+                        "quantity": random.randint(1, int(product["quantity"])),
+                    }
+                ]
+            }
+        ),
+    )
+
+    bad_request_test(response)
+
+
+def test_update_order_products_with_too_high_qty_product():
+    order = get_order_with_status("pending")
+
+    product_id = random.choice(order["products"])["product_id"]
+    product_max_qty = get_json_data(f"/api/v1/products/{product_id}", client)[
+        "quantity"
+    ]
+    order["products"][0]["quantity"] = product_max_qty + 23.24
+
+    response = client.patch(
+        f"/api/v1/orders/{order["id"]}/products/",
+        data=json.dumps({"products": order["products"]}),
+    )
+
+    bad_request_test(response)
+
+
+def test_update_order_products_invalid_product_id():
+    all_products = get_json_data("/api/v1/products/", client)
+    random.shuffle(all_products)
+    invalid_id = 1
+    while invalid_id in [p["id"] for p in all_products]:
+        invalid_id += 1
+
+    order = get_order_with_status("pending")
+    order["products"] = [{"product_id": invalid_id, "quantity": 1}]
+    response = client.patch(
+        f"/api/v1/orders/{order['id']}/products/",
+        data=json.dumps({"products": order["products"]}),
+    )
+    not_found_response_test(response)
 
 
 def test_update_order_status():
@@ -168,8 +282,8 @@ def test_update_order_status():
     assert order is not None
 
     response = client.patch(f"/api/v1/orders/{order['id']}/status")
-    assert response.json() == object()
-    successful_rud_response_test(response)
+    # assert response.json() == object()
+    successful_ud_response_test(response)
 
 
 def test_cancel_order():
@@ -183,21 +297,30 @@ def test_cancel_order():
     assert order is not None
 
     response = client.patch(f"/api/v1/orders/{order['id']}/cancel")
-    successful_rud_response_test(response)
+    successful_ud_response_test(response)
+
+
+def test_cancel_received_order():
+    order = get_order_with_status("received")
+    response = client.patch(f"/api/v1/orders/{order['id']}/cancel")
+    bad_request_test(response)
 
 
 def test_create_order_product_from_other_store():
-    invalid_product_id = 1
+    invalid_product_id = None
     order = _random_order()
 
-    all_products = (get_json("/api/v1/products/", client))["data"]
-
+    all_products = get_json_data(f"/api/v1/products/", client)
+    random.shuffle(all_products)
     for product in all_products:
-        if product["store_id"] == order["store_id"]:
-            continue
-        else:
+        if product["store_id"] != order["store_id"]:
             invalid_product_id = product["id"]
+            # assert [invalid_product_id, order] == NotImplemented
             break
+    if invalid_product_id is None:
+        pytest.skip(
+            f"No products from other stores (that aren't {order["store_id"]}) found"
+        )
 
     order["products"].append({"product_id": invalid_product_id, "quantity": 1})
     response = client.post("/api/v1/orders/", data=json.dumps(order))
@@ -205,13 +328,7 @@ def test_create_order_product_from_other_store():
 
 
 def test_update_received_order_status():
-    all_orders = (get_json("/api/v1/orders/", client))["data"]
-    order = None
-    for o in all_orders:
-        if o["status"] not in ["pending", "cancelled", "accepted"]:
-            order = o
-            break
-
+    order = get_order_with_status("received")
     response = client.patch(f"/api/v1/orders/{order['id']}/status")
     bad_request_test(response)
 
@@ -231,18 +348,12 @@ def test_update_cancelled_order_status():
 def test_update_accepted_order_status():
     order = get_order_with_status("accepted")
     response = client.patch(f"/api/v1/orders/{order['id']}/status")
-    # assert response.json() == object()
-    successful_rud_response_test(response)
 
+    if response.status_code == 400:
+        message = response.json()["data"]["message"]
+        if message.startswith("Not enough") and message.endswith("in stock"):
+            pytest.skip(
+                "Not enough stock to update order status, skipped because if not this would take 85 years longer to run"
+            )
 
-def test_update_received_order_status():
-    all_orders = (get_json("/api/v1/orders/", client))["data"]
-    order = None
-    for o in all_orders:
-        if o["status"] == "received":
-            order = o
-            break
-
-    response = client.patch(f"/api/v1/orders/{order['id']}/status")
-    # assert response.json() == object()
-    bad_request_test(response)
+    successful_ud_response_test(response)
