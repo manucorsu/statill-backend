@@ -8,19 +8,20 @@ from .custom_types import (
     UnsignedInt,
     NonNegativeFloat,
 )
+from typing import Annotated
 from decimal import Decimal
 
 
 class ProductRead(BaseModel):
     id: PositiveInt
     store_id: PositiveInt
-    name: NonEmptyStr
-    brand: NonEmptyStr
+    name: Annotated[str, Field(min_length=1, pattern=r"\S", max_length=100)]
+    brand: Annotated[str, Field(min_length=1, pattern=r"\S", max_length=30)]
     price: Money
     type: UnsignedInt
     quantity: NonNegativeFloat
     desc: NonEmptyStr
-    hidden: bool
+    hidden: bool | None
     barcode: NonEmptyStr | None
 
     @field_validator("price", mode="before")
@@ -35,14 +36,14 @@ class ProductRead(BaseModel):
 
 
 class ProductCreate(BaseModel):
-    name: NonEmptyStr
-    brand: NonEmptyStr
+    name: Annotated[str, Field(min_length=1, pattern=r"\S", max_length=100)]
+    brand: Annotated[str, Field(min_length=1, pattern=r"\S", max_length=30)]
     price: Money
     type: PositiveInt
     quantity: NonNegativeFloat
     desc: NonEmptyStr
     barcode: NonEmptyStr | None
-    hidden: bool = Field(default=False)
+    hidden: bool | None = Field(default=False)
     store_id: PositiveInt  # temp until login
 
     class Config:
@@ -50,8 +51,8 @@ class ProductCreate(BaseModel):
 
 
 class ProductUpdate(BaseModel):
-    name: NonEmptyStr | None
-    brand: NonEmptyStr | None
+    name: Annotated[str, Field(min_length=1, pattern=r"\S", max_length=100)] | None
+    brand: Annotated[str, Field(min_length=1, pattern=r"\S", max_length=30)] | None
     price: Money | None
     type: PositiveInt | None
     quantity: NonNegativeFloat | None
@@ -69,4 +70,5 @@ class GetAllProductsResponse(APIResponse):
 
 
 class GetProductResponse(APIResponse):
+    successful: Literal[True]
     data: ProductRead

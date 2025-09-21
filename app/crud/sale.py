@@ -1,5 +1,5 @@
 from datetime import datetime
-from datetime import timezone as timezone
+from datetime import timezone
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from app.models.products_sales import ProductsSales
@@ -57,9 +57,6 @@ def create_sale(sale_data: SaleCreate, session: Session):
     Returns:
         int: The ID of the newly created sale.
     """
-    store = stores_crud.get_by_id(sale_data.store_id, session)
-    if store is None:
-        raise HTTPException(status_code=404, detail="Store not found")
     sale = Sale(
         store_id=sale_data.store_id,
         user_id=sale_data.user_id,

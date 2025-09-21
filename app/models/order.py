@@ -3,14 +3,13 @@ from sqlalchemy import Column, Integer, BigInteger, CheckConstraint, ForeignKey,
 from sqlalchemy.dialects.postgresql import TIME
 from sqlalchemy.orm import relationship
 import enum
-from .user import User
-from .orders_products import OrdersProducts
 
 
 class StatusEnum(enum.Enum):
     PENDING = "pending"
     ACCEPTED = "accepted"
-    RECIEVED = "recieved"
+    RECEIVED = "received"
+    CANCELLED = "cancelled"
 
 
 class Order(Base):
@@ -20,8 +19,8 @@ class Order(Base):
     store_id = Column(BigInteger, ForeignKey("stores.id"), nullable=False)
     created_at = Column(TIME(timezone=True), nullable=False)
     status = Column(Enum(StatusEnum, name="status_enum"), nullable=False)
-    recieved_at = Column(TIME(timezone=True), nullable=False)
-    payement_method = Column(Integer, nullable=False)
+    received_at = Column(TIME(timezone=True), nullable=True)
+    payment_method = Column(Integer, nullable=False)
 
     # Relationships
     user = relationship("User", back_populates="order")

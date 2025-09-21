@@ -27,9 +27,6 @@ class Store(Base):
     # Constraints
     __table_args__ = (
         CheckConstraint(
-            "array_length(days_open, 1) = 7", name="days_open_length_check"
-        ),
-        CheckConstraint(
             "array_length(opening_times, 1) = 7", name="opening_times_length_check"
         ),
         CheckConstraint(

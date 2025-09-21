@@ -1,5 +1,6 @@
 from app.database.base import Base
 from sqlalchemy import Column, Integer, BigInteger, ForeignKey
+from sqlalchemy.dialects.postgresql import DOUBLE_PRECISION
 from sqlalchemy.orm import relationship
 
 
@@ -8,7 +9,7 @@ class OrdersProducts(Base):
     id = Column(BigInteger, primary_key=True)
     order_id = Column(BigInteger, ForeignKey("orders.id"), nullable=False)
     product_id = Column(BigInteger, ForeignKey("products.id"), nullable=False)
-    quantity = Column(Integer, nullable=False)
+    quantity = Column(DOUBLE_PRECISION, nullable=False)
 
     # Relationships
     order = relationship("Order", back_populates="orders_products")
