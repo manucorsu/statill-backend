@@ -3,14 +3,13 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from app.schemas.general import APIResponse
-from ...schemas.discount import (
-   DiscountRead
-)
+from ...schemas.discount import DiscountRead
 from ...models.order import Order
 from ...dependencies.db import get_db
 from ...crud import order as crud
 
 router = APIRouter()
+
 
 @router.get("/", response_model=GetAllOrdersResponse)
 def get_all_orders(session: Session = Depends(get_db)):
