@@ -69,6 +69,35 @@ def get_by_id(
         message="Successfully retrieved the User.",
     )
 
+@router.get("/store/{id}", response_model=GetAllUsersResponse)
+def get_by_store_id(
+    id: int,
+    allow_anonymized: bool = False,
+    session: Session = Depends(get_db),
+):
+    """
+    Retrieves a list of users by their store ID.
+
+    (Will require auth in the future)
+
+    Args:
+        id (int): The ID of the store.
+        allow_anonymized (bool): Whether to include users anonymized as "Deleted User".
+        session (Session): The SQLAlchemy session to use for the query.
+
+    Returns:
+        GetAllUsesrResponse: A response containing the users with the specified store ID.
+
+    Raises:
+        HTTPException(404): If the store with the specified ID does not exist.
+    """
+    result = crud.get_by_store_id(id, session, allow_anonymized=allow_anonymized)
+    return GetAllUsersResponse(
+        successful=True,
+        data=[__user_to_userread(u) for u in result],
+        message="Successfully retrieved the list of Users.",
+    )
+
 
 @router.post("/", response_model=APIResponse, status_code=201)
 def create_user(user: UserCreate, db: Session = Depends(get_db)):

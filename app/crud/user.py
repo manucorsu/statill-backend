@@ -1,6 +1,9 @@
 from sqlalchemy.orm import Session, object_mapper
 
 from ..models.user import User
+from ..models.store import Store
+
+from . import store as stores_crud
 
 from fastapi import HTTPException
 
@@ -47,6 +50,22 @@ def get_by_id(id: int, session: Session, allow_anonymized: bool = False):
 
     return user
 
+def get_by_store_id(id: int, session: Session, allow_anonymized: bool = False):
+    """
+    Retrieves a list of users by their store ID.
+
+    Args:
+        id (int): The ID of the store.
+        session (Session): The SQLAlchemy session to use for the query.
+        allow_anonymized (bool): If set to `False`, a 404 error will be raised if the User with the specified store ID is marked as `"Deleted User"`, just as if the user did not exist in the database. Default is `False`.
+    Returns:
+        list[User]: The users with the specified store ID.
+    Raises:
+        HTTPException(404): If the store with the specified ID does not exist.
+    """
+    stores_crud.get_by_id(id, session)
+    users = session.query(User).filter(User.store_id==id).all()
+    return users
 
 @overload
 def get_by_email(email: str, session: Session, raise_404: Literal[True]) -> User: ...

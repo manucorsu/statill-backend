@@ -45,6 +45,7 @@ def _random_store():
         random_opening_times.append(time(hour, minute, second).isoformat())
         random_closing_times.append(time (hour, minute, second + 1).isoformat())
 
+    
     temp_user_id = random.choice(client.get("/api/v1/users/").json()["data"])["id"]
 
     return {
