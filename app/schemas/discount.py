@@ -1,18 +1,19 @@
 from pydantic import BaseModel, Field
 from app.schemas.general import APIResponse
-from typing import Annotated, Literal
+from typing import Annotated, Literal, Optional
 from .custom_types import PositiveInt, NonEmptyStr, NonNegativeFloat, Gt0Float
-
+from ..models.discount import INTEGER_MAX_VALUE
 
 class DiscountRead(BaseModel):
     id: PositiveInt
-    product_id: PositiveInt | None
+    product_id: PositiveInt
     type: NonEmptyStr
-    pct_off: PositiveInt | None
-    start_date: NonEmptyStr | None
-    end_date: NonEmptyStr | None
+    pct_off: PositiveInt
+    start_date: NonEmptyStr
+    end_date: NonEmptyStr
     days_usable: Annotated[list[bool | None], Field(min_length=7, max_length=7)]
-    condition: dict
+    min_amount: PositiveInt = 1
+    max_amount: PositiveInt = INTEGER_MAX_VALUE
 
     class Config:
         from_attributes = True
