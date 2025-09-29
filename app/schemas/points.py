@@ -3,6 +3,7 @@ from app.schemas.general import APIResponse
 from typing import Annotated, Literal
 from .custom_types import PositiveInt, NonEmptyStr, NonNegativeFloat, Gt0Float
 
+
 class PointsRead(BaseModel):
     id: PositiveInt
     store_id: PositiveInt

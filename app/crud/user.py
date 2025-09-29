@@ -50,6 +50,7 @@ def get_by_id(id: int, session: Session, allow_anonymized: bool = False):
 
     return user
 
+
 def get_by_store_id(id: int, session: Session, allow_anonymized: bool = False):
     """
     Retrieves a list of users by their store ID.
@@ -64,8 +65,9 @@ def get_by_store_id(id: int, session: Session, allow_anonymized: bool = False):
         HTTPException(404): If the store with the specified ID does not exist.
     """
     stores_crud.get_by_id(id, session)
-    users = session.query(User).filter(User.store_id==id).all()
+    users = session.query(User).filter(User.store_id == id).all()
     return users
+
 
 @overload
 def get_by_email(email: str, session: Session, raise_404: Literal[True]) -> User: ...

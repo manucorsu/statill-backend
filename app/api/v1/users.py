@@ -12,6 +12,7 @@ from sqlalchemy.orm import Session
 
 from ...crud import user as crud
 
+name="users"
 router = APIRouter()
 
 
@@ -68,6 +69,7 @@ def get_by_id(
         data=__user_to_userread(result),
         message="Successfully retrieved the User.",
     )
+
 
 @router.get("/store/{id}", response_model=GetAllUsersResponse)
 def get_by_store_id(

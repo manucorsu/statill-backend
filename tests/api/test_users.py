@@ -15,7 +15,7 @@ from ..utils import (
     successful_ud_response_test,
     not_found_response_test,
     bad_request_test,
-    get_json_data
+    get_json_data,
 )
 
 import json
@@ -23,6 +23,7 @@ import json
 import random
 
 client = TestClient(app)
+
 
 def test_get_all_users():
     response = client.get("/api/v1/users/")
@@ -42,6 +43,7 @@ def test_get_user():
     assert response.status_code == 200
 
     schema_test(response.json(), GetUserResponse)
+
 
 def test_get_user_by_store_id():
     random_store_id = random.choice(get_json_data("/api/v1/stores", client))["id"]

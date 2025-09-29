@@ -12,6 +12,7 @@ from sqlalchemy.orm import relationship
 
 INTEGER_MAX_VALUE = 2147483647
 
+
 class Discount(Base):
     __tablename__ = "discounts"
     id = Column(BigInteger, primary_key=True)

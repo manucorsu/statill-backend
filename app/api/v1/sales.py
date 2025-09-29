@@ -14,6 +14,7 @@ from ...crud import sale as crud
 from ...models.sale import Sale
 from ...models.products_sales import ProductsSales as ProductsSalesModel
 
+name="sales"
 router = APIRouter()
 
 

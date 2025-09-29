@@ -4,6 +4,7 @@ from typing import Annotated, Literal, Optional
 from .custom_types import PositiveInt, NonEmptyStr, NonNegativeFloat, Gt0Float
 from ..models.discount import INTEGER_MAX_VALUE
 
+
 class DiscountRead(BaseModel):
     id: PositiveInt
     product_id: PositiveInt
@@ -17,3 +18,7 @@ class DiscountRead(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class GetAllDiscountsResponse(APIResponse):
+    data: list[DiscountRead]

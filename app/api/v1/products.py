@@ -14,6 +14,7 @@ from app.schemas.general import APIResponse
 
 from app.crud import product as crud
 
+name="products"
 router = APIRouter()
 
 
