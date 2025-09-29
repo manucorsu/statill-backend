@@ -13,7 +13,7 @@ from app.schemas.general import APIResponse
 
 from app.crud import store as crud
 
-name="stores"
+name = "stores"
 router = APIRouter()
 
 

@@ -12,7 +12,7 @@ from sqlalchemy.orm import Session
 
 from ...crud import user as crud
 
-name="users"
+name = "users"
 router = APIRouter()
 
 

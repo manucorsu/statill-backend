@@ -16,7 +16,7 @@ from ...models.order import Order
 from ...dependencies.db import get_db
 from ...crud import order as crud
 
-name="orders"
+name = "orders"
 router = APIRouter()
 
 
