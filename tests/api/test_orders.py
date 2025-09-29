@@ -248,7 +248,7 @@ def test_update_order_products_with_too_high_qty_product():
     order["products"][0]["quantity"] = product_max_qty + 23.24
 
     response = client.patch(
-        f"/api/v1/orders/{order["id"]}/products/",
+        f"/api/v1/orders/{order['id']}/products/",
         data=json.dumps({"products": order["products"]}),
     )
 
@@ -319,7 +319,7 @@ def test_create_order_product_from_other_store():
             break
     if invalid_product_id is None:
         pytest.skip(
-            f"No products from other stores (that aren't {order["store_id"]}) found"
+            f"No products from other stores (that aren't {order['store_id']}) found"
         )
 
     order["products"].append({"product_id": invalid_product_id, "quantity": 1})
