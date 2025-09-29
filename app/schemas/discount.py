@@ -27,8 +27,10 @@ class DiscountCreate(BaseModel):
     start_date: NonEmptyStr
     end_date: NonEmptyStr
     days_usable: Annotated[list[bool | None], Field(min_length=7, max_length=7)]
-    min_amount: PositiveInt = 1
-    max_amount: PositiveInt = INTEGER_MAX_VALUE
+    min_amount: Annotated[int, Field(ge=1, le=INTEGER_MAX_VALUE)] = 1
+    max_amount: Annotated[int, Field(ge=1, le=INTEGER_MAX_VALUE)] = (
+        INTEGER_MAX_VALUE  # estos dos después se chequean para ver que max no sea < min
+    )
 
 
 class GetAllDiscountsResponse(APIResponse):
