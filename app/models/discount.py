@@ -17,7 +17,6 @@ class Discount(Base):
     __tablename__ = "discounts"
     id = Column(BigInteger, primary_key=True)
     product_id = Column(BigInteger, ForeignKey("products.id"), nullable=False)
-    type = Column(Integer, nullable=False)
     pct_off = Column(Integer, nullable=False)
     start_date = Column(Date, nullable=False)
     end_date = Column(Date, nullable=False)
