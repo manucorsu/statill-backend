@@ -94,10 +94,6 @@ def get_by_email(email: str, session: Session, raise_404: bool = True):
     Raises:
         HTTPException: If the email is invalid (400) or if no user is found and raise_404 is True (404).
     """
-    try:
-        email = validate_email(email).normalized
-    except EmailNotValidError:
-        raise HTTPException(400, "Invalid email address.")
     users = session.query(User).filter(User.email == email).all()
     if len(users) < 1:
         if raise_404:
@@ -125,7 +121,6 @@ def get_all_by_store_id(id: int, session: Session):
             result.append(u)
 
     return result
-
 
 def create(user_data: UserCreate, session: Session):
     """
@@ -194,7 +189,7 @@ def delete(id: int, session: Session):
         HTTPException(404): If the user with the specified ID does not exist.
     """
     user = get_by_id(id, session)
-    if user in get_all_by_store_id(user.store_id, session):
+    if user.store_id is not None and user in get_all_by_store_id(user.store_id, session):
         raise HTTPException(
             400,
             f"User must be dissasociated from store {user.store_id} before deleting them.",

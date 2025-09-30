@@ -53,7 +53,10 @@ def _random_store():
         random_opening_times.append(time(hour, minute, second).isoformat())
         random_closing_times.append(time(hour, minute, second + 1).isoformat())
 
-    temp_user_id = random.choice(client.get("/api/v1/users/").json()["data"])["id"]
+    all_users = client.get("/api/v1/users/").json()["data"]
+    unemployed_users = [u for u in all_users if u["store_id"] == None]
+
+    temp_user_id = random.choice(unemployed_users)["id"]
 
     return {
         "name": random_string(),
