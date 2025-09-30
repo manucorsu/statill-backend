@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 
 from sqlalchemy.orm import Session
 
@@ -6,6 +6,8 @@ from ...crud import discount as crud
 from ...schemas.general import APIResponse
 from ...schemas.discount import GetAllDiscountsResponse, DiscountCreate
 from ...dependencies.db import get_db
+
+from datetime import date
 
 name = "discounts"
 router = APIRouter()
@@ -41,7 +43,29 @@ def create_discount(discount: DiscountCreate, session=Depends(get_db)):
     Returns:
         (APIResponse) An APIResponse containing the new discount's id.
     """
-    # TODO URGENTE AGREGAR LOS CHECKS QUE FALTAN!
+    # date checks
+    try:
+        start_date = date.fromisoformat(discount.start_date)
+        end_date = date.fromisoformat(discount.start_date)
+
+        if start_date >= end_date:
+            raise HTTPException(400, "Start date should be before end date")
+    except ValueError:
+        raise HTTPException(
+            400,
+            f"Invalid format for discount start date or end date (start_date={discount.start_date}, end_date={discount.end_date})",
+        )
+
+    # amount checks
+    if discount.min_amount >= discount.max_amount:
+        raise HTTPException(
+            400, f"Discount min amount must be smaller than discount max amount."
+        )
+
+    # days usable checks
+    if discount.days_usable == [False, False, False, False, False, False, False]:
+        raise HTTPException(400, "The discount must be usable on at least one day.")
+
     id = crud.create(discount, session)
     return APIResponse(
         successful=True,

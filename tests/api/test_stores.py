@@ -35,7 +35,6 @@ client = TestClient(app)
 
 
 def _random_store():
-
     """
     Generate a dict representing a random store with various attributes.
 
@@ -91,10 +90,11 @@ def test_get_store():
 
 def test_create_store():
     random_user_generate = random_user()
-    new_user = (client.post("/api/v1/users", data=json.dumps(random_user_generate))).json()
+    new_user = (
+        client.post("/api/v1/users", data=json.dumps(random_user_generate))
+    ).json()
     store = _random_store()
-    #assert [new_user, random_user_generate["birthdate"]]==object()
+    # assert [new_user, random_user_generate["birthdate"]]==object()
     store["user_id"] = new_user["data"]["id"]
     response = client.post("/api/v1/stores/", data=json.dumps(store))
     successful_post_response_test(response)
-

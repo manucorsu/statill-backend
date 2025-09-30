@@ -24,12 +24,15 @@ import random
 
 client = TestClient(app)
 
+
 def _random_email():
     """Generates a syntactically valid random email address."""
-    
+
     # Generate a random string for the local part (username)
     local_part_length = random.randint(5, 15)  # Random length between 5 and 15
-    local_part = ''.join(random.choices(string.ascii_lowercase + string.digits, k=local_part_length))
+    local_part = "".join(
+        random.choices(string.ascii_lowercase + string.digits, k=local_part_length)
+    )
 
     # Choose a common domain
     domains = ["gmail.com", "yahoo.com", "hotmail.com", "outlook.com"]
@@ -37,11 +40,13 @@ def _random_email():
 
     return f"{local_part}@{domain}"
 
+
 def _random_date():
     year = random.randint(1000, 9999)
     month = random.randint(10, 12)
     day = random.randint(10, 28 if month == 2 else 30)
     return f"{year}-{month}-{day}"
+
 
 def random_user():
     return {
@@ -51,8 +56,9 @@ def random_user():
         "password": random_string(),
         "birthdate": _random_date(),
         "gender": random.choice(("M", "F", "X")),
-        "res_area": random_string(max_len=49)
+        "res_area": random_string(max_len=49),
     }
+
 
 def test_get_all_users():
     response = client.get("/api/v1/users/")
