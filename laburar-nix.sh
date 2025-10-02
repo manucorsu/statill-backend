@@ -46,6 +46,7 @@ echo
 echo "Instalando dependencias..."
 "$python_cmd" -m pip install -r requirements.txt
 "$python_cmd" -m pip install -r requirements-dev.txt
+pre-commit install
 echo
 
 echo "✅ Listo. No te olvides de importar el .env"
