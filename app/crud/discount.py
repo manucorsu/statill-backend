@@ -2,6 +2,7 @@ from sqlalchemy.orm import Session
 
 from ..models.discount import Discount
 from ..schemas.discount import DiscountCreate, DiscountRead
+from datetime import date
 
 
 def _discount_to_discountread(discount: Discount):
@@ -17,7 +18,7 @@ def _discount_to_discountread(discount: Discount):
     )
 
 
-def get_all(session: Session):
+def get_all(session: Session) -> list[DiscountRead]:
     """
     Retrieves all discounts from the database.
     Args:
@@ -25,9 +26,22 @@ def get_all(session: Session):
     Returns:
         list[Discount]: A list of all discounts.
     """
+    did_cleanup = False
     query = session.query(Discount)
     discounts = query.all()
-    return [_discount_to_discountread(d) for d in discounts]
+    result: list[DiscountRead] = []
+    for d in discounts:
+        if date.today() > d.end_date:
+            did_cleanup = True
+            session.delete(d)
+        else:
+            result.append(_discount_to_discountread(d))
+
+    if did_cleanup:
+        session.commit()
+        return get_all(session)
+
+    return result
 
 
 def create(discount_data: DiscountCreate, session: Session):
