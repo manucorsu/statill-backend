@@ -122,6 +122,7 @@ def get_all_by_store_id(id: int, session: Session):
 
     return result
 
+
 def create(user_data: UserCreate, session: Session):
     """
     Creates a new user in the database.
@@ -189,7 +190,9 @@ def delete(id: int, session: Session):
         HTTPException(404): If the user with the specified ID does not exist.
     """
     user = get_by_id(id, session)
-    if user.store_id is not None and user in get_all_by_store_id(user.store_id, session):
+    if user.store_id is not None and user in get_all_by_store_id(
+        user.store_id, session
+    ):
         raise HTTPException(
             400,
             f"User must be dissasociated from store {user.store_id} before deleting them.",

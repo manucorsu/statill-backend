@@ -6,7 +6,6 @@ from app.main import app
 from app.schemas.user import GetAllUsersResponse, GetUserResponse
 
 from ..utils import (
-
     get_json,
     get_json_data,
     schema_test,
@@ -88,6 +87,7 @@ def test_get_user_by_store_id():
 
     schema_test(response.json(), GetAllUsersResponse)
 
+
 def test_get_anon_user_in_non_anon_get_by_id():
     anon_users = get_json_data("/api/v1/users?allow_anonymized=true", client)
     if anon_users == []:
@@ -95,16 +95,18 @@ def test_get_anon_user_in_non_anon_get_by_id():
             "For this test to work there needs to be at least one GETtable user in the database."
         )
     random.shuffle(anon_users)
-    
+
     user = None
     for u in anon_users:
         if u["email"] == "deleted@example.com":
             user = u
-    
-    if not user: pytest.skip("There are no anonymized users")
+
+    if not user:
+        pytest.skip("There are no anonymized users")
 
     response = get_json_data(f"/api/v1/users/{user['id']}")
     bad_request_test(response)
+
 
 # def test_create_user():
 #     user = _random_product()

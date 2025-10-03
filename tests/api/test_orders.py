@@ -294,7 +294,8 @@ def test_cancel_order():
             order = o
             break
 
-    if order is None: pytest.skip("No orders were received or cancelled.")
+    if order is None:
+        pytest.skip("No orders were received or cancelled.")
 
     response = client.patch(f"/api/v1/orders/{order['id']}/cancel")
     successful_ud_response_test(response)

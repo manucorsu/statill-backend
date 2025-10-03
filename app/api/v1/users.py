@@ -102,6 +102,7 @@ def get_by_store_id(
         message="Successfully retrieved the list of Users.",
     )
 
+
 @router.get("/email/{email}", response_model=GetAllUsersResponse)
 def get_by_email(
     email: EmailStr,
@@ -130,6 +131,7 @@ def get_by_email(
         data=[__user_to_userread(u) for u in result],
         message="Successfully retrieved the list of Users.",
     )
+
 
 @router.post("/", response_model=APIResponse, status_code=201)
 def create_user(user: UserCreate, db: Session = Depends(get_db)):
