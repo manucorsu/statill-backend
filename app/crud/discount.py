@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from ..models.discount import Discount
 from ..schemas.discount import DiscountCreate, DiscountRead
 from datetime import date
+import logging
 
 
 def _discount_to_discountread(discount: Discount):
@@ -32,8 +33,9 @@ def get_all(session: Session) -> list[DiscountRead]:
     result: list[DiscountRead] = []
     for d in discounts:
         if date.today() > d.end_date:
-            did_cleanup = True
+            logging.info(f"Deleting discount {d.id} because it is expired")
             session.delete(d)
+            did_cleanup = True
         else:
             result.append(_discount_to_discountread(d))
 
