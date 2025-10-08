@@ -1,5 +1,5 @@
 from fastapi import APIRouter, responses
-from . import status, products, sales, users, stores, orders, discounts
+from . import status, products, sales, users, stores, orders, discounts, points
 
 router = APIRouter()
 
@@ -11,12 +11,17 @@ routers_to_include = [
     stores,
     orders,
     discounts,
+    points,
 ]  # list of modules that have a router
 
 for r_module in routers_to_include:
-    router.include_router(
-        r_module.router, prefix=f"/{r_module.name}", tags=[r_module.name]
-    )
+    module_router = r_module.router
+    module_name = r_module.name
+
+    assert isinstance(module_router, APIRouter)
+    assert isinstance(module_name, str)
+
+    router.include_router(module_router, prefix=f"/{module_name}", tags=[module_name])
 
 
 @router.get("/docs", response_class=responses.RedirectResponse, status_code=308)

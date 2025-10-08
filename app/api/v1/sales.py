@@ -62,14 +62,13 @@ def get_sale_by_id(id: int, db: Session = Depends(get_db)):
     (Will require auth in the future)
 
     Args:
-        **id (int): The ID of the sale to retrieve.**
+        id (int): The ID of the sale to retrieve.
         db (Session): The SQLAlchemy session to use for the query.
 
     Returns:
         GetSaleResponse: A response containing the sale with the specified ID.
 
     Raises:
-        HTTPException(400): If the provided ID is invalid (less than or equal to 0).
         HTTPException(404): If the sale with the specified ID does not exist.
     """
     sale = crud.get_by_id(id, db)
