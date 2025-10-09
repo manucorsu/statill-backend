@@ -52,13 +52,13 @@ def _random_store():
         random_opening_times.append(time(hour, minute, second).isoformat())
         random_closing_times.append(time(hour, minute, second + 1).isoformat())
 
-    all_users = client.get("/api/v1/users/").json()["data"]
-    unemployed_users = [u for u in all_users if u["store_id"] == None]
+    all_users = get_json_data("/api/v1/users", client)
+    unemployed_users = [u for u in all_users if u["store_id"] is None]
+    temp_user_id = int(random.choice(unemployed_users)["id"])
 
-    temp_user_id = random.choice(unemployed_users)["id"]
 
     return {
-        "name": random_string(),
+        "name": random_string(1, 60),
         "category": random.randint(1, 255),
         "address": random_string(),
         "preorder_enabled": random.choice((True, False)),
@@ -97,7 +97,7 @@ def test_create_store():
         client.post("/api/v1/users", data=json.dumps(random_user_generate))
     ).json()
     store = _random_store()
-    # assert [new_user, random_user_generate["birthdate"]]==object()
     store["user_id"] = new_user["data"]["id"]
     response = client.post("/api/v1/stores/", data=json.dumps(store))
+    assert response.json() == object()
     successful_post_response_test(response)

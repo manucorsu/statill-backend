@@ -72,6 +72,10 @@ def create(discount_data: DiscountCreate, session: Session):
     Returns:
         int: The id of the newly created order.
     """
+    existing_discount = get_by_product_id(discount_data.product_id, session, False)
+    if existing_discount:
+        Session.delete(existing_discount)
+        session.commit()
     discount = Discount(discount_data)
     session.add(discount)
     session.commit()
