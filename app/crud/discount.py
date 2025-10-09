@@ -1,14 +1,17 @@
 from sqlalchemy.orm import Session
+from sqlalchemy.orm.exc import ObjectDeletedError
 
 from ..models.discount import Discount
-from ..schemas.discount import DiscountCreate, DiscountRead
+from ..schemas.discount import DiscountCreate
 
 from datetime import date
 
 from fastapi import HTTPException
 
+from typing import overload, Literal
 
-def get_all(session: Session) -> list[Discount]:
+
+def get_all(session: Session):
     """
     Retrieves all discounts from the database.
     Args:
@@ -16,24 +19,8 @@ def get_all(session: Session) -> list[Discount]:
     Returns:
         list[Discount]: A list of all discounts.
     """
-    did_cleanup = False
     discounts = session.query(Discount).all()
-    result: list[Discount] = []
-    for d in discounts:
-        if date.today() > d.end_date:
-            print(
-                f"Deleting discount {d.id} because it has expired"
-            )  # No encontré la forma de que fastapi-cli no me rompa logging
-            session.delete(d)
-            did_cleanup = True
-        else:
-            result.append(d)
-
-    if did_cleanup:
-        session.commit()
-        return get_all(session)
-
-    return result
+    return discounts
 
 
 def get_by_id(id: int, session: Session):
@@ -48,10 +35,29 @@ def get_by_id(id: int, session: Session):
     Raises:
         HTTPException(404): If the discount with the specified ID does not exist.
     """
-
     discount = session.get(Discount, id)
     if discount is None:
         raise HTTPException(404, "Discount not found")
+    return discount
+
+
+@overload
+def get_by_product_id(
+    product_id: int, session: Session, raise_404: Literal[True]
+) -> Discount: ...
+
+@overload
+def get_by_product_id(
+    product_id: int, session: Session, raise_404: Literal[False]
+) -> Discount | None: ...
+
+def get_by_product_id(
+    product_id: int, session: Session, raise_404: bool = True
+) -> Discount | None:
+    discount = session.query(Discount).filter(Discount.product_id == product_id).first()
+    if discount is None and raise_404:
+        raise HTTPException(404, f"No discount was found for product {product_id}")
+    
     return discount
 
 

@@ -1,18 +1,18 @@
-from sqlalchemy.orm import Session, object_mapper
+from sqlalchemy.orm import Session
 
 from ..models.user import User
-from ..models.store import Store
-
 from . import store as stores_crud
 
 from fastapi import HTTPException
 
 from ..schemas.user import *
-from app.models.products_sales import ProductsSales
 from datetime import date
 from .sale import get_sales_by_user_id
-from email_validator import validate_email, EmailNotValidError
 from typing import overload, Literal
+
+
+def is_anonymized(user: User):
+    return bool(user.email == "deleted@example.com")
 
 
 def get_all(session: Session, include_anonymized: bool = False):
@@ -31,7 +31,7 @@ def get_all(session: Session, include_anonymized: bool = False):
     return users
 
 
-def get_by_id(id: int, session: Session, allow_anonymized: bool = False):
+def get_by_id(id: int, session: Session, allow_anonymized: bool = False) -> User:
     """
     Retrieves a user by their ID.
 
@@ -45,7 +45,7 @@ def get_by_id(id: int, session: Session, allow_anonymized: bool = False):
         HTTPException(404): If the user with the specified ID does not exist, or is a `"Deleted User"` and `allow_anonymized` is set to `False`.
     """
     user = session.get(User, id)
-    if user is None or (user.email == "deleted@example.com" and not allow_anonymized):
+    if user is None or (is_anonymized(user) and not allow_anonymized):
         raise HTTPException(404, detail="User not found")
 
     return user
@@ -79,7 +79,7 @@ def get_by_email(
 ) -> User | None: ...
 
 
-def get_by_email(email: str, session: Session, raise_404: bool = True):
+def get_by_email(email: str, session: Session, raise_404: bool = True) -> User | None:
     """
     Retrieve a user from the database by their email address.
 
@@ -94,13 +94,10 @@ def get_by_email(email: str, session: Session, raise_404: bool = True):
     Raises:
         HTTPException: If the email is invalid (400) or if no user is found and raise_404 is True (404).
     """
-    users = session.query(User).filter(User.email == email).all()
-    if len(users) < 1:
-        if raise_404:
-            raise HTTPException(404, f"No user found with the {email} email address.")
-        else:
-            return None
-    return users[0]
+    user = session.query(User).filter(User.email == email).first()
+    if user is None and raise_404:
+        raise HTTPException(404, f"No user found with the {email} email address.")
+    return user
 
 
 def get_all_by_store_id(id: int, session: Session):

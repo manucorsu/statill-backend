@@ -73,11 +73,34 @@ def get_discount_by_id(id: int, session=Depends(get_db)):
     Raises:
         HTTPException(404): If the discount with the specified ID does not exist.
     """
-    discount = __discount_to_discountread(crud.get_by_id(id, session))
+    discount = crud.get_by_id(id, session)
     return GetDiscountResponse(
         successful=True,
-        data=discount,
-        message=f"Successfully retreived the discount with id {discount.id}",
+        data=__discount_to_discountread(discount),
+        message=f"Successfully retrieved the discount with id {discount.id}",
+    )
+
+
+@router.get("/product/{product_id}")
+def get_discount_by_product_id(product_id: int, session=Depends(get_db)):
+    """
+    Retrieves the discount for the product with the specified id. If that product does not have an active discount, it raises an `HTTPException(404)`.
+    """
+    discount = crud.get_by_product_id(product_id, session, True)
+    return GetDiscountResponse(
+        successful=True,
+        data=__discount_to_discountread(discount),
+        message=f"Successfully retrieved the discount for product {product_id}",
+    )
+
+
+@router.get("/product/{product_id}/allownull")
+def get_discount_by_product_id_no_allow_null(product_id: int, session=Depends(get_db)):
+    discount = crud.get_by_product_id(product_id, session, False)
+    return APIResponse(
+        successful=True,
+        data=__discount_to_discountread(discount) if discount else None,
+        message=f"Successfully retrieved the discount for product {product_id}",
     )
 
 
@@ -114,13 +137,13 @@ def create_discount(discount: DiscountCreate, session=Depends(get_db)):
             f"Invalid format for discount start date or end date (start_date='{discount.start_date}', end_date='{discount.end_date}')",
         )
 
-    # amount checks
+    # amount check
     if discount.min_amount >= discount.max_amount:
         raise HTTPException(
             400, f"Discount min amount must be smaller than discount max amount."
         )
 
-    # days usable checks
+    # usable days check
     if discount.days_usable == [False, False, False, False, False, False, False]:
         raise HTTPException(400, "The discount must be usable on at least one day.")
 

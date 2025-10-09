@@ -103,33 +103,29 @@ def get_by_store_id(
     )
 
 
-@router.get("/email/{email}", response_model=GetAllUsersResponse)
+@router.get("/email/{email}", response_model=GetUserResponse)
 def get_by_email(
     email: EmailStr,
-    allow_anonymized: bool = False,
     session: Session = Depends(get_db),
 ):
     """
-    Retrieves a list of users by their email.
-
-    (Will require auth in the future)
+    Retrieves the user with the specified email address.
 
     Args:
-        email (emailStr): The email string.
-        allow_anonymized (bool): Whether to include users anonymized as "Deleted User".
+        email (EmailStr): The email address.
         session (Session): The SQLAlchemy session to use for the query.
 
     Returns:
-        GetAllUsesrResponse: A response containing the users with the specified store ID.
+        GetUserResponse: A response containing the user with the specified email address.
 
     Raises:
         HTTPException(404): If the specified email does not exist.
     """
-    result = crud.get_by_email(email, session, allow_anonymized=allow_anonymized)
-    return GetAllUsersResponse(
+    user = crud.get_by_email(email, session, True)
+    return GetUserResponse(
         successful=True,
-        data=[__user_to_userread(u) for u in result],
-        message="Successfully retrieved the list of Users.",
+        data=__user_to_userread(user),
+        message=f"Successfully retrieved the user with email {email}.",
     )
 
 
