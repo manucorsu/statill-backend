@@ -7,7 +7,7 @@ from .custom_types import PositiveInt, NonEmptyStr, UnsignedInt
 
 class StoreRead(BaseModel):
     id: PositiveInt
-    name: NonEmptyStr
+    name: Annotated[str, Field(min_length=1, max_length=60, pattern=r"\S")]
     address: NonEmptyStr
     category: UnsignedInt
     preorder_enabled: bool

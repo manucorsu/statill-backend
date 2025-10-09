@@ -35,17 +35,41 @@ def _random_email():
     )
 
     # Choose a common domain
-    domains = ["gmail.com", "yahoo.com", "hotmail.com", "outlook.com"]
+    domains = ["gmail.com", "yahoo.com", "hotmail.com", "outlook.com", "ort.edu.ar"]
     domain = random.choice(domains)
 
     return f"{local_part}@{domain}"
 
 
+def leading_zero_md(n: int):
+    if n < 1:
+        raise ValueError("min value for this function is 1")
+    if n in range(1, 9 + 1):
+        return f"0{n}"
+    return f"{n}"
+
+
+def leading_zero_y(y: int):
+    if y < 1:
+        raise ValueError("min value for this function is ")
+
+    if y in range(1, 9 + 1):
+        return f"000{y}"
+
+    if y in range(10, 99 + 1):
+        return f"00{y}"
+
+    if y in range(100, 999 + 1):
+        return f"0{y}"
+
+    return f"{y}"
+
+
 def _random_date():
-    year = random.randint(1000, 9999)
-    month = random.randint(10, 12)
+    year = random.randint(1, 9999)
+    month = random.randint(1, 12)
     day = random.randint(10, 28 if month == 2 else 30)
-    return f"{year}-{month}-{day}"
+    return f"{leading_zero_y(year)}-{leading_zero_md(month)}-{leading_zero_md(day)}"
 
 
 def random_user():

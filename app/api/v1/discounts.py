@@ -105,7 +105,7 @@ def get_discount_by_product_id_no_allow_null(product_id: int, session=Depends(ge
 
 
 @router.post("/", response_model=APIResponse)
-def create_discount(discount: DiscountCreate, session=Depends(get_db)):
+def create_discount(discount: DiscountCreate, session: Session = Depends(get_db)):
     """
     Creates a discount.
 
@@ -128,9 +128,8 @@ def create_discount(discount: DiscountCreate, session=Depends(get_db)):
         if start_date >= end_date:
             raise HTTPException(
                 400,
-                f"Start date ('{start_date}') should be before end date (f'{end_date}')",
+                f"Start date ('{start_date}') should be before end date ('{end_date}')",
             )
-
     except ValueError:
         raise HTTPException(
             400,

@@ -58,7 +58,7 @@ def create_sale(sale_data: SaleCreate, session: Session):
         int: The ID of the newly created sale.
     """
     sale = Sale(
-        store_id=sale_data.store_id, #no hace falta en realidad pero alembic
+        store_id=sale_data.store_id,  # no hace falta en realidad pero alembic
         user_id=sale_data.user_id,
         payment_method=sale_data.payment_method,
         timestamp=datetime.now(timezone.utc),

@@ -46,10 +46,12 @@ def get_by_product_id(
     product_id: int, session: Session, raise_404: Literal[True]
 ) -> Discount: ...
 
+
 @overload
 def get_by_product_id(
     product_id: int, session: Session, raise_404: Literal[False]
 ) -> Discount | None: ...
+
 
 def get_by_product_id(
     product_id: int, session: Session, raise_404: bool = True
@@ -57,7 +59,7 @@ def get_by_product_id(
     discount = session.query(Discount).filter(Discount.product_id == product_id).first()
     if discount is None and raise_404:
         raise HTTPException(404, f"No discount was found for product {product_id}")
-    
+
     return discount
 
 

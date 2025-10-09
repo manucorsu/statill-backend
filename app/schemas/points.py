@@ -12,8 +12,3 @@ class PointsRead(BaseModel):
 
     class Config:
         from_attributes = True
-
-
-class CreatePointsWithSale(BaseModel):
-    products: list[PositiveInt]
-    user_id: PositiveInt
