@@ -95,7 +95,7 @@ def get_discount_by_product_id(product_id: int, session=Depends(get_db)):
 
 
 @router.get("/product/{product_id}/allownull")
-def get_discount_by_product_id_no_allow_null(product_id: int, session=Depends(get_db)):
+def get_discount_by_product_id_allow_null(product_id: int, session=Depends(get_db)):
     discount = crud.get_by_product_id(product_id, session, False)
     return APIResponse(
         successful=True,
