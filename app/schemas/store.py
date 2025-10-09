@@ -12,7 +12,9 @@ class StoreRead(BaseModel):
     category: UnsignedInt
     preorder_enabled: bool
     ps_max: Optional[PositiveInt]
-    ps_value: Optional[PositiveInt]
+    ps_value: Optional[
+        PositiveInt
+    ]  # Cuántos puntos se le dan al usuario por cada peso gastado
     opening_times: Annotated[list[time | None], Field(min_length=7, max_length=7)]
     closing_times: Annotated[list[time | None], Field(min_length=7, max_length=7)]
     payment_methods: Annotated[list[bool], Field(min_length=4, max_length=4)]

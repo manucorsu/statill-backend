@@ -14,6 +14,7 @@ class Product(Base):
     name = Column(String(100), nullable=False)
     brand = Column(String(30), nullable=False)
     price = Column(Numeric(10, 2), nullable=False)
+    points_price = Column(Integer, nullable=True)
     type = Column(Integer, nullable=False)
     quantity = Column(DOUBLE_PRECISION, nullable=False)
     desc = Column(String, nullable=False)

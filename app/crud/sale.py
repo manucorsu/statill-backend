@@ -1,5 +1,4 @@
-from datetime import datetime
-from datetime import timezone
+from datetime import datetime, timezone
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from app.models.products_sales import ProductsSales
@@ -9,7 +8,8 @@ from app.models.store import Store
 from app.schemas.sale import SaleCreate
 
 from . import product as products_crud
-from . import store as stores_crud
+
+# from . import store as stores_crud
 
 
 def get_all(session: Session):
