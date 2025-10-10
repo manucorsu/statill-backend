@@ -76,7 +76,7 @@ def create(discount_data: DiscountCreate, session: Session):
     if existing_discount:
         Session.delete(existing_discount)
         session.commit()
-    discount = Discount(discount_data)
+    discount = Discount(**discount_data.model_dump())
     session.add(discount)
     session.commit()
 

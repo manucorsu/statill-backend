@@ -104,7 +104,7 @@ def get_discount_by_product_id_allow_null(product_id: int, session=Depends(get_d
     )
 
 
-@router.post("/", response_model=APIResponse)
+@router.post("/", response_model=APIResponse, status_code = 201)
 def create_discount(discount: DiscountCreate, session: Session = Depends(get_db)):
     """
     Creates a discount.

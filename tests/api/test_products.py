@@ -38,6 +38,7 @@ def _random_product():
         "name": random_string(),
         "brand": random_string(max_len=30),
         "price": random_money(),
+        "points_price": random.choice((None, random.randint(1, 100))),
         "type": random.randint(1, 255),
         "quantity": random.randint(1, 10000),
         "desc": random_string(max_len=512),
