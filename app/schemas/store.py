@@ -11,7 +11,6 @@ class StoreRead(BaseModel):
     address: NonEmptyStr
     category: UnsignedInt
     preorder_enabled: bool
-    ps_max: Optional[PositiveInt]
     ps_value: Optional[
         PositiveInt
     ]  # Cuántos puntos se le dan al usuario por cada peso gastado
@@ -29,12 +28,24 @@ class StoreCreate(BaseModel):
     address: NonEmptyStr
     category: UnsignedInt
     preorder_enabled: bool
-    ps_max: Optional[PositiveInt]
     ps_value: Optional[PositiveInt]
     opening_times: Annotated[list[time | None], Field(min_length=7, max_length=7)]
     closing_times: Annotated[list[time | None], Field(min_length=7, max_length=7)]
     payment_methods: Annotated[list[bool], Field(min_length=4, max_length=4)]
     user_id: PositiveInt
+
+    class Config:
+        from_attributes = True
+
+class StoreUpdate(BaseModel):
+    name: NonEmptyStr
+    address: NonEmptyStr
+    category: UnsignedInt
+    preorder_enabled: bool
+    ps_value: Optional[PositiveInt]
+    opening_times: Annotated[list[time | None], Field(min_length=7, max_length=7)]
+    closing_times: Annotated[list[time | None], Field(min_length=7, max_length=7)]
+    payment_methods: Annotated[list[bool], Field(min_length=4, max_length=4)]
 
     class Config:
         from_attributes = True

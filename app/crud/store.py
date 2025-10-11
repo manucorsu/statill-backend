@@ -52,13 +52,6 @@ def create(store_data: StoreCreate, session: Session):
             400,
             f"User must be disassociated from store {user.store_id} before associating them to a new one.",
         )
-    if (store_data.ps_max and not store_data.ps_value) or (
-        not store_data.ps_max and store_data.ps_value
-    ):
-        raise HTTPException(
-            400,
-            "Points-related fields should either both have a value or both be None (but not one each)",
-        )
     for index, ct in enumerate(store_data.closing_times):
         ot = store_data.opening_times[index]
 
@@ -101,14 +94,6 @@ def update(id: int, store_data: StoreCreate, session: Session):
     Raises:
         HTTPException(404): If the store with the specified ID does not exist.
     """
-    if (store_data.ps_max and not store_data.ps_value) or (
-        not store_data.ps_max and store_data.ps_value
-    ):
-        raise HTTPException(
-            400,
-            "Points-related fields should either both have a value or both be None (but not one each)",
-        )
-
     for index, ct in enumerate(store_data.closing_times):
         ot = store_data.opening_times[index]
 

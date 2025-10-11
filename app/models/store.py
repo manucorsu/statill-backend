@@ -12,7 +12,6 @@ class Store(Base):
     category = Column(BigInteger, nullable=False)
     address = Column(String, nullable=False)
     preorder_enabled = Column(Boolean, nullable=False)
-    ps_max = Column(Integer, nullable=True)
     ps_value = Column(Integer, nullable=True)  # cuántos $ vale un punto
     opening_times = Column(ARRAY(TIME(timezone=True)), nullable=False)
     closing_times = Column(ARRAY(TIME(timezone=True)), nullable=False)

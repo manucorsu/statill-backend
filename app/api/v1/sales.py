@@ -101,7 +101,7 @@ def create_sale(sale: SaleCreate, db: Session = Depends(get_db)):
     """
     if len(sale.products) == 0:
         raise HTTPException(status_code=400, detail="Sale must have at least 1 product")
-    sale_id = crud.create_sale(sale, db)
+    sale_id = crud.create(sale, db)
     return APIResponse(
         successful=True,
         data={"id": sale_id},

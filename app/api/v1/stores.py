@@ -8,6 +8,7 @@ from app.schemas.store import (
     StoreCreate,
     GetAllStoresResponse,
     GetStoreResponse,
+    StoreUpdate,
 )
 from app.schemas.general import APIResponse
 
@@ -83,7 +84,7 @@ def create_store(store: StoreCreate, db: Session = Depends(get_db)):
 
 
 @router.put("/{id}", response_model=APIResponse)
-def update_store(id: int, store: StoreCreate, db: Session = Depends(get_db)):
+def update_store(id: int, store: StoreUpdate, db: Session = Depends(get_db)):
     """
     Updates a store by its ID.
 
@@ -91,7 +92,7 @@ def update_store(id: int, store: StoreCreate, db: Session = Depends(get_db)):
 
     Args:
         id (int): The ID of the store to update.
-        store (StoreCreate): The updated store data.
+        store (StoreUpdate): The updated store data.
         db (Session): The SQLAlchemy session to use for the update.
 
     Returns:

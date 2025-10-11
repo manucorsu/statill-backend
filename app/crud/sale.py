@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
+from app.models.product import Product
 from app.models.products_sales import ProductsSales
 
 from app.models.sale import Sale
@@ -48,12 +49,13 @@ def get_sales_by_user_id(user_id: int, session: Session):
     return session.query(Sale).filter(Sale.user_id == user_id).all()
 
 
-def create_sale(sale_data: SaleCreate, session: Session):
+def create(sale_data: SaleCreate, session: Session, using_points: bool = False) -> int:
     """
     Creates a new sale in the database.
     Args:
         sale_data (SaleCreate): The sale data to create.
         session (Session): The SQLAlchemy session to use for the insert.
+        using_points (bool): Whether the user is using points to pay for ALL of the products in this sale. Defaults to `False`.
     Returns:
         int: The ID of the newly created sale.
     """
@@ -66,6 +68,7 @@ def create_sale(sale_data: SaleCreate, session: Session):
     session.add(sale)
     session.commit()
 
+    products_model_instances: list[Product] = []  # ver if not using_points...
     for product_data in sale_data.products:
         product = products_crud.get_by_id(product_data.product_id, session)
         if product.store_id != sale_data.store_id:
@@ -87,7 +90,12 @@ def create_sale(sale_data: SaleCreate, session: Session):
             quantity=product_data.quantity,
         )
         session.add(ps)
-
+        products_model_instances.append(product)
     session.refresh(sale)
+    from .points import gain_points_from_purchase, points_enabled
+
+    if not using_points and points_enabled(sale.store_id, session):
+        gain_points_from_purchase(sale_data.user_id, products_model_instances, session)
+
     session.commit()
     return int(sale.id)
