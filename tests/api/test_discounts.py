@@ -13,7 +13,12 @@ from ..utils import (
     get_json_data,
 )
 from app.schemas.discount import GetAllDiscountsResponse, GetDiscountResponse
-from .test_users import leading_zero_md, leading_zero_y
+from .test_users import (
+    leading_zero_md,
+    leading_zero_y,
+    is_leap_year,
+    random_day_of_month,
+)
 
 import random
 
@@ -21,16 +26,19 @@ import json
 
 from typing import Literal
 
-from datetime import datetime, timedelta
+from datetime import date, timedelta
 
 client = TestClient(app)
 
 
 def _random_discount():
     all_products = get_json_data("/api/v1/products", client)
-    year = random.randint(1, 9999)
-    month = random.randint(1, 12)
-    day = random.randint(10, 27 if month == 2 else 29)
+    today = date.today()
+    year = random.randint(today.year, 9999)
+    month = random.randint(today.month if year == today.year else 1, 12)
+    day = random_day_of_month(
+        year, month, min_day=today.day if year == today.year else 1
+    )
     min_amount = random.randint(1, 100)
     max_amount = random.randint(min_amount, 200)
     days_usable = [random.choice((False, True)) for _ in range(6)]
@@ -88,11 +96,13 @@ def test_get_discount_by_product_id_allownull():
 def test_create_discount():
     discount = _random_discount()
     response = client.post("/api/v1/discounts/", data=json.dumps(discount))
+    if response.status_code != 201:
+        assert response.json() == object()
     successful_post_response_test(response)
 
 
 def test_create_discount_past_date():
-    yesterday = datetime.today() - timedelta(days=1)
+    yesterday = date.today() - timedelta(days=1)
     discount = _random_discount()
     discount["start_date"] = (
         f"{leading_zero_y(yesterday.year)}-{leading_zero_md(yesterday.month)}-{leading_zero_md(yesterday.day)}"
@@ -102,8 +112,8 @@ def test_create_discount_past_date():
 
 
 def test_create_discount_end_before_start():
-    today = datetime.today()
-    yesterday = datetime.today() - timedelta(days=1)
+    today = date.today()
+    yesterday = date.today() - timedelta(days=1)
 
     discount = _random_discount()
     discount["start_date"] = (
@@ -140,7 +150,7 @@ def test_create_discount_minamount_larger_than_maxamount():
 
 def test_create_discount_no_usable_days():
     discount = _random_discount()
-    discount["days_usable"] = ([False, False, False, False, False, False, False],)
+    discount["days_usable"] = [False, False, False, False, False, False, False]
     response = client.post("/api/v1/discounts/", data=json.dumps(discount))
     bad_request_test(response)
 
@@ -174,10 +184,12 @@ def test_get_invalid_discount_by_product_id():
     not_found_response_test(response)
 
 
-def test_create_already_existing_discount():
+def test_create_existing_discount():
     all_discounts = get_json_data("/api/v1/discounts", client)
 
     discount = _random_discount()
     discount["product_id"] = random.choice(all_discounts)["product_id"]
     response = client.post("/api/v1/discounts/", data=json.dumps(discount))
+    if response.status_code != 201:
+        assert response.json() == object()
     successful_post_response_test(response)

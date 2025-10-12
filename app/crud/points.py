@@ -139,7 +139,9 @@ def gain_points_from_purchase(user_id: int, products: list[Product], session: Se
     if not points_enabled(store_id, session):
         raise HTTPException(400, detail="Store does not have points system")
     user_points = get_user_points(user_id, store_id, session, True)
-    assert user_points is None or isinstance(user_points, Points) # por qué no podíamos hacerlo en typescript con prisma para no tener que hacer estas cosas marcos t
+    assert user_points is None or isinstance(
+        user_points, Points
+    )  # por qué no podíamos hacerlo en typescript con prisma para no tener que hacer estas cosas marcos t
     if user_points is None:
         user_points = Points(user_id=user_id, store_id=store_id, amount=0)
         session.add(user_points)

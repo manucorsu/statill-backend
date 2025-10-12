@@ -65,6 +65,33 @@ def leading_zero_y(y: int):
     return f"{y}"
 
 
+def is_leap_year(year: int):
+    if year % 4 != 0:
+        return False
+    elif year % 100 != 0:
+        return True
+    elif year % 400 == 0:
+        return True
+    else:
+        return False
+
+
+def random_day_of_month(year: int, month: int, min_day: int = 1):
+    leap_year = is_leap_year(year)
+    max_day = None
+    if month == 2:
+        if not leap_year:
+            max_day = 28
+        else:
+            max_day = 29
+    elif month in (1, 3, 5, 7, 8, 10, 12):
+        max_day = 31
+    else:
+        max_day = 30
+
+    return random.randint(min_day, max_day)
+
+
 def _random_date():
     year = random.randint(1, 9999)
     month = random.randint(1, 12)
@@ -75,7 +102,7 @@ def _random_date():
 def random_user():
     return {
         "first_names": random_string(max_len=39),
-        "last_name": random_string(max_len=49),
+        "last_name": random_string(max_len=39),
         "email": _random_email(),
         "password": random_string(),
         "birthdate": _random_date(),

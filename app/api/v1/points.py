@@ -12,13 +12,10 @@ from ...models.points import Points
 name = "points"
 router = APIRouter()
 
-def __points_to_pointsread (p: Points):
-    return PointsRead(
-        id=p.id,
-        store_id=p.store_id,
-        user_id=p.user_id,
-        amount=p.amount
-    )
+
+def __points_to_pointsread(p: Points):
+    return PointsRead(id=p.id, store_id=p.store_id, user_id=p.user_id, amount=p.amount)
+
 
 @router.get("/", response_model=GetAllPointsResponse)
 def get_all_points(session: Session = Depends(get_db)):

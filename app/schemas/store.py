@@ -37,6 +37,7 @@ class StoreCreate(BaseModel):
     class Config:
         from_attributes = True
 
+
 class StoreUpdate(BaseModel):
     name: NonEmptyStr
     address: NonEmptyStr
