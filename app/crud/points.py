@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
 
-from app.schemas.sale import SaleCreate
+from app.schemas.sale import SaleCreate, ProductSale
 
 from .user import get_by_id as get_user_by_id
 from .store import get_by_id as get_store_by_id
@@ -93,7 +93,7 @@ def buy_with_points(user_id: int, product: Product, session: Session):
     Raises:
         HTTPException(400): If the product does not have a points price or if the user does not have enough points to make the purchase.
     """
-    if not points_enabled(product.store_id) or product.points_price is None:
+    if not points_enabled(product.store_id, session) or product.points_price is None:
         raise HTTPException(
             status_code=400, detail="This product cannot be purchased with points"
         )
@@ -110,7 +110,10 @@ def buy_with_points(user_id: int, product: Product, session: Session):
         sale_data=SaleCreate(
             user_id=user_id,
             store_id=product.store_id,
-            products=[product.id],  # la pésima coding practice
+            products=[
+                ProductSale(product_id=product.id, quantity=1)
+            ],  # la pésima coding practice
+            payment_method=3,
         ),
         session=session,
         using_points=True,
