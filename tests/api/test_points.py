@@ -78,6 +78,7 @@ def test_buy_with_points():
     json_response = response.json()
     assert json_response["successful"]
 
+
 def test_get_user_points_invalid_ps_value():
     all_points = get_json("/api/v1/points/", client)["data"]
     all_stores = get_json("/api/v1/stores/", client)["data"]
@@ -99,13 +100,17 @@ def test_get_user_points_invalid_ps_value():
     response = client.get(f"/api/v1/points/store/{store_id}?user_id={user_id}")
     bad_request_test(response)
 
+
 def test_get_user_points_pointless_user():
     all_stores = get_json("/api/v1/stores/", client)["data"]
     all_users = get_json("/api/v1/users/", client)["data"]
 
     random_store = random.choice(all_stores)
-    all_users_in_store = [u["user_id"] for u in get_json_data(f"/api/v1/points/store/{random_store['id']}/all", client)]
-    
+    all_users_in_store = [
+        u["user_id"]
+        for u in get_json_data(f"/api/v1/points/store/{random_store['id']}/all", client)
+    ]
+
     invalid_user_id = None
     for user in all_users:
         if user["id"] not in all_users_in_store:
@@ -114,7 +119,7 @@ def test_get_user_points_pointless_user():
     if not invalid_user_id:
         pytest.skip("No hay usuarios que no tengan puntos en esta tienda")
 
-    response = client.get(f"/api/v1/points/store/{random_store['id']}?user_id={invalid_user_id}")
+    response = client.get(
+        f"/api/v1/points/store/{random_store['id']}?user_id={invalid_user_id}"
+    )
     bad_request_test(response)
-        
-

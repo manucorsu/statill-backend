@@ -162,6 +162,7 @@ def gain_points_from_purchase(user_id: int, products: list[Product], session: Se
     session.commit()
     return
 
+
 def get_all_by_store_id(id: int, session: Session):
     """
     Retrieves all points from the database by their store ID.

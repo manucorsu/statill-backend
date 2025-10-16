@@ -13,6 +13,7 @@ class PointsRead(BaseModel):
     class Config:
         from_attributes = True
 
+
 class PointsSale(BaseModel):  # represents a product being bought with points
     product_id: PositiveInt
     quantity: PositiveInt

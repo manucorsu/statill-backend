@@ -58,7 +58,9 @@ def get_user_points(store_id: int, user_id: int, session: Session = Depends(get_
     )
 
 
-@router.post("/product/{product_id}", response_model=SuccessfulResponse, status_code=201)
+@router.post(
+    "/product/{product_id}", response_model=SuccessfulResponse, status_code=201
+)
 def buy_with_points(user_id: int, product_id: int, session: Session = Depends(get_db)):
     """
     Creates a sale where the user buys is buying the product using their points.
@@ -77,10 +79,9 @@ def buy_with_points(user_id: int, product_id: int, session: Session = Depends(ge
     crud.buy_with_points(user_id, product, session)
     return SuccessfulResponse(data=None, message="Purchase with points successful.")
 
+
 @router.get("/store/{id}/all", response_model=GetAllPointsResponse)
-def get_points_by_store_id(
-    id: int, session: Session = Depends(get_db)
-):
+def get_points_by_store_id(id: int, session: Session = Depends(get_db)):
     """
     Retrieves all points by its store ID.
 
@@ -97,9 +98,7 @@ def get_points_by_store_id(
         HTTPException(400): If the provided ID is invalid (less than or equal to 0).
         HTTPException(404): If the store with the specified ID does not exist.
     """
-    result = crud.get_all_by_store_id(
-        id, session
-    )
+    result = crud.get_all_by_store_id(id, session)
     return GetAllPointsResponse(
         successful=True,
         data=[__points_to_pointsread(p) for p in result],
