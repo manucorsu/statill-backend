@@ -161,3 +161,17 @@ def gain_points_from_purchase(user_id: int, products: list[Product], session: Se
     user_points.amount += points_to_add
     session.commit()
     return
+
+def get_all_by_store_id(id: int, session: Session):
+    """
+    Retrieves all points from the database by their store ID.
+    Args:
+        id (int): The ID of the store.
+        session (Session): The SQLAlchemy session to use for the query.
+    Returns:
+        list[Points]: A list for the points with the store ID.
+    Raises:
+        HTTPException(404): If the store with the specified ID does not exist.
+    """
+    points = session.query(Points).filter(Points.store_id == id).all()
+    return points
