@@ -105,21 +105,84 @@ def test_get_user_points_pointless_user():
     all_stores = get_json("/api/v1/stores/", client)["data"]
     all_users = get_json("/api/v1/users/", client)["data"]
 
-    random_store = random.choice(all_stores)
-    all_users_in_store = [
-        u["user_id"]
-        for u in get_json_data(f"/api/v1/points/store/{random_store['id']}/all", client)
-    ]
+    random_store = None
+
+    for store in all_stores:
+        if store["ps_value"] != None and store['ps_value'] > 0:
+            random_store = store["id"]
+            break
+    all_users_in_store = []
+
+    for points in get_json_data(f"/api/v1/points/store/{random_store}/all", client):
+        all_users_in_store.append(points["user_id"])
 
     invalid_user_id = None
     for user in all_users:
         if user["id"] not in all_users_in_store:
             invalid_user_id = user["id"]
+            break
 
     if not invalid_user_id:
         pytest.skip("No hay usuarios que no tengan puntos en esta tienda")
 
     response = client.get(
-        f"/api/v1/points/store/{random_store['id']}?user_id={invalid_user_id}"
+        f"/api/v1/points/store/{random_store}?user_id={invalid_user_id}"
     )
+    not_found_response_test(response)
+
+def test_buy_with_points_not_points_enabled():
+    all_products = get_json("/api/v1/products/", client)["data"]
+    all_users = get_json("/api/v1/users/", client)["data"]
+    all_stores = get_json("/api/v1/stores/", client)["data"]
+
+    random_user = random.choice(all_users)
+
+    pointless_store = None
+    for store in all_stores:
+        if (store["ps_value"] != None and store["ps_value"] <= 0) or store["ps_value"] == None:
+            pointless_store = store["id"]
+            break
+
+    random_product = None
+    for product in all_products:
+        if product["store_id"] == pointless_store:
+            random_product = product
+            break
+
+    response = client.post(
+        f"/api/v1/points/product/{random_product['id']}?user_id={random_user["id"]}"
+    )
+
     bad_request_test(response)
+
+def test_buy_with_not_enough_points():
+    all_products = get_json("/api/v1/products/", client)["data"]
+    all_stores = get_json("/api/v1/stores/", client)["data"]
+
+    random_store = None
+    for store in all_stores:
+        if store["ps_value"] != None and store["ps_value"] > 0:
+            random_store = store["id"]
+            break
+
+    random_product = None
+    for product in all_products:
+        if product["store_id"] == random_store:
+            random_product = product
+            break
+
+    broke_user = None
+    for points in get_json_data(f"/api/v1/points/store/{random_store}/all", client):
+        if(points["amount"] < random_product["points_price"]):
+            broke_user = points["user_id"]
+
+    if broke_user == None:
+        pytest.skip("Todos los usuarios tienen suficiente plata")
+
+    response = client.post(
+        f"/api/v1/points/product/{random_product['id']}?user_id={broke_user}"
+    )
+
+    bad_request_test(response)
+
+

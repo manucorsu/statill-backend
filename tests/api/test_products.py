@@ -84,6 +84,19 @@ def test_get_product():
 
     schema_test(response.json(), GetProductResponse)
 
+def test_get_products_by_store_id():
+    all_products = (get_json("/api/v1/products/", client))["data"]
+    all_stores = (get_json("/api/v1/stores/", client))["data"]
+    if all_products == []:
+        raise ValueError(
+            "For test_get_products_by_store_id to work there needs to be at least one GETtable product in the database."
+        )
+    random_store = random.choice(all_stores)
+    response = client.get(f"/api/v1/products/store/{random_store['id']}")
+    assert response.status_code == 200
+
+    schema_test(response.json(), GetAllProductsResponse)
+
 
 def test_update_product():
     id = random.choice(get_json("/api/v1/products/", client)["data"])["id"]
@@ -95,15 +108,24 @@ def test_update_product():
 def test_delete_product():
     all_orders = get_json("/api/v1/orders", client)["data"]
     all_products = get_json("/api/v1/products/", client)["data"]
-    id = random.choice(all_products)["id"]
+
     ids_in_orders = []
     for order in all_orders:
         for product in order["products"]:
             ids_in_orders.append(product["product_id"])
-    while id in ids_in_orders:
-        id = random.choice(all_products)["id"]
+    
+    id = None
+
+    for product in all_products:
+        if product["id"] not in ids_in_orders:
+            id = product["id"]
+            break
+
+    if id == None:
+        pytest.skip("no hay productos sin orders")
+
     response = client.delete(f"/api/v1/products/{id}")
-    successful_ud_response_test(response)
+    assert id == object()
 
 
 def test_get_not_existing_product():
