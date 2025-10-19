@@ -5,6 +5,7 @@ from fastapi.testclient import TestClient
 from app.main import app
 from app.schemas.points import PointsRead, GetAllPointsResponse, GetUserPointsResponse
 
+
 from ..utils import (
     get_json,
     get_json_data,
@@ -23,6 +24,26 @@ import random
 
 client = TestClient(app)
 
+def random_sale():
+    random_store = random.choice(get_json("/api/v1/stores/", client)["data"])
+    random_user = random.choice(get_json("/api/v1/users/", client)["data"])
+    products_list = []
+
+    for product in get_json("/api/v1/products/", client)["data"]:
+        if product["store_id"] == random_store["id"] and product["quantity"] > 0:
+            products_list.append(product)
+
+    products_in_sale = []
+
+    for i in range(random.randint(0, len(products_list))):
+        products_in_sale.append(products_list[i])
+
+    return {
+        "store_id": random_store["id"],
+        "products": products_in_sale,
+        "payment_method": random.randint(1, 3),
+        "user_id": random_user["id"]
+    }
 
 def test_get_all_points():
     response = client.get("/api/v1/points/")
@@ -50,34 +71,29 @@ def test_buy_with_points():
     all_points = get_json("/api/v1/points/", client)["data"]
     all_products = get_json("/api/v1/products/", client)["data"]
 
+    random_points = random.choice(all_points)
     random_product = None
+
+    store_products = []
+
     for product in all_products:
-        if product["points_price"] != None:
+        if not product["points_price"]:
+            continue
+        if product["store_id"] == random_points["store_id"]:
+            store_products.append(product)
+
+    for product in store_products:
+        if product["points_price"] <= random_points["amount"]:
             random_product = product
             break
-    if random_product is None:
-        pytest.skip("No hay productos comprables con puntos")
 
-    user_points = None
-    for point in all_points:
-        if (point["store_id"] == random_product["store_id"]) and (
-            point["amount"] > random_product["points_price"]
-        ):
-            user_points = point
-            break
-    if not user_points:
-        pytest.skip("No hay usuarios con suficientes puntos para comprar esto")
-
-    user_id = user_points["user_id"]
+    user_id = random_points["user_id"]
 
     response = client.post(
         f"/api/v1/points/product/{random_product['id']}?user_id={user_id}"
     )
 
-    assert response.status_code == 201
-    json_response = response.json()
-    assert json_response["successful"]
-
+    successful_post_response_test(response)
 
 def test_get_user_points_invalid_ps_value():
     all_points = get_json("/api/v1/points/", client)["data"]
@@ -130,59 +146,53 @@ def test_get_user_points_pointless_user():
     )
     not_found_response_test(response)
 
-def test_buy_with_points_not_points_enabled():
+def test_buy_with_points_pointless_product():
     all_products = get_json("/api/v1/products/", client)["data"]
-    all_users = get_json("/api/v1/users/", client)["data"]
-    all_stores = get_json("/api/v1/stores/", client)["data"]
 
-    random_user = random.choice(all_users)
+    users_in_store = []
 
-    pointless_store = None
-    for store in all_stores:
-        if (store["ps_value"] != None and store["ps_value"] <= 0) or store["ps_value"] == None:
-            pointless_store = store["id"]
-            break
-
-    random_product = None
+    pointless_product = None
     for product in all_products:
-        if product["store_id"] == pointless_store:
-            random_product = product
+        product_store = get_json(f"/api/v1/stores/{product['store_id']}", client)["data"]
+        if (product_store["ps_value"] == None) or (product_store["ps_value"] <= 0) or (product["points_price"] == None):
+            pointless_product = product
+            users_in_store = get_json_data(f"/api/v1/points/store/{product_store['id']}/all", client)
             break
+    
+    random_user = random.choice(users_in_store)
 
     response = client.post(
-        f"/api/v1/points/product/{random_product['id']}?user_id={random_user["id"]}"
+        f"/api/v1/points/product/{pointless_product['id']}?user_id={random_user['id']}"
     )
 
     bad_request_test(response)
 
-def test_buy_with_not_enough_points():
-    all_products = get_json("/api/v1/products/", client)["data"]
-    all_stores = get_json("/api/v1/stores/", client)["data"]
-
-    random_store = None
-    for store in all_stores:
-        if store["ps_value"] != None and store["ps_value"] > 0:
-            random_store = store["id"]
-            break
-
-    random_product = None
-    for product in all_products:
-        if product["store_id"] == random_store:
-            random_product = product
-            break
-
-    broke_user = None
-    for points in get_json_data(f"/api/v1/points/store/{random_store}/all", client):
-        if(points["amount"] < random_product["points_price"]):
-            broke_user = points["user_id"]
-
-    if broke_user == None:
-        pytest.skip("Todos los usuarios tienen suficiente plata")
-
-    response = client.post(
-        f"/api/v1/points/product/{random_product['id']}?user_id={broke_user}"
-    )
-
+def test_gain_points_from_purchase():
+    rand_sale = random_sale()
+    rand_sale["products"] = []
+    response = client.post("/api/v1/sales/", data=json.dumps(rand_sale))
     bad_request_test(response)
 
+def test_gain_points_from_purchase_not_point_system():
+    all_stores = get_json("/api/v1/stores/", client)["data"]
+    rand_sale = random_sale()
+    for store in all_stores:
+        if (store["ps_value"] == None or store["ps_value"] <= 0):
+            rand_sale["store_id"] = store["id"]
+            break
+            
+    response = client.post("/api/v1/sales/", data=json.dumps(rand_sale))
+    bad_request_test(response)
 
+def test_gain_points_from_purchase_product_from_other_store():
+    all_products = get_json("/api/v1/products/", client)["data"]
+            
+    rand_sale = random_sale()
+    products_with_impostor = list(rand_sale["products"])
+
+    for product in all_products:
+        if product["store_id"] != rand_sale["store_id"]:
+            products_with_impostor.append(product)
+    rand_sale["products"] = products_with_impostor
+    response = client.post("/api/v1/sales/", data=json.dumps(rand_sale))
+    bad_request_test(response)
