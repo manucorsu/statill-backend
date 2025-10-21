@@ -1,6 +1,6 @@
 from argon2 import PasswordHasher
 from datetime import datetime, timezone, timedelta
-from config import settings
+from .config import settings
 import jwt
 from fastapi import HTTPException
 
