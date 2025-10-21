@@ -24,7 +24,7 @@ import random
 client = TestClient(app)
 
 
-def _random_product():
+def random_product():
     """
     Generate a JSON string representing a random order with various attributes.
 
@@ -67,7 +67,7 @@ def test_get_all_products_including_anonymized():
 
 
 def test_create_product():
-    product = _random_product()
+    product = random_product()
     response = client.post("/api/v1/products/", data=json.dumps(product))
     successful_post_response_test(response)
 
@@ -100,7 +100,7 @@ def test_get_products_by_store_id():
 
 def test_update_product():
     id = random.choice(get_json("/api/v1/products/", client)["data"])["id"]
-    product = _random_product()
+    product = random_product()
     response = client.put(f"/api/v1/products/{id}", data=json.dumps(product))
     successful_ud_response_test(response)
 
@@ -140,14 +140,14 @@ def test_get_not_existing_product():
 
 
 def test_product_create_data_hidden_none():
-    product = _random_product()
+    product = random_product()
     product["hidden"] = None
     response = client.post("/api/v1/products/", data=json.dumps(product))
     successful_post_response_test(response)
 
 
 def test_product_create_deleted_product_400():
-    product = _random_product()
+    product = random_product()
     product["name"] = "Deleted Product"
     response = client.post("/api/v1/products/", data=json.dumps(product))
     bad_request_test(response)
@@ -155,7 +155,7 @@ def test_product_create_deleted_product_400():
 
 def test_product_update_data_hidden_none():
     id = random.choice(get_json("/api/v1/products/", client)["data"])["id"]
-    product = _random_product()
+    product = random_product()
     product["hidden"] = None
     response = client.put(f"/api/v1/products/{id}", data=json.dumps(product))
     successful_ud_response_test(response)

@@ -34,7 +34,7 @@ import random
 client = TestClient(app)
 
 
-def _random_store():
+def random_store():
     """
     Generate a dict representing a random store with various attributes.
 
@@ -94,7 +94,7 @@ def test_create_store():
     new_user = (
         client.post("/api/v1/users", data=json.dumps(random_user_generate))
     ).json()
-    store = _random_store()
+    store = random_store()
     store["user_id"] = new_user["data"]["id"]
     response = client.post("/api/v1/stores/", data=json.dumps(store))
     if response.status_code != 201:
