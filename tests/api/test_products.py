@@ -125,7 +125,7 @@ def test_delete_product():
         pytest.skip("no hay productos sin orders")
 
     response = client.delete(f"/api/v1/products/{id}")
-    assert id == object()
+    successful_ud_response_test(response)
 
 
 def test_get_not_existing_product():

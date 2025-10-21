@@ -2,7 +2,6 @@ from argon2 import PasswordHasher
 from datetime import datetime, timezone, timedelta
 from config import settings
 import jwt
-from typing import Any
 from fastapi import HTTPException
 
 __ph = PasswordHasher()
@@ -57,7 +56,7 @@ def create_token(subject, expires_delta: int = settings.jwt_expiry) -> str:
     return token
 
 
-def decode_token(token: str) -> Any:
+def decode_token(token: str):
     """
     Decodes a JWT token.
     Args:

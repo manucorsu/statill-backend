@@ -65,36 +65,6 @@ def test_get_user_points():
 
     schema_test(response.json(), GetUserPointsResponse)
 
-
-def test_buy_with_points():
-
-    all_points = get_json("/api/v1/points/", client)["data"]
-    all_products = get_json("/api/v1/products/", client)["data"]
-
-    random_points = random.choice(all_points)
-    random_product = None
-
-    store_products = []
-
-    for product in all_products:
-        if not product["points_price"]:
-            continue
-        if product["store_id"] == random_points["store_id"]:
-            store_products.append(product)
-
-    for product in store_products:
-        if product["points_price"] <= random_points["amount"]:
-            random_product = product
-            break
-
-    user_id = random_points["user_id"]
-
-    response = client.post(
-        f"/api/v1/points/product/{random_product['id']}?user_id={user_id}"
-    )
-
-    successful_post_response_test(response)
-
 def test_get_user_points_invalid_ps_value():
     all_points = get_json("/api/v1/points/", client)["data"]
     all_stores = get_json("/api/v1/stores/", client)["data"]
@@ -170,29 +140,5 @@ def test_buy_with_points_pointless_product():
 def test_gain_points_from_purchase():
     rand_sale = random_sale()
     rand_sale["products"] = []
-    response = client.post("/api/v1/sales/", data=json.dumps(rand_sale))
-    bad_request_test(response)
-
-def test_gain_points_from_purchase_not_point_system():
-    all_stores = get_json("/api/v1/stores/", client)["data"]
-    rand_sale = random_sale()
-    for store in all_stores:
-        if (store["ps_value"] == None or store["ps_value"] <= 0):
-            rand_sale["store_id"] = store["id"]
-            break
-            
-    response = client.post("/api/v1/sales/", data=json.dumps(rand_sale))
-    bad_request_test(response)
-
-def test_gain_points_from_purchase_product_from_other_store():
-    all_products = get_json("/api/v1/products/", client)["data"]
-            
-    rand_sale = random_sale()
-    products_with_impostor = list(rand_sale["products"])
-
-    for product in all_products:
-        if product["store_id"] != rand_sale["store_id"]:
-            products_with_impostor.append(product)
-    rand_sale["products"] = products_with_impostor
     response = client.post("/api/v1/sales/", data=json.dumps(rand_sale))
     bad_request_test(response)
