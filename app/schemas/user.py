@@ -1,6 +1,6 @@
 from pydantic import BaseModel, EmailStr, Field
 from typing import Literal, Annotated
-from .general import APIResponse
+from .general import APIResponse, SuccessfulResponse
 from .custom_types import NonEmptyStr, PositiveInt, UserPassword
 
 
@@ -23,9 +23,18 @@ class UserRead(UserCreate):
     store_role: Literal["cashier", "owner"] | None
 
 
+class Token(BaseModel):
+    token: str
+    token_type: Literal["bearer"] = "bearer"
+
+
 class GetAllUsersResponse(APIResponse):
     data: list[UserRead]
 
 
 class GetUserResponse(APIResponse):
     data: UserRead
+
+
+class LoginResponse(SuccessfulResponse):
+    data: Token
