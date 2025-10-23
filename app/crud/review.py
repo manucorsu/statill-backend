@@ -41,10 +41,12 @@ def get_by_id(id: int, session: Session):
 
 
 def get_reviews_by_user_id(user_id: int, session: Session):
+    users_crud.get_by_id(user_id, session)
     return session.query(Review).filter(Review.user_id == user_id).all()
 
 
 def get_reviews_by_store_id(store_id: int, session: Session):
+    stores_crud.get_by_id(store_id, session)
     return session.query(Review).filter(Review.store_id == store_id).all()
 
 
@@ -60,13 +62,14 @@ def create(user_id: int, review_data: ReviewCreate, session: Session):
 
     stores_crud.get_by_id(
         review_data.store_id, session
-    )  # Checks that the store exists. Extracting the id from the review_data is temporary and will only stay there until we do login
+    )  # Checks that the store exists.
 
     users_crud.get_by_id(
         user_id, session
     )  # Checks that the user exists. Extracting the id is temporary and will only stay there until we do login
 
     review = Review(
+        user_id=user_id,
         **review_data.model_dump(),
     )
 
