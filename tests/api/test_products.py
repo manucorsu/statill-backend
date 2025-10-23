@@ -84,6 +84,7 @@ def test_get_product():
 
     schema_test(response.json(), GetProductResponse)
 
+
 def test_get_products_by_store_id():
     all_products = (get_json("/api/v1/products/", client))["data"]
     all_stores = (get_json("/api/v1/stores/", client))["data"]
@@ -113,7 +114,7 @@ def test_delete_product():
     for order in all_orders:
         for product in order["products"]:
             ids_in_orders.append(product["product_id"])
-    
+
     id = None
 
     for product in all_products:

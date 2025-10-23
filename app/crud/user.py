@@ -164,7 +164,7 @@ def update(id: int, user_data: UserCreate, session: Session):
         date.fromisoformat(user_data.birthdate)
     except ValueError:
         raise HTTPException(400, detail="Invalid birthdate.")
-    
+
     user = get_by_id(id, session)
 
     updates = user_data.model_dump(exclude_unset=True)

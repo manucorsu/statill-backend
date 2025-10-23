@@ -11,20 +11,24 @@ from .custom_types import (
 from typing import Annotated
 from decimal import Decimal
 
+
 class ReviewRead(BaseModel):
-    id:  PositiveInt
+    id: PositiveInt
     store_id: PositiveInt
     user_id: PositiveInt
     stars: PositiveInt
     desc: str
 
+
 class GetAllReviewsResponse:
     successful: Literal[True]
     data: list[ReviewRead]
 
+
 class GetReviewResponse(APIResponse):
     successful: Literal[True]
     data: ReviewRead
+
 
 class ReviewCreate(BaseModel):
     store_id: PositiveInt

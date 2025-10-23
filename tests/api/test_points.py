@@ -17,7 +17,7 @@ from ..utils import (
     successful_ud_response_test,
     not_found_response_test,
     bad_request_test,
-    post_and_return_id
+    post_and_return_id,
 )
 
 import json
@@ -25,6 +25,7 @@ import json
 import random
 
 client = TestClient(app)
+
 
 def random_sale():
     random_store = random.choice(get_json("/api/v1/stores/", client)["data"])
@@ -44,8 +45,9 @@ def random_sale():
         "store_id": random_store["id"],
         "products": products_in_sale,
         "payment_method": random.randint(1, 3),
-        "user_id": random_user["id"]
+        "user_id": random_user["id"],
     }
+
 
 def test_get_all_points():
     response = client.get("/api/v1/points/")
@@ -66,6 +68,7 @@ def test_get_user_points():
     assert response.status_code == 200
 
     schema_test(response.json(), GetUserPointsResponse)
+
 
 def test_get_user_points_invalid_ps_value():
     all_points = get_json("/api/v1/points/", client)["data"]
@@ -96,7 +99,7 @@ def test_get_user_points_pointless_user():
     random_store = None
 
     for store in all_stores:
-        if store["ps_value"] != None and store['ps_value'] > 0:
+        if store["ps_value"] != None and store["ps_value"] > 0:
             random_store = store["id"]
             break
     all_users_in_store = []
@@ -118,11 +121,13 @@ def test_get_user_points_pointless_user():
     )
     not_found_response_test(response)
 
+
 def test_gain_points_from_purchase():
     rand_sale = random_sale()
     rand_sale["products"] = []
     response = client.post("/api/v1/sales/", data=json.dumps(rand_sale))
     bad_request_test(response)
+
 
 def test_buy_with_points_pointless_store():
     all_stores = get_json("/api/v1/stores/", client)["data"]
@@ -133,11 +138,16 @@ def test_buy_with_points_pointless_store():
         if store["ps_value"] == None or store["ps_value"] <= 0:
             pointless_store = store
 
-    store_products = get_json(f"/api/v1/products/store/{pointless_store['id']}", client)["data"]
+    store_products = get_json(
+        f"/api/v1/products/store/{pointless_store['id']}", client
+    )["data"]
     random_user = random.choice(all_users)
 
-    response = client.post(f"/api/v1/points/product/{random.choice(store_products)['id']}?user_id={random_user['id']}")
+    response = client.post(
+        f"/api/v1/points/product/{random.choice(store_products)['id']}?user_id={random_user['id']}"
+    )
     bad_request_test(response)
+
 
 def test_buy_with_points_pointless_product():
     all_stores = get_json("/api/v1/stores/", client)["data"]
@@ -147,24 +157,31 @@ def test_buy_with_points_pointless_product():
         if store["ps_value"] != None and store["ps_value"] > 0:
             chosen_store = store
 
-    store_products = get_json(f"/api/v1/products/store/{chosen_store['id']}", client)["data"]
+    store_products = get_json(f"/api/v1/products/store/{chosen_store['id']}", client)[
+        "data"
+    ]
 
     pointless_product = None
     for product in store_products:
         if product["points_price"] == None or product["points_price"] <= 0:
             pointless_product = product
 
-    store_points = get_json(f"/api/v1/points/store/{chosen_store['id']}/all", client)["data"]
+    store_points = get_json(f"/api/v1/points/store/{chosen_store['id']}/all", client)[
+        "data"
+    ]
 
     if not store_points:
         pytest.skip("No hay usuarios que compraron en esta tienda")
 
     chosen_user = random.choice(store_points)["user_id"]
 
-    response = client.post(f"/api/v1/points/product/{pointless_product['id']}?user_id={chosen_user}")
+    response = client.post(
+        f"/api/v1/points/product/{pointless_product['id']}?user_id={chosen_user}"
+    )
     bad_request_test(response)
 
-def test_buy_with_points_guaranteed():
+
+def test_buy_with_points_guaranteed(capsys):
     store_owner_id = post_and_return_id("/api/v1/users/", random_user(), client)
 
     store = random_store()
@@ -175,9 +192,26 @@ def test_buy_with_points_guaranteed():
     product = random_product()
     product["points_price"] = random.randint(1, 100)
     product["store_id"] = store_id
+    product["quantity"] = random.randint(1000, 100000)
     product_id = post_and_return_id("/api/v1/products/", product, client)
 
     customer_id = post_and_return_id("/api/v1/users/", random_user(), client)
+
+    client.post(
+        "/api/v1/sales/",
+        data=json.dumps(
+            {
+                "store_id": store_id,
+                "products": [{"product_id": product_id, "quantity": 999}],
+                "payment_method": 3,
+                "user_id": customer_id,
+            }
+        ),
+    )  # ganar un montón de puntos
+
     response = client.post(f"/api/v1/points/product/{product_id}?user_id={customer_id}")
 
-    successful_post_response_test(response)
+    jsonr = response.json()
+    assert jsonr["successful"] == True
+    assert jsonr["data"] == None
+    assert jsonr["message"] == "Purchase with points successful."

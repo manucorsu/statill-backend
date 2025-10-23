@@ -8,7 +8,7 @@ from app.schemas.review import (
     ReviewRead,
     GetReviewResponse,
     GetAllReviewsResponse,
-    ReviewCreate
+    ReviewCreate,
 )
 from app.schemas.general import APIResponse
 
@@ -33,10 +33,9 @@ def get_reviews(session: Session = Depends(get_db)):
         successful=True, data=result, message="Successfully retrieved all reviews."
     )
 
+
 @router.get("/{id}", response_model=GetReviewResponse)
-def get_review_by_id(
-    id: int, session: Session = Depends(get_db)
-):
+def get_review_by_id(id: int, session: Session = Depends(get_db)):
     """
     Retrieves a review by its ID.
 
@@ -63,9 +62,7 @@ def get_review_by_id(
 
 
 @router.get("/store/{id}", response_model=GetAllReviewsResponse)
-def get_reviews_by_store_id(
-    id: int, session: Session = Depends(get_db)
-):
+def get_reviews_by_store_id(id: int, session: Session = Depends(get_db)):
     """
     Retrieves a list of reviews by its store ID.
 
@@ -83,19 +80,16 @@ def get_reviews_by_store_id(
         HTTPException(404): If the store with the specified ID does not exist.
     """
 
-    result = crud.get_reviews_by_store_id(
-        id, session
-    )
+    result = crud.get_reviews_by_store_id(id, session)
     return GetAllReviewsResponse(
         successful=True,
         data=result,
         message=f"Successfully retrieved all Reviews with store id {id}.",
     )
 
+
 @router.get("/user/{id}", response_model=GetAllReviewsResponse)
-def get_reviews_by_user_id(
-    id: int, session: Session = Depends(get_db)
-):
+def get_reviews_by_user_id(id: int, session: Session = Depends(get_db)):
     """
     Retrieves a list of reviews by its user ID.
 
@@ -113,17 +107,18 @@ def get_reviews_by_user_id(
         HTTPException(404): If the user with the specified ID does not exist.
     """
 
-    result = crud.get_reviews_by_user_id(
-        id, session
-    )
+    result = crud.get_reviews_by_user_id(id, session)
     return GetAllReviewsResponse(
         successful=True,
         data=result,
         message=f"Successfully retrieved all Reviews with user id {id}.",
     )
 
+
 @router.post("/", response_model=APIResponse, status_code=201)
-def create_review(user_id: int, review: ReviewCreate, session: Session = Depends(get_db)):
+def create_review(
+    user_id: int, review: ReviewCreate, session: Session = Depends(get_db)
+):
     """
     Creates a review.
 

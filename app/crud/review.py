@@ -2,9 +2,15 @@ from datetime import datetime, timezone
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from app.models.review import Review
-from app.schemas.review import ReviewRead, ReviewCreate, GetAllReviewsResponse, GetReviewResponse
+from app.schemas.review import (
+    ReviewRead,
+    ReviewCreate,
+    GetAllReviewsResponse,
+    GetReviewResponse,
+)
 
 from . import review as reviews_crud, store as stores_crud, user as users_crud
+
 
 def get_all(session: Session):
     """
@@ -15,6 +21,7 @@ def get_all(session: Session):
         list[Review]: A list of all reviews.
     """
     return session.query(Review).all()
+
 
 def get_by_id(id: int, session: Session):
     """
@@ -32,11 +39,14 @@ def get_by_id(id: int, session: Session):
         raise HTTPException(status_code=404, detail="Review not found")
     return review
 
+
 def get_reviews_by_user_id(user_id: int, session: Session):
     return session.query(Review).filter(Review.user_id == user_id).all()
 
+
 def get_reviews_by_store_id(store_id: int, session: Session):
     return session.query(Review).filter(Review.store_id == store_id).all()
+
 
 def create(user_id: int, review_data: ReviewCreate, session: Session):
     """
@@ -64,6 +74,7 @@ def create(user_id: int, review_data: ReviewCreate, session: Session):
     session.commit()
     session.refresh(review)
     return int(review.id)
+
 
 def delete(id: int, session: Session):
     """

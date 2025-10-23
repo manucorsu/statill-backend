@@ -228,21 +228,21 @@ def login(
     """
     Authenticate a user and generate an access token.
 
-    This endpoint verifies the provided username (email) and password. If the 
-    credentials are valid, it generates and returns an authentication token 
+    This endpoint verifies the provided username (email) and password. If the
+    credentials are valid, it generates and returns an authentication token
     for the user. If the credentials are invalid, a 401 HTTP exception is raised.
 
     Args:
-        form (OAuth2PasswordRequestForm): 
-            The OAuth2 form containing the user's login credentials. 
-            `form.username` represents the user's email, and `form.password` 
+        form (OAuth2PasswordRequestForm):
+            The OAuth2 form containing the user's login credentials.
+            `form.username` represents the user's email, and `form.password`
             represents their password.
-        session (Session): 
+        session (Session):
             The SQLAlchemy session to be used for the query.
 
     Returns:
-        LoginResponse: 
-            A response object containing the generated authentication token 
+        LoginResponse:
+            A response object containing the generated authentication token
             if the login is successful.
 
     Raises:
