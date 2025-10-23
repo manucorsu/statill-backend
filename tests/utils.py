@@ -175,3 +175,12 @@ def bad_request_test(response: httpx.Response, code: int = 400):
     jsonr = response.json()
     assert not jsonr["successful"]
     assert isinstance(jsonr["message"], str)
+
+def post_and_return_data(url:str,data,client:fastapi.testclient.TestClient):
+    response = client.post(url, data=data)
+    json = response.json()
+    return json["data"]
+
+def post_and_return_id(url:str, data, client:fastapi.testclient.TestClient):
+    response_data = post_and_return_data(url, data,client)
+    return int(response_data["id"])
