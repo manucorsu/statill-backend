@@ -96,8 +96,6 @@ def test_get_discount_by_product_id_allownull():
 def test_create_discount():
     discount = _random_discount()
     response = client.post("/api/v1/discounts/", data=json.dumps(discount))
-    if response.status_code != 201:
-        assert response.json() == object()
     successful_post_response_test(response)
 
 
@@ -190,6 +188,4 @@ def test_create_existing_discount():
     discount = _random_discount()
     discount["product_id"] = random.choice(all_discounts)["product_id"]
     response = client.post("/api/v1/discounts/", data=json.dumps(discount))
-    if response.status_code != 201:
-        assert response.json() == object()
     successful_post_response_test(response)

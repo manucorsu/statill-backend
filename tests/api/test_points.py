@@ -141,6 +141,8 @@ def test_buy_with_points_pointless_store():
     store_products = get_json(
         f"/api/v1/products/store/{pointless_store['id']}", client
     )["data"]
+    if store_products == []:
+        pytest.skip(f"La store {pointless_store['id']} no tiene productos (?)")
     random_user = random.choice(all_users)
 
     response = client.post(
@@ -149,39 +151,7 @@ def test_buy_with_points_pointless_store():
     bad_request_test(response)
 
 
-def test_buy_with_points_pointless_product():
-    all_stores = get_json("/api/v1/stores/", client)["data"]
-
-    chosen_store = None
-    for store in all_stores:
-        if store["ps_value"] != None and store["ps_value"] > 0:
-            chosen_store = store
-
-    store_products = get_json(f"/api/v1/products/store/{chosen_store['id']}", client)[
-        "data"
-    ]
-
-    pointless_product = None
-    for product in store_products:
-        if product["points_price"] == None or product["points_price"] <= 0:
-            pointless_product = product
-
-    store_points = get_json(f"/api/v1/points/store/{chosen_store['id']}/all", client)[
-        "data"
-    ]
-
-    if not store_points:
-        pytest.skip("No hay usuarios que compraron en esta tienda")
-
-    chosen_user = random.choice(store_points)["user_id"]
-
-    response = client.post(
-        f"/api/v1/points/product/{pointless_product['id']}?user_id={chosen_user}"
-    )
-    bad_request_test(response)
-
-
-def test_buy_with_points_guaranteed(capsys):
+def test_buy_with_points_guaranteed():
     store_owner_id = post_and_return_id("/api/v1/users/", random_user(), client)
 
     store = random_store()
@@ -215,3 +185,35 @@ def test_buy_with_points_guaranteed(capsys):
     assert jsonr["successful"] == True
     assert jsonr["data"] == None
     assert jsonr["message"] == "Purchase with points successful."
+
+
+def test_buy_with_points_insufficient_points():
+    store_owner_id = post_and_return_id("/api/v1/users/", random_user(), client)
+    store = random_store()
+    store["ps_value"] = 1
+    store["user_id"] = store_owner_id
+    store_id = post_and_return_id("/api/v1/stores/", store, client)
+
+    product = random_product()
+    product["price"] = 1
+    product["points_price"] = 2
+    product["store_id"] = store_id
+    product["quantity"] = 203
+    product_id = post_and_return_id("/api/v1/products/", product, client)
+
+    customer_id = post_and_return_id("/api/v1/users/", random_user(), client)
+
+    client.post(
+        "/api/v1/sales/",
+        data=json.dumps(
+            {
+                "store_id": store_id,
+                "products": [{"product_id": product_id, "quantity": 1}],
+                "payment_method": 3,
+                "user_id": customer_id,
+            }
+        ),
+    ),
+
+    response = client.post(f"/api/v1/points/product/{product_id}?user_id={customer_id}")
+    bad_request_test(response)

@@ -97,6 +97,4 @@ def test_create_store():
     store = random_store()
     store["user_id"] = new_user["data"]["id"]
     response = client.post("/api/v1/stores/", data=json.dumps(store))
-    if response.status_code != 201:
-        assert response.json() == object()
     successful_post_response_test(response)

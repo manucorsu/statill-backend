@@ -127,9 +127,19 @@ def test_create_order_invalid_store():
 
 
 def test_create_order_with_no_products():
-    order = _random_order()
-    order["products"] = []
-    response = client.post("/api/v1/orders/", data=json.dumps(order))
+    store_id = random.choice(get_json_data("/api/v1/stores/", client))["id"]
+    temp_user_id = random.choice(get_json_data("/api/v1/users/", client))["id"]
+    response = client.post(
+        "/api/v1/orders/",
+        data=json.dumps(
+            {
+                "user_id": temp_user_id,  # temp!!
+                "store_id": store_id,
+                "payment_method": random.randint(0, 3),
+                "products": [],
+            }
+        ),
+    )
     bad_request_test(response)
 
 
@@ -316,7 +326,6 @@ def test_create_order_product_from_other_store():
     for product in all_products:
         if product["store_id"] != order["store_id"]:
             invalid_product_id = product["id"]
-            # assert [invalid_product_id, order] == NotImplemented
             break
     if invalid_product_id is None:
         pytest.skip(
