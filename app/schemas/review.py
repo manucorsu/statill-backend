@@ -20,7 +20,7 @@ class ReviewRead(BaseModel):
     desc: str
 
 
-class GetAllReviewsResponse:
+class GetAllReviewsResponse(APIResponse):
     successful: Literal[True]
     data: list[ReviewRead]
 

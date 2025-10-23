@@ -1,5 +1,5 @@
 from fastapi import APIRouter, responses
-from . import status, products, sales, users, stores, orders, discounts, points
+from . import status, products, sales, users, stores, orders, discounts, points, reviews
 
 router = APIRouter()
 
@@ -12,6 +12,7 @@ routers_to_include = [
     orders,
     discounts,
     points,
+    reviews
 ]  # list of modules that have a router
 
 for r_module in routers_to_include:
