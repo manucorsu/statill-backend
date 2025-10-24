@@ -24,7 +24,7 @@ import random
 client = TestClient(app)
 
 
-def _random_product():
+def random_product():
     """
     Generate a JSON string representing a random order with various attributes.
 
@@ -38,6 +38,7 @@ def _random_product():
         "name": random_string(),
         "brand": random_string(max_len=30),
         "price": random_money(),
+        "points_price": random.choice((None, random.randint(1, 100))),
         "type": random.randint(1, 255),
         "quantity": random.randint(1, 10000),
         "desc": random_string(max_len=512),
@@ -66,7 +67,7 @@ def test_get_all_products_including_anonymized():
 
 
 def test_create_product():
-    product = _random_product()
+    product = random_product()
     response = client.post("/api/v1/products/", data=json.dumps(product))
     successful_post_response_test(response)
 
@@ -84,9 +85,23 @@ def test_get_product():
     schema_test(response.json(), GetProductResponse)
 
 
+def test_get_products_by_store_id():
+    all_products = (get_json("/api/v1/products/", client))["data"]
+    all_stores = (get_json("/api/v1/stores/", client))["data"]
+    if all_products == []:
+        raise ValueError(
+            "For test_get_products_by_store_id to work there needs to be at least one GETtable product in the database."
+        )
+    random_store = random.choice(all_stores)
+    response = client.get(f"/api/v1/products/store/{random_store['id']}")
+    assert response.status_code == 200
+
+    schema_test(response.json(), GetAllProductsResponse)
+
+
 def test_update_product():
     id = random.choice(get_json("/api/v1/products/", client)["data"])["id"]
-    product = _random_product()
+    product = random_product()
     response = client.put(f"/api/v1/products/{id}", data=json.dumps(product))
     successful_ud_response_test(response)
 
@@ -94,13 +109,22 @@ def test_update_product():
 def test_delete_product():
     all_orders = get_json("/api/v1/orders", client)["data"]
     all_products = get_json("/api/v1/products/", client)["data"]
-    id = random.choice(all_products)["id"]
+
     ids_in_orders = []
     for order in all_orders:
         for product in order["products"]:
             ids_in_orders.append(product["product_id"])
-    while id in ids_in_orders:
-        id = random.choice(all_products)["id"]
+
+    id = None
+
+    for product in all_products:
+        if product["id"] not in ids_in_orders:
+            id = product["id"]
+            break
+
+    if id == None:
+        pytest.skip("no hay productos sin orders")
+
     response = client.delete(f"/api/v1/products/{id}")
     successful_ud_response_test(response)
 
@@ -117,14 +141,14 @@ def test_get_not_existing_product():
 
 
 def test_product_create_data_hidden_none():
-    product = _random_product()
+    product = random_product()
     product["hidden"] = None
     response = client.post("/api/v1/products/", data=json.dumps(product))
     successful_post_response_test(response)
 
 
 def test_product_create_deleted_product_400():
-    product = _random_product()
+    product = random_product()
     product["name"] = "Deleted Product"
     response = client.post("/api/v1/products/", data=json.dumps(product))
     bad_request_test(response)
@@ -132,7 +156,7 @@ def test_product_create_deleted_product_400():
 
 def test_product_update_data_hidden_none():
     id = random.choice(get_json("/api/v1/products/", client)["data"])["id"]
-    product = _random_product()
+    product = random_product()
     product["hidden"] = None
     response = client.put(f"/api/v1/products/{id}", data=json.dumps(product))
     successful_ud_response_test(response)

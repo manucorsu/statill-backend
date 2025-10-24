@@ -1,13 +1,14 @@
 from sqlalchemy.orm import Session
+from sqlalchemy.orm.exc import ObjectDeletedError
 
-from ..models.discount import Discount, StatusEnum
+from ..models.discount import Discount
+from ..schemas.discount import DiscountCreate
+
+from datetime import date
 
 from fastapi import HTTPException
 
-from ..schemas.order import *
-from datetime import datetime, timezone
-from . import store as stores_crud, product as products_crud, sale as sales_crud
-from ..schemas.sale import SaleCreate, ProductSale
+from typing import overload, Literal
 
 
 def get_all(session: Session):
@@ -18,17 +19,16 @@ def get_all(session: Session):
     Returns:
         list[Discount]: A list of all discounts.
     """
-    query = session.query(Discount)
-    discounts = query.all()
+    discounts = session.query(Discount).all()
     return discounts
 
 
 def get_by_id(id: int, session: Session):
     """
-    Retrieves a discount by their ID.
+    Retrieves a discount by its ID.
 
     Args:
-        id (int): The ID of the discount to retrieve.
+        id (int): The ID of the user to retrieve.
         session (Session): The SQLAlchemy session to use for the query.
     Returns:
         Discount: The discount with the specified ID.
@@ -37,23 +37,48 @@ def get_by_id(id: int, session: Session):
     """
     discount = session.get(Discount, id)
     if discount is None:
-        raise HTTPException(404, detail="Discount not found")
+        raise HTTPException(404, "Discount not found")
+    return discount
+
+
+@overload
+def get_by_product_id(
+    product_id: int, session: Session, raise_404: Literal[True]
+) -> Discount: ...
+
+
+@overload
+def get_by_product_id(
+    product_id: int, session: Session, raise_404: Literal[False]
+) -> Discount | None: ...
+
+
+def get_by_product_id(
+    product_id: int, session: Session, raise_404: bool = True
+) -> Discount | None:
+    discount = session.query(Discount).filter(Discount.product_id == product_id).first()
+    if discount is None and raise_404:
+        raise HTTPException(404, f"No discount was found for product {product_id}")
 
     return discount
 
 
-def get_all_by_store_id(id: int, session: Session):
+def create(discount_data: DiscountCreate, session: Session):
     """
-    Retrieves all discounts from the database by their store ID.
+    Creates a new discount in the database
     Args:
-        id (int): The ID of the store.
+        discount_data (DiscountCreate): The discount data.
         session (Session): The SQLAlchemy session to use for the query.
     Returns:
-        list[Discount]: A list for the discounts with the store ID.
-    Raises:
-        HTTPException(404): If the store with the specified ID does not exist.
+        int: The id of the newly created order.
     """
+    existing_discount = get_by_product_id(discount_data.product_id, session, False)
+    if existing_discount:
+        session.delete(instance=existing_discount)
+        session.commit()
+    discount = Discount(**discount_data.model_dump())
+    session.add(discount)
+    session.commit()
 
-    products = session.query(Product).filter(Product.store_id == id).all()
-    discounts = session.query(Discount).filter(Discount.product_id in products.id).all()
-    return discounts
+    session.refresh(discount)
+    return int(discount.id)

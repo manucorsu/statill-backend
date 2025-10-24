@@ -1,4 +1,4 @@
-from typing import Literal
+from typing import Literal, Optional
 from pydantic import BaseModel, field_validator, Field
 from app.schemas.general import APIResponse
 from .custom_types import (
@@ -18,6 +18,7 @@ class ProductRead(BaseModel):
     name: Annotated[str, Field(min_length=1, pattern=r"\S", max_length=100)]
     brand: Annotated[str, Field(min_length=1, pattern=r"\S", max_length=30)]
     price: Money
+    points_price: Optional[PositiveInt]
     type: UnsignedInt
     quantity: NonNegativeFloat
     desc: NonEmptyStr
@@ -39,6 +40,7 @@ class ProductCreate(BaseModel):
     name: Annotated[str, Field(min_length=1, pattern=r"\S", max_length=100)]
     brand: Annotated[str, Field(min_length=1, pattern=r"\S", max_length=30)]
     price: Money
+    points_price: Optional[PositiveInt]
     type: PositiveInt
     quantity: NonNegativeFloat
     desc: NonEmptyStr
@@ -54,6 +56,7 @@ class ProductUpdate(BaseModel):
     name: Annotated[str, Field(min_length=1, pattern=r"\S", max_length=100)] | None
     brand: Annotated[str, Field(min_length=1, pattern=r"\S", max_length=30)] | None
     price: Money | None
+    points_price: Optional[PositiveInt]
     type: PositiveInt | None
     quantity: NonNegativeFloat | None
     desc: NonEmptyStr | None

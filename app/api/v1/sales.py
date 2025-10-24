@@ -14,6 +14,7 @@ from ...crud import sale as crud
 from ...models.sale import Sale
 from ...models.products_sales import ProductsSales as ProductsSalesModel
 
+name = "sales"
 router = APIRouter()
 
 
@@ -61,14 +62,13 @@ def get_sale_by_id(id: int, db: Session = Depends(get_db)):
     (Will require auth in the future)
 
     Args:
-        **id (int): The ID of the sale to retrieve.**
+        id (int): The ID of the sale to retrieve.
         db (Session): The SQLAlchemy session to use for the query.
 
     Returns:
         GetSaleResponse: A response containing the sale with the specified ID.
 
     Raises:
-        HTTPException(400): If the provided ID is invalid (less than or equal to 0).
         HTTPException(404): If the sale with the specified ID does not exist.
     """
     sale = crud.get_by_id(id, db)
@@ -101,7 +101,7 @@ def create_sale(sale: SaleCreate, db: Session = Depends(get_db)):
     """
     if len(sale.products) == 0:
         raise HTTPException(status_code=400, detail="Sale must have at least 1 product")
-    sale_id = crud.create_sale(sale, db)
+    sale_id = crud.create(sale, db)
     return APIResponse(
         successful=True,
         data={"id": sale_id},

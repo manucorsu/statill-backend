@@ -6,22 +6,23 @@ from sqlalchemy import (
     Date,
     CheckConstraint,
     ForeignKey,
-    JSON,
 )
 from sqlalchemy.dialects.postgresql import ARRAY, BOOLEAN
 from sqlalchemy.orm import relationship
+
+INTEGER_MAX_VALUE = 2147483647
 
 
 class Discount(Base):
     __tablename__ = "discounts"
     id = Column(BigInteger, primary_key=True)
     product_id = Column(BigInteger, ForeignKey("products.id"), nullable=False)
-    type = Column(Integer, nullable=False)
     pct_off = Column(Integer, nullable=False)
     start_date = Column(Date, nullable=False)
     end_date = Column(Date, nullable=False)
     days_usable = Column(ARRAY(BOOLEAN), nullable=False)
-    condition = Column(JSON, nullable=False)
+    min_amount = Column(Integer, nullable=False, default=1)
+    max_amount = Column(Integer, nullable=False, default=INTEGER_MAX_VALUE)
 
     # Relationships
     product = relationship("Product", back_populates="discount")

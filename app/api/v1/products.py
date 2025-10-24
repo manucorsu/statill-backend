@@ -14,6 +14,7 @@ from app.schemas.general import APIResponse
 
 from app.crud import product as crud
 
+name = "products"
 router = APIRouter()
 
 
@@ -142,7 +143,7 @@ def update_product(id: int, product: ProductUpdate, session: Session = Depends(g
 
 
 @router.delete("/{id}", response_model=APIResponse)
-def delete_product_by_id(id: int, session: Session = Depends(get_db)):
+def delete_product(id: int, session: Session = Depends(get_db)):
     """
     Deletes a product by its ID.
     If the product is not in any sale, it will be erased from the database.

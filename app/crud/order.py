@@ -203,7 +203,7 @@ def update_status(id: int, session: Session):
         new_status = statuses[new_status_index]
 
         if new_status == StatusEnum.RECEIVED:  # puede quedar amarillo
-            sales_crud.create_sale(
+            sales_crud.create(
                 SaleCreate(
                     store_id=order.store_id,
                     products=[
