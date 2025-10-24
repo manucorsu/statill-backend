@@ -12,7 +12,7 @@ routers_to_include = [
     orders,
     discounts,
     points,
-    reviews
+    reviews,
 ]  # list of modules that have a router
 
 for r_module in routers_to_include:

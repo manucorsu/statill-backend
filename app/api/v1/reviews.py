@@ -18,8 +18,12 @@ from app.crud import review as crud
 name = "reviews"
 router = APIRouter()
 
+
 def __review_to_reviewread(r: Review):
-    return ReviewRead(id=r.id, store_id=r.store_id, user_id=r.user_id, stars=r.stars, desc=r.desc)
+    return ReviewRead(
+        id=r.id, store_id=r.store_id, user_id=r.user_id, stars=r.stars, desc=r.desc
+    )
+
 
 @router.get("/", response_model=GetAllReviewsResponse)
 def get_reviews(session: Session = Depends(get_db)):
@@ -34,7 +38,8 @@ def get_reviews(session: Session = Depends(get_db)):
     result = crud.get_all(session=session)
     return GetAllReviewsResponse(
         data=[__review_to_reviewread(r) for r in result],
-        successful=True, message="Successfully retrieved all reviews."
+        successful=True,
+        message="Successfully retrieved all reviews.",
     )
 
 
@@ -138,6 +143,7 @@ def create_review(
         data={"id": review_id},
         message=f"Successfully created the Review, which received id {review_id}.",
     )
+
 
 @router.delete("/{id}", response_model=APIResponse)
 def delete_review(id: int, db: Session = Depends(get_db)):

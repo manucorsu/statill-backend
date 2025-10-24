@@ -32,7 +32,7 @@ def fp(products_list):
     pytest.skip("No products have enough qty")
 
 
-def usable_products_list(products_list):
+def usable_products_list(products_list: list):
     random.shuffle(products_list)
     usable_products = []
     for p in products_list:
@@ -110,7 +110,6 @@ def test_get_order():
 def test_create_order():
     order = _random_order()
     response = client.post("/api/v1/orders/", data=json.dumps(order))
-    # assert response.json() == object()
     successful_post_response_test(response)
 
 
