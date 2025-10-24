@@ -3,5 +3,5 @@ pydantic_settings == 2.9.1
 SQLAlchemy == 2.0.41
 psycopg[binary] == 3.2.9
 alembic == 1.16.1
-#PyJWT == 2.10.1 (commented out until we do login)
-#argon2-cffi == 23.1.0 (commented out until we do login)
+PyJWT == 2.10.1
+argon2-cffi == 25.1.0

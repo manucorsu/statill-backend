@@ -5,8 +5,10 @@ from sqlalchemy.orm import Session
 from app.models.product import Product
 from app.models.products_sales import ProductsSales
 from app.models.orders_products import OrdersProducts
+
 from app.schemas.product import ProductCreate, ProductUpdate
-from . import store as stores_crud, order as orders_crud
+
+from . import store as stores_crud, order as orders_crud, discount as discounts_crud
 
 
 def get_all(session: Session, include_anonymized: bool = False):
@@ -118,9 +120,9 @@ def update(id: int, product_data: ProductUpdate, session: Session):
 
 def delete(id: int, session: Session):
     """
-    Deletes a product by its ID.
+    Deletes a product by its ID. This will also delete any associated discounts.
 
-    If the product is not in any sale, it will be erased from the database.
+    If the product is not in any sale or non-RECEIVED order it will be erased from the database.
 
     If any sale contains any amount of the product, it will be anonymized instead, meaning:
         * Its name, brand and description will be set to `"Deleted Product"`.
@@ -136,9 +138,13 @@ def delete(id: int, session: Session):
         HTTPException(404): If the product with the specified ID does not exist.
         HTTPException(400): If the product is part of any pending or accepted (but not received) order.
     """
-    item = get_by_id(id, session)
+    product = get_by_id(id, session)
     orders = session.query(OrdersProducts).filter(OrdersProducts.product_id == id).all()
     sales = session.query(ProductsSales).filter(ProductsSales.product_id == id).all()
+    discount = discounts_crud.get_by_product_id(id, session, raise_404=False)
+
+    if discount:
+        session.delete(discount)
 
     # Checks if the product is part of any pending or accepted order, and blocks deletion if so
     for op in orders:
@@ -151,12 +157,12 @@ def delete(id: int, session: Session):
 
     # If the product is part of any sale, anonymize it instead of deleting it
     if len(sales) > 0:
-        item.name = "Deleted Product"
-        item.brand = "Deleted Product"
-        item.desc = "Deleted Product"
-        item.barcode = None
-        item.quantity = 0
+        product.name = "Deleted Product"
+        product.brand = "Deleted Product"
+        product.desc = "Deleted Product"
+        product.barcode = None
+        product.quantity = 0
     else:
-        session.delete(item)
+        session.delete(product)
 
     session.commit()

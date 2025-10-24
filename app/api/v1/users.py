@@ -1,17 +1,30 @@
 from fastapi import APIRouter, Depends
 from fastapi.exceptions import HTTPException
+from fastapi.security import OAuth2PasswordRequestForm
 
 from app.models.user import User
 
 from ...schemas.general import APIResponse
-from ...schemas.user import UserCreate, GetAllUsersResponse, GetUserResponse, UserRead
-
+from ...schemas.user import (
+    UserCreate,
+    GetAllUsersResponse,
+    GetUserResponse,
+    UserRead,
+    Token,
+    LoginResponse,
+)
 from ...dependencies.db import get_db
+from ...security import verify_password, create_token
+from ...config import settings
+
 
 from sqlalchemy.orm import Session
 
 from ...crud import user as crud
 
+from pydantic import EmailStr
+
+name = "users"
 router = APIRouter()
 
 
@@ -67,6 +80,62 @@ def get_by_id(
         successful=True,
         data=__user_to_userread(result),
         message="Successfully retrieved the User.",
+    )
+
+
+@router.get("/store/{id}", response_model=GetAllUsersResponse)
+def get_by_store_id(
+    id: int,
+    allow_anonymized: bool = False,
+    session: Session = Depends(get_db),
+):
+    """
+    Retrieves a list of users by their store ID.
+
+    (Will require auth in the future)
+
+    Args:
+        id (int): The ID of the store.
+        allow_anonymized (bool): Whether to include users anonymized as "Deleted User".
+        session (Session): The SQLAlchemy session to use for the query.
+
+    Returns:
+        GetAllUsesrResponse: A response containing the users with the specified store ID.
+
+    Raises:
+        HTTPException(404): If the store with the specified ID does not exist.
+    """
+    result = crud.get_by_store_id(id, session, allow_anonymized=allow_anonymized)
+    return GetAllUsersResponse(
+        successful=True,
+        data=[__user_to_userread(u) for u in result],
+        message="Successfully retrieved the list of Users.",
+    )
+
+
+@router.get("/email/{email}", response_model=GetUserResponse)
+def get_by_email(
+    email: EmailStr,
+    session: Session = Depends(get_db),
+):
+    """
+    Retrieves the user with the specified email address.
+
+    Args:
+        email (EmailStr): The email address.
+        session (Session): The SQLAlchemy session to use for the query.
+
+    Returns:
+        GetUserResponse: A response containing the user with the specified email address.
+
+    Raises:
+        HTTPException(404): If the specified email does not exist.
+    """
+    user = crud.get_by_email(email, session, True)
+    return GetUserResponse(
+        successful=True,
+        data=__user_to_userread(user),
+        message=f"Successfully retrieved the user with email {email}.",
     )
 
 
@@ -150,3 +219,40 @@ def delete_user_by_id(id: int, db: Session = Depends(get_db)):
         data=None,
         message=f"Successfully deleted the User with id {id}.",
     )
+
+
+@router.post("/login", response_model=LoginResponse)
+def login(
+    form: OAuth2PasswordRequestForm = Depends(), session: Session = Depends(get_db)
+):
+    """
+    Authenticate a user and generate an access token.
+
+    This endpoint verifies the provided username (email) and password. If the
+    credentials are valid, it generates and returns an authentication token
+    for the user. If the credentials are invalid, a 401 HTTP exception is raised.
+
+    Args:
+        form (OAuth2PasswordRequestForm):
+            The OAuth2 form containing the user's login credentials.
+            `form.username` represents the user's email, and `form.password`
+            represents their password.
+        session (Session):
+            The SQLAlchemy session to be used for the query.
+
+    Returns:
+        LoginResponse:
+            A response object containing the generated authentication token
+            if the login is successful.
+
+    Raises:
+        HTTPException(401): If the provided credentials are invalid.
+        HTTPException(404): If no user is found with the given email (raised within `crud.get_by_email`).
+    """
+    user = crud.get_by_email(form.username, session, raise_404=True)
+    hashed_password = user.password
+    if not verify_password(hashed_password, form.password):
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+
+    token = create_token(user.id)
+    return LoginResponse(data=Token(token=token))

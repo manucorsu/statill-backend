@@ -16,6 +16,7 @@ from ...models.order import Order
 from ...dependencies.db import get_db
 from ...crud import order as crud
 
+name = "orders"
 router = APIRouter()
 
 
@@ -44,6 +45,8 @@ def get_all_orders(session: Session = Depends(get_db)):
     Returns:
         GetAllOrdersResponse: A response containing a list of all orders.
 
+    (Will require auth in the future)
+    (Will require admin role in the future)
     """
     result = crud.get_all(session)
     return GetAllOrdersResponse(

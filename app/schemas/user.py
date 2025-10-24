@@ -1,17 +1,17 @@
-from pydantic import BaseModel, EmailStr
-from typing import Literal
-from .general import APIResponse
+from pydantic import BaseModel, EmailStr, Field
+from typing import Literal, Annotated
+from .general import APIResponse, SuccessfulResponse
 from .custom_types import NonEmptyStr, PositiveInt, UserPassword
 
 
 class UserCreate(BaseModel):
-    first_names: NonEmptyStr
-    last_name: NonEmptyStr
+    first_names: Annotated[str, Field(min_length=1, max_length=40, pattern=r"\S")]
+    last_name: Annotated[str, Field(min_length=1, max_length=40, pattern=r"\S")]
     email: EmailStr
     password: UserPassword
     birthdate: NonEmptyStr
     gender: Literal["X", "F", "M"]
-    res_area: NonEmptyStr
+    res_area: Annotated[str, Field(min_length=1, max_length=50, pattern=r"\S")]
 
     class Config:
         from_attributes = True
@@ -23,9 +23,18 @@ class UserRead(UserCreate):
     store_role: Literal["cashier", "owner"] | None
 
 
+class Token(BaseModel):
+    token: str
+    token_type: Literal["bearer"] = "bearer"
+
+
 class GetAllUsersResponse(APIResponse):
     data: list[UserRead]
 
 
 class GetUserResponse(APIResponse):
     data: UserRead
+
+
+class LoginResponse(SuccessfulResponse):
+    data: Token

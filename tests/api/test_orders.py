@@ -32,7 +32,7 @@ def fp(products_list):
     pytest.skip("No products have enough qty")
 
 
-def usable_products_list(products_list):
+def usable_products_list(products_list: list):
     random.shuffle(products_list)
     usable_products = []
     for p in products_list:
@@ -110,7 +110,6 @@ def test_get_order():
 def test_create_order():
     order = _random_order()
     response = client.post("/api/v1/orders/", data=json.dumps(order))
-    # assert response.json() == object()
     successful_post_response_test(response)
 
 
@@ -127,9 +126,19 @@ def test_create_order_invalid_store():
 
 
 def test_create_order_with_no_products():
-    order = _random_order()
-    order["products"] = []
-    response = client.post("/api/v1/orders/", data=json.dumps(order))
+    store_id = random.choice(get_json_data("/api/v1/stores/", client))["id"]
+    temp_user_id = random.choice(get_json_data("/api/v1/users/", client))["id"]
+    response = client.post(
+        "/api/v1/orders/",
+        data=json.dumps(
+            {
+                "user_id": temp_user_id,  # temp!!
+                "store_id": store_id,
+                "payment_method": random.randint(0, 3),
+                "products": [],
+            }
+        ),
+    )
     bad_request_test(response)
 
 
@@ -248,7 +257,7 @@ def test_update_order_products_with_too_high_qty_product():
     order["products"][0]["quantity"] = product_max_qty + 23.24
 
     response = client.patch(
-        f"/api/v1/orders/{order["id"]}/products/",
+        f"/api/v1/orders/{order['id']}/products/",
         data=json.dumps({"products": order["products"]}),
     )
 
@@ -287,14 +296,15 @@ def test_update_order_status():
 
 
 def test_cancel_order():
-    all_orders = (get_json("/api/v1/orders/", client))["data"]
+    all_orders = get_json_data("/api/v1/orders", client)
     order = None
     for o in all_orders:
         if o["status"] not in ["received", "cancelled"]:
             order = o
             break
 
-    assert order is not None
+    if order is None:
+        pytest.skip("No orders were received or cancelled.")
 
     response = client.patch(f"/api/v1/orders/{order['id']}/cancel")
     successful_ud_response_test(response)
@@ -315,11 +325,10 @@ def test_create_order_product_from_other_store():
     for product in all_products:
         if product["store_id"] != order["store_id"]:
             invalid_product_id = product["id"]
-            # assert [invalid_product_id, order] == NotImplemented
             break
     if invalid_product_id is None:
         pytest.skip(
-            f"No products from other stores (that aren't {order["store_id"]}) found"
+            f"No products from other stores (that aren't {order['store_id']}) found"
         )
 
     order["products"].append({"product_id": invalid_product_id, "quantity": 1})
