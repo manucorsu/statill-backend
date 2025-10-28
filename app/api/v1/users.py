@@ -237,4 +237,3 @@ def delete_user_by_id(id: int, db: Session = Depends(get_db)):
         data=None,
         message=f"Successfully deleted the User with id {id}.",
     )
-
