@@ -1,7 +1,5 @@
 from fastapi import APIRouter, Depends
 from fastapi.exceptions import HTTPException
-from fastapi.security import OAuth2PasswordRequestForm
-
 from app.models.user import User
 
 from ...schemas.general import APIResponse
@@ -14,8 +12,6 @@ from ...schemas.user import (
     LoginResponse,
 )
 from ...dependencies.db import get_db
-from ...security import verify_password, create_token
-from ...config import settings
 
 
 from sqlalchemy.orm import Session
@@ -146,6 +142,9 @@ def create_user(user: UserCreate, db: Session = Depends(get_db)):
     Args:
         user (UserCreate): The User data.
         db (Session): The SQLAlchemy session to use for the query.
+
+    Returns:
+        APIResponse: A response indicating that the user was created successfully.
     """
     user_id = crud.create(user, db)
     return APIResponse(
@@ -219,40 +218,3 @@ def delete_user_by_id(id: int, db: Session = Depends(get_db)):
         data=None,
         message=f"Successfully deleted the User with id {id}.",
     )
-
-
-@router.post("/login", response_model=LoginResponse)
-def login(
-    form: OAuth2PasswordRequestForm = Depends(), session: Session = Depends(get_db)
-):
-    """
-    Authenticate a user and generate an access token.
-
-    This endpoint verifies the provided username (email) and password. If the
-    credentials are valid, it generates and returns an authentication token
-    for the user. If the credentials are invalid, a 401 HTTP exception is raised.
-
-    Args:
-        form (OAuth2PasswordRequestForm):
-            The OAuth2 form containing the user's login credentials.
-            `form.username` represents the user's email, and `form.password`
-            represents their password.
-        session (Session):
-            The SQLAlchemy session to be used for the query.
-
-    Returns:
-        LoginResponse:
-            A response object containing the generated authentication token
-            if the login is successful.
-
-    Raises:
-        HTTPException(401): If the provided credentials are invalid.
-        HTTPException(404): If no user is found with the given email (raised within `crud.get_by_email`).
-    """
-    user = crud.get_by_email(form.username, session, raise_404=True)
-    hashed_password = user.password
-    if not verify_password(hashed_password, form.password):
-        raise HTTPException(status_code=401, detail="Invalid credentials")
-
-    token = create_token(user.id)
-    return LoginResponse(data=Token(token=token))
