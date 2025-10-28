@@ -1,17 +1,12 @@
 from datetime import timedelta
 
-from ...schemas.general import SuccessfulResponse, APIResponse
-from ...schemas.user import UserCreate, LoginResponse
+from ...schemas.user import LoginResponse, Token
 
 from ...dependencies.db import get_db
 
-from .users import create_user as create_user_endpoint
+import app.crud.user as user_crud
 
-import app.crud.user as crud
-
-from ...security import verify_password, create_token
-
-from ...config import settings
+from ...security import verify_password, create_token, decode_token
 
 
 from fastapi import APIRouter, Depends
@@ -20,28 +15,14 @@ from fastapi.exceptions import HTTPException
 
 from sqlalchemy.orm import Session
 
-
+TOKEN_URL = "/api/v1/auth/token"
+name = "auth"
 router = APIRouter()
-oauth2 = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/token")
+oauth2 = OAuth2PasswordBearer(tokenUrl=TOKEN_URL)
 
 
-@router.post("/", response_model=APIResponse, status_code=201)
-def register(user: UserCreate, db: Session = Depends(get_db)):
-    """
-    (Alias for users.create_user)
-    Creates a user.
-
-    Args:
-        user (UserCreate): The User data.
-        db (Session): The SQLAlchemy session to use for the query.
-    Returns:
-        APIResponse: A response indicating that the user was created successfully.
-    """
-    return create_user_endpoint(user, db)
-
-
-@router.post("/login", response_model=LoginResponse)
-def login(
+@router.post("/token", response_model=LoginResponse)
+def token(
     form_data: OAuth2PasswordRequestForm = Depends(), session: Session = Depends(get_db)
 ):
     """
@@ -51,7 +32,7 @@ def login(
     verifies the provided password against the stored hash, and, if valid,
     creates and returns a token wrapped in a LoginResponse.
     Args:
-        mform_data (OAuth2PasswordRequestForm): Dependency-injected form with
+        form_data (OAuth2PasswordRequestForm): Dependency-injected form with
                 'username' (email) and 'password' fields.
         session (Session): Database session dependency (provided by get_db).
     Returns:
@@ -70,7 +51,7 @@ def login(
         - Authentication and token creation side effects occur within this function.
     """
 
-    user = crud.get_by_email(form_data.username, session, raise_404=False)
+    user = user_crud.get_by_email(form_data.username, session, raise_404=False)
     if not user or not verify_password(
         plain_password=form_data.password, hashed_password=str(user.password)
     ):
@@ -82,5 +63,33 @@ def login(
 
     token = create_token(subject=user.id)
     return LoginResponse(
-        data=token, message=f"Logging into {user.email} successful: Token is in data"
+        data=Token(token=token), message=f"Logging into {user.email} successful: Token is in data"
     )
+
+
+def get_current_user(token: str = Depends(oauth2), session: Session = Depends(get_db)):
+    """
+    Get the current authenticated user based on the provided JWT token.
+    Endpoints that require auth `Depends` on this by adding `user: User = Depends(get_current_user)`
+    as a Python parameter AFTER `session`
+
+    Args:
+        token (str): The JWT token obtained from OAuth2 authentication. Defaults to Depends(oauth2).
+        session (Session): The database session. Defaults to Depends(get_db).
+    Returns:
+        User: The authenticated user object.
+    Raises:
+        HTTPException: If the token is invalid or user is not found.
+            - 404: User not found
+            - 401: Invalid token (raised by decode_token)
+    Dependencies:
+        - oauth2: OAuth2 authentication scheme
+        - get_db: Database session factory
+    """
+
+    payload = decode_token(token)  # raises if invalid
+    user_id = int(payload.get("sub"))
+    user = user_crud.get_by_id(user_id, session)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user

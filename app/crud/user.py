@@ -1,7 +1,6 @@
 from sqlalchemy.orm import Session
 
 from ..models.user import User
-from . import store as stores_crud
 
 from fastapi import HTTPException
 
@@ -9,6 +8,8 @@ from ..schemas.user import *
 from datetime import date
 from .sale import get_sales_by_user_id
 from typing import overload, Literal
+
+from ..security import hash
 
 
 def is_anonymized(user: User):
@@ -64,6 +65,8 @@ def get_by_store_id(id: int, session: Session, allow_anonymized: bool = False):
     Raises:
         HTTPException(404): If the store with the specified ID does not exist.
     """
+    from . import store as stores_crud
+
     stores_crud.get_by_id(id, session)
     users = session.query(User).filter(User.store_id == id).all()
     return users
@@ -139,6 +142,8 @@ def create(user_data: UserCreate, session: Session):
     except ValueError:
         raise HTTPException(400, detail="Invalid birthdate.")
 
+    user_data.password = hash(user_data.password)
+
     user = User(**user_data.model_dump(), is_admin=False)
 
     session.add(user)
@@ -166,7 +171,7 @@ def update(id: int, user_data: UserCreate, session: Session):
         raise HTTPException(400, detail="Invalid birthdate.")
 
     user = get_by_id(id, session)
-
+    user_data.password = hash(user_data.password)
     updates = user_data.model_dump(exclude_unset=True)
 
     for field, value in updates.items():

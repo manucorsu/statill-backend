@@ -62,7 +62,7 @@ def decode_token(token: str):
     Args:
         token (str): The JWT token to decode.
     Returns:
-        Any: The decoded token payload.
+        dict: The decoded token payload.
     Raises:
         HTTPException(401): If the token is invalid or expired.
     """
@@ -70,6 +70,8 @@ def decode_token(token: str):
         payload = jwt.decode(
             token, settings.jwt_secret, algorithms=[settings.jwt_algorithm]
         )
-        return payload
-    except jwt.PyJWTError:
-        raise HTTPException(status_code=401, detail="Unauthorized")
+        return dict(payload)
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Token expired")
+    except jwt.InvalidTokenError:
+        raise HTTPException(status_code=401, detail="Invalid token")

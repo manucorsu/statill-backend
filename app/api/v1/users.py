@@ -20,6 +20,8 @@ from ...crud import user as crud
 
 from pydantic import EmailStr
 
+from .auth import get_current_user
+
 name = "users"
 router = APIRouter()
 
@@ -46,6 +48,19 @@ def get_all(include_anonymized: bool = False, session: Session = Depends(get_db)
     return GetAllUsersResponse(
         successful=True, data=user_reads, message="Successfully retrieved all Users."
     )
+
+@router.get("/me", response_model=GetUserResponse)
+def get_current_user_endpoint(user: User = Depends(get_current_user)):
+    """
+    Get the current authenticated user.
+    This endpoint retrieves the User object for the currently authenticated user.
+    Args:
+        user (User): The current authenticated user object, obtained through dependency injection.
+                     This is extracted from the JWT token in the request.
+    Returns:
+        User: The User object containing the authenticated user's information.
+    """
+    return GetUserResponse(successful=True, data=__user_to_userread(user), message="Succesfully retrieved the current user.")
 
 
 @router.get("/{id}", response_model=GetUserResponse)
@@ -160,7 +175,6 @@ def __user_to_userread(user: User):
         first_names=user.first_names,
         last_name=user.last_name,
         email=user.email,
-        password=user.password,
         birthdate=str(user.birthdate),
         gender=str(user.gender.value),
         res_area=user.res_area,
@@ -218,3 +232,5 @@ def delete_user_by_id(id: int, db: Session = Depends(get_db)):
         data=None,
         message=f"Successfully deleted the User with id {id}.",
     )
+
+

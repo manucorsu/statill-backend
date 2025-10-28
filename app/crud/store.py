@@ -6,7 +6,6 @@ from app.models.sale import Sale
 from app.models.products_sales import ProductsSales
 from app.models.product import Product
 from app.schemas.store import StoreCreate
-from app.crud.user import get_by_id as get_user_by_id, get_all_by_store_id
 
 
 def get_all(session: Session):
@@ -46,6 +45,8 @@ def create(store_data: StoreCreate, session: Session):
     Returns:
         int: The ID of the newly created store.
     """
+    from app.crud.user import get_by_id as get_user_by_id, get_all_by_store_id
+
     user = get_user_by_id(store_data.user_id, session)
     if user.store_id:
         raise HTTPException(
@@ -148,7 +149,9 @@ def delete(id: int, session: Session):
             session.delete(ps)
 
     # Do NOT delete users, just disassociate them
-    users = get_all_by_store_id(id, session)
+    from .user import get_by_store_id
+
+    users = get_by_store_id(id, session)
     for user in users:
         user.store_id = None
         user.store_role = None
