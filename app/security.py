@@ -4,6 +4,9 @@ from .config import settings
 import jwt
 from fastapi import HTTPException
 
+import secrets
+import string
+
 __ph = PasswordHasher()
 
 
@@ -75,3 +78,7 @@ def decode_token(token: str):
         raise HTTPException(status_code=401, detail="Token expired")
     except jwt.InvalidTokenError:
         raise HTTPException(status_code=401, detail="Invalid token")
+
+def generate_email_verification_code():
+    alphabet = string.ascii_letters + string.digits
+    return ''.join(secrets.choice(alphabet) for _ in range(32))

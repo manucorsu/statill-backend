@@ -1,13 +1,20 @@
-from datetime import timedelta
+import datetime
+
+import smtplib
+
+from email.message import EmailMessage
 
 from ...schemas.user import LoginResponse, Token
+from ...schemas.general import SuccessfulResponse
 
 from ...dependencies.db import get_db
 
 import app.crud.user as user_crud
 
-from ...security import verify_password, create_token, decode_token
+from ...security import verify_password, create_token, decode_token, generate_email_verification_code
 
+from ...models.user import User
+from ...models.email_verification_code import EmailVerificationCode
 
 from fastapi import APIRouter, Depends
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
@@ -63,7 +70,8 @@ def token(
 
     token = create_token(subject=user.id)
     return LoginResponse(
-        data=Token(token=token), message=f"Logging into {user.email} successful: Token is in data"
+        data=Token(token=token),
+        message=f"Logging into {user.email} successful: Token is in data",
     )
 
 
@@ -93,3 +101,21 @@ def get_current_user(token: str = Depends(oauth2), session: Session = Depends(ge
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     return user
+
+def send_email_verification_code(code: EmailVerificationCode):
+    msg = EmailMessage()
+
+
+@router.get("/send-email-verification-code", response_model=SuccessfulResponse)
+def send_email_verification_code_endpoint(session: Session = Depends(get_db), user: User = Depends(get_current_user)):
+    if user.email_verified:
+        raise HTTPException(400, "User's email is already verified")
+    
+    session.query(EmailVerificationCode).filter(EmailVerificationCode.user_id==user.id).delete()
+
+    code = generate_email_verification_code()
+    expires_at = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(minutes=30)
+
+    verification = EmailVerificationCode(user_id=user.id, code=code, expires_at=expires_at)
+    session.add(verification)
+    session.commit()

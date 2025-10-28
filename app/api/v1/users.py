@@ -49,6 +49,7 @@ def get_all(include_anonymized: bool = False, session: Session = Depends(get_db)
         successful=True, data=user_reads, message="Successfully retrieved all Users."
     )
 
+
 @router.get("/me", response_model=GetUserResponse)
 def get_current_user_endpoint(user: User = Depends(get_current_user)):
     """
@@ -60,7 +61,11 @@ def get_current_user_endpoint(user: User = Depends(get_current_user)):
     Returns:
         User: The User object containing the authenticated user's information.
     """
-    return GetUserResponse(successful=True, data=__user_to_userread(user), message="Succesfully retrieved the current user.")
+    return GetUserResponse(
+        successful=True,
+        data=__user_to_userread(user),
+        message="Succesfully retrieved the current user.",
+    )
 
 
 @router.get("/{id}", response_model=GetUserResponse)
@@ -232,5 +237,4 @@ def delete_user_by_id(id: int, db: Session = Depends(get_db)):
         data=None,
         message=f"Successfully deleted the User with id {id}.",
     )
-
 
