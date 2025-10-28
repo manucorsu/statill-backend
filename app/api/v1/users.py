@@ -142,6 +142,9 @@ def create_user(user: UserCreate, db: Session = Depends(get_db)):
     Args:
         user (UserCreate): The User data.
         db (Session): The SQLAlchemy session to use for the query.
+
+    Returns:
+        APIResponse: A response indicating that the user was created successfully.
     """
     user_id = crud.create(user, db)
     return APIResponse(
