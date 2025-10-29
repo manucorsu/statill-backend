@@ -5,6 +5,7 @@ from sqlalchemy.orm import relationship
 from .sale import Sale
 from .review import Review
 from .points import Points
+from .email_verification_code import EmailVerificationCode
 
 
 class GenderEnum(str, enum.Enum):

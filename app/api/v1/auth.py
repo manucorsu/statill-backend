@@ -41,7 +41,7 @@ def token(
 ):
     """
     Authenticate a user and issue an access token.
-    
+
     This endpoint handler performs authentication using form-encoded credentials
     (compatible with OAuth2PasswordRequestForm). It looks up the user by email,
     verifies the provided password against the stored hash, and, if valid,
@@ -51,7 +51,7 @@ def token(
         form_data (OAuth2PasswordRequestForm): Dependency-injected form with
                 'username' (email) and 'password' fields.
         session (Session): Database session dependency (provided by get_db).
-    
+
     Returns:
         LoginResponse: On success, contains the issued token in `data` and a
             human-readable message describing the login success.
@@ -114,6 +114,42 @@ def get_current_user(token: str = Depends(oauth2), session: Session = Depends(ge
     return user
 
 
+def __utcnow():
+    return datetime.datetime.now(datetime.timezone.utc)
+
+
+@router.patch("/activate", response_model=SuccessfulResponse)
+def activate(
+    code: str,
+    session: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    verification = (
+        session.query(EmailVerificationCode)
+        .filter(
+            EmailVerificationCode.code == code
+            and EmailVerificationCode.user_id == user.id
+        )
+        .first()
+    )
+
+    if not verification:
+        raise HTTPException(status_code=400, detail="Invalid or expired code")
+
+    if verification.expires_at < __utcnow():
+        session.delete(verification)
+        session.commit()
+        raise HTTPException(status_code=400, detail="Code expired")
+
+    user = user_crud.get_by_id(verification.user_id, session)
+
+    user.email_verified = True
+    session.delete(verification)
+    session.commit()
+
+    return SuccessfulResponse(data=None, message="User is now activated.")
+
+
 def send_email_verification_code(session: Session, user: User):
     if user.email_verified:
         raise HTTPException(400, "User's email is already verified")
@@ -123,9 +159,7 @@ def send_email_verification_code(session: Session, user: User):
     ).delete()
 
     code = generate_email_verification_code()
-    expires_at = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(
-        minutes=30
-    )
+    expires_at = __utcnow() + datetime.timedelta(minutes=30)
 
     verification = EmailVerificationCode(
         user_id=user.id, code=code, expires_at=expires_at
@@ -143,8 +177,7 @@ def send_email_verification_code(session: Session, user: User):
     <html>
     <body>
         <h1>Statill</h1>
-        <p>Hacé click <a href="{get_base_url()}/api/v1/auth/activate?code={code}">acá</a> para activar tu cuenta</p>
-        <small>{code}</small>
+        <p>Tu código de activación es {code}</p>
     </body>
     </html>
     """,
@@ -161,4 +194,4 @@ def send_email_verification_code_endpoint(
     session: Session = Depends(get_db), user: User = Depends(get_current_user)
 ):
     send_email_verification_code(session, user)
-    return SuccessfulResponse(message="Activation email sent.")
+    return SuccessfulResponse(data=None, message="Activation email sent.")

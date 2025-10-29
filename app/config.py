@@ -26,7 +26,6 @@ settings = Settings()
 
 assert settings.jwt_expiry > 1
 validate_email(settings.email_address)
-assert settings.mode in ["local", "render-dev", "render-prod"]
 
 __BASE_URLS = {
     "local": "http://localhost:8000",
