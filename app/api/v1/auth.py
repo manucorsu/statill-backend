@@ -1,9 +1,5 @@
 import datetime
 
-import smtplib
-
-from email.message import EmailMessage
-
 from ...schemas.user import LoginResponse, Token
 from ...schemas.general import SuccessfulResponse
 
@@ -21,7 +17,7 @@ from ...security import (
 from ...models.user import User
 from ...models.email_verification_code import EmailVerificationCode
 
-from ...config import settings, get_base_url
+from ...mailing import send_email
 
 from fastapi import APIRouter, Depends
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
@@ -167,26 +163,18 @@ def send_email_verification_code(session: Session, user: User):
     session.add(verification)
     session.commit()
 
-    sender_address = settings.email_address
-    msg = EmailMessage()
-    msg["Subject"] = "Activá tu cuenta de Statill"
-    msg["From"] = sender_address
-    msg["To"] = user.email
-    msg.add_alternative(
-        f"""
-    <html>
-    <body>
-        <h1>Statill</h1>
-        <p>Tu código de activación es {code}</p>
-    </body>
-    </html>
-    """,
-        subtype="html",
-    )
-
-    with smtplib.SMTP_SSL(settings.smtp_host, 465) as smtp:
-        smtp.login(sender_address, settings.email_app_password)
-        smtp.send_message(msg)
+    send_email(
+        user,
+        subject="Activá tu cuenta de Statill",
+        htmlBody=f"""
+                <html>
+                <body>
+                    <h1>Statill</h1>
+                    <p>Tu código de activación es {code}</p>
+                </body>
+                </html>
+               """,
+    )  # body es temporal obviamente
 
 
 @router.get("/send-email-verification-code", response_model=SuccessfulResponse)
