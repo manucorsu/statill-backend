@@ -64,10 +64,15 @@ def create(user_id: int, review_data: ReviewCreate, session: Session):
         review_data.store_id, session
     )  # Checks that the store exists.
 
-    users_crud.get_by_id(
-        user_id, session
-    )  # Checks that the user exists. Extracting the id is temporary and will only stay there until we do login
-
+    users_crud.get_by_id(user_id, session)
+    existing_review = (
+        session.query(Review)
+        .filter(Review.user_id == user_id, Review.store_id == review_data.store_id)
+        .first()
+    )
+    if existing_review:
+        raise HTTPException(400, "Users can only make one review per store")
+    
     review = Review(
         user_id=user_id,
         **review_data.model_dump(),
