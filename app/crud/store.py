@@ -1,3 +1,5 @@
+from ..models.user import User, StoreRoleEnum
+
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
@@ -5,8 +7,12 @@ from app.models.store import Store
 from app.models.sale import Sale
 from app.models.products_sales import ProductsSales
 from app.models.product import Product
+from ..models.verification_code import VerificationCode
 from app.schemas.store import StoreCreate
-from app.crud.user import get_by_id as get_user_by_id, get_all_by_store_id
+
+from ..mailing import send_verification_code, send_email
+
+from ..utils import utcnow
 
 
 def get_all(session: Session):
@@ -37,16 +43,19 @@ def get_by_id(id: int, session: Session):
     return store
 
 
-def create(store_data: StoreCreate, session: Session):
+def create(store_data: StoreCreate, session: Session, owner: User):
     """
     Creates a new store in the database.
     Args:
         store_data (StoreCreate): The store data to create.
         session (Session): The SQLAlchemy session to use for the insert.
+        owner (User):
     Returns:
         int: The ID of the newly created store.
     """
-    user = get_user_by_id(store_data.user_id, session)
+    from app.crud.user import get_by_id as get_user_by_id, get_all_by_store_id
+
+    user = owner
     if user.store_id:
         raise HTTPException(
             400,
@@ -67,16 +76,15 @@ def create(store_data: StoreCreate, session: Session):
             )
 
     store_dump = store_data.model_dump()
-    del store_dump["user_id"]
     store = Store(**store_dump)
 
     session.add(store)
     session.flush()
     session.refresh(store)
 
-    user = get_user_by_id(store_data.user_id, session)
+    user = owner
     user.store_id = store.id
-    user.store_role = "owner"
+    user.store_role = StoreRoleEnum.OWNER
 
     session.commit()
     return store.id
@@ -148,10 +156,87 @@ def delete(id: int, session: Session):
             session.delete(ps)
 
     # Do NOT delete users, just disassociate them
-    users = get_all_by_store_id(id, session)
+    from .user import get_by_store_id
+
+    users = get_by_store_id(id, session)
     for user in users:
         user.store_id = None
         user.store_role = None
 
     session.delete(item)
     session.commit()
+
+
+def add_cashier(cashier_email_address: str, store_owner: User, session: Session):
+    if store_owner.store_role != StoreRoleEnum.OWNER:
+        raise HTTPException(400, "User has to own a store to add cashiers to it")
+
+    from .user import get_by_email
+
+    cashier_user = get_by_email(cashier_email_address, session, raise_404=True)
+    if cashier_user.store_id:
+        raise HTTPException(400, "Cashier already belongs to a store")
+
+    cashier_user.store_id = store_owner.store_id
+    cashier_user.store_role = StoreRoleEnum.CASHIER_PENDING
+    send_verification_code(
+        session,
+        cashier_user,
+        "store_add",
+        store=get_by_id(store_owner.store_id, session),
+    )
+
+
+def accept_cashier_add(code: str, session: Session, cashier: User):
+    verification = (
+        session.query(VerificationCode)
+        .filter(
+            VerificationCode.code == code
+            and VerificationCode.user_id == cashier.id
+            and VerificationCode.type == "store_add"
+        )
+        .first()
+    )
+
+    if not verification:
+        raise HTTPException(status_code=400, detail="Invalid or expired code")
+
+    if verification.expires_at < utcnow():
+        session.delete(verification)
+        session.commit()
+        raise HTTPException(status_code=400, detail="Code expired")
+
+    cashier.store_role = StoreRoleEnum.CASHIER
+    session.commit()
+
+
+def remove_cashier(cashier_email_address: str, store_owner: User, session: Session):
+    if store_owner.store_role != "owner":
+        raise HTTPException(400, "User has to own a store to add cashiers to it")
+
+    from .user import get_by_email
+
+    cashier_user = get_by_email(cashier_email_address, session, raise_404=True)
+
+    if (
+        cashier_user.store_id != store_owner.store_id
+        or cashier_user.store_role not in ("cashier", "cashier-pending")
+    ):
+        raise HTTPException(400, "The target user must be a cashier at this store")
+
+    cashier_user.store_id = None
+    cashier_user.store_role = None
+
+    session.commit()
+
+    store = get_by_id(store_owner.store_id, session)
+    send_email(
+        cashier_user,
+        f"Fuiste eliminado de {store.name}",
+        htmlBody=f"""
+                 <html>
+                    <h1>Fuiste eliminado de {store.name}</h1>
+                    <p>Contactate con el dueño de {store.name} para más información.</p>
+                 </html>
+                 """,
+    )

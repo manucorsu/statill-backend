@@ -1,9 +1,21 @@
 from fastapi import APIRouter, responses
-from . import status, products, sales, users, stores, orders, discounts, points, reviews
+from . import (
+    auth,
+    status,
+    products,
+    sales,
+    users,
+    stores,
+    orders,
+    discounts,
+    points,
+    reviews,
+)
 
 router = APIRouter()
 
 routers_to_include = [
+    auth,
     status,
     products,
     sales,

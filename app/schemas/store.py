@@ -1,5 +1,5 @@
 from typing import Literal, Annotated, Optional
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, EmailStr
 from app.schemas.general import APIResponse
 from datetime import time
 from .custom_types import PositiveInt, NonEmptyStr, UnsignedInt
@@ -32,7 +32,6 @@ class StoreCreate(BaseModel):
     opening_times: Annotated[list[time | None], Field(min_length=7, max_length=7)]
     closing_times: Annotated[list[time | None], Field(min_length=7, max_length=7)]
     payment_methods: Annotated[list[bool], Field(min_length=4, max_length=4)]
-    user_id: PositiveInt
 
     class Config:
         from_attributes = True
@@ -50,6 +49,10 @@ class StoreUpdate(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class AddCashier(BaseModel):
+    email_address: EmailStr
 
 
 class GetAllStoresResponse(APIResponse):

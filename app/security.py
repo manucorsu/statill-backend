@@ -1,8 +1,13 @@
-from argon2 import PasswordHasher
-from datetime import datetime, timezone, timedelta
+import secrets
+import string
+import datetime
+
 from .config import settings
+
+from argon2 import PasswordHasher
 import jwt
 from fastapi import HTTPException
+
 
 __ph = PasswordHasher()
 
@@ -48,8 +53,8 @@ def create_token(subject, expires_delta: int = settings.jwt_expiry) -> str:
     """
     if expires_delta < 1:
         raise ValueError("expires_delta must be a positive integer")
-    now = datetime.now(timezone.utc)
-    expire = now + timedelta(minutes=expires_delta)
+    now = datetime.datetime.now(datetime.timezone.utc)
+    expire = now + datetime.timedelta(minutes=expires_delta)
     payload = {"sub": str(subject), "iat": now.timestamp(), "exp": expire.timestamp()}
 
     token = jwt.encode(payload, settings.jwt_secret, algorithm=settings.jwt_algorithm)
@@ -62,7 +67,7 @@ def decode_token(token: str):
     Args:
         token (str): The JWT token to decode.
     Returns:
-        Any: The decoded token payload.
+        dict: The decoded token payload.
     Raises:
         HTTPException(401): If the token is invalid or expired.
     """
@@ -70,6 +75,13 @@ def decode_token(token: str):
         payload = jwt.decode(
             token, settings.jwt_secret, algorithms=[settings.jwt_algorithm]
         )
-        return payload
-    except jwt.PyJWTError:
-        raise HTTPException(status_code=401, detail="Unauthorized")
+        return dict(payload)
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Token expired")
+    except jwt.InvalidTokenError as ex:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+
+def generate_verification_code():
+    alphabet = string.ascii_letters + string.digits
+    return "".join(secrets.choice(alphabet) for _ in range(32))

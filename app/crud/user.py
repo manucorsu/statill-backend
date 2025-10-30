@@ -1,7 +1,6 @@
 from sqlalchemy.orm import Session
 
 from ..models.user import User
-from . import store as stores_crud
 
 from fastapi import HTTPException
 
@@ -9,6 +8,9 @@ from ..schemas.user import *
 from datetime import date
 from .sale import get_sales_by_user_id
 from typing import overload, Literal
+
+from ..security import hash
+from ..mailing import send_verification_code
 
 
 def is_anonymized(user: User):
@@ -64,6 +66,8 @@ def get_by_store_id(id: int, session: Session, allow_anonymized: bool = False):
     Raises:
         HTTPException(404): If the store with the specified ID does not exist.
     """
+    from . import store as stores_crud
+
     stores_crud.get_by_id(id, session)
     users = session.query(User).filter(User.store_id == id).all()
     return users
@@ -139,16 +143,19 @@ def create(user_data: UserCreate, session: Session):
     except ValueError:
         raise HTTPException(400, detail="Invalid birthdate.")
 
+    user_data.password = hash(user_data.password)
+
     user = User(**user_data.model_dump(), is_admin=False)
 
     session.add(user)
     session.commit()
     session.refresh(user)
 
+    send_verification_code(session, user, type="email")
     return int(user.id)
 
 
-def update(id: int, user_data: UserCreate, session: Session):
+def update(id: int, user_data: UserUpdate, session: Session):
     """
     Updates a user by its ID.
     Args:
@@ -166,13 +173,16 @@ def update(id: int, user_data: UserCreate, session: Session):
         raise HTTPException(400, detail="Invalid birthdate.")
 
     user = get_by_id(id, session)
-
     updates = user_data.model_dump(exclude_unset=True)
 
     for field, value in updates.items():
         setattr(user, field, value)
-
+    needs_email_verification = str(user.email) == user_data.email
+    if needs_email_verification:
+        user.email_verified = False
     session.commit()
+    if needs_email_verification:
+        send_verification_code(session, user, "email")
 
 
 def delete(id: int, session: Session):
@@ -192,7 +202,7 @@ def delete(id: int, session: Session):
     ):
         raise HTTPException(
             400,
-            f"User must be dissasociated from store {user.store_id} before deleting them.",
+            "User must be dissasociated from their store before deleting them.",
         )
 
     has_sales = get_sales_by_user_id(id, session).__len__() > 0

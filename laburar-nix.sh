@@ -1,5 +1,5 @@
 #!/bin/bash
-# Solo testeado en Linux Mint 22.1
+# Solo testeado en Linux Mint 22.2
 
 read -p "Ingresá el comando de python que usás [default: python3]: " python_cmd
 python_cmd=${python_cmd:-python3}
@@ -10,6 +10,26 @@ if ! command -v "$python_cmd" &>/dev/null; then
     return 1 2>/dev/null || exit 1
 fi
 
+PYTHON_VERSION_OUTPUT=$("$python_cmd" --version 2>&1) || {
+  echo "❌ No se pudo ejecutar $python_cmd. Asegúrate de que esté instalado."
+  exit 1
+}
+
+# Extraer el número de versión (ejemplo: "3.10.8")
+PYTHON_VERSION=$(echo "$PYTHON_VERSION_OUTPUT" | awk '{print $2}')
+
+# Extraer la versión mayor y menor
+MAJOR=$(echo "$PYTHON_VERSION" | cut -d. -f1)
+MINOR=$(echo "$PYTHON_VERSION" | cut -d. -f2)
+
+# Verificar rango permitido
+if [[ "$MAJOR" -ne 3 ]] || [[ "$MINOR" -lt 9 || "$MINOR" -gt 13 ]]; then
+  echo "❌ Versión de Python incompatible: $PYTHON_VERSION"
+  echo "   Se requiere Python entre 3.9 y 3.13 (inclusive)."
+  exit 1
+fi
+
+echo "✅ Versión de Python válida: $PYTHON_VERSION"
 if ! "$python_cmd" -m venv --help &>/dev/null; then
     echo "Error: '$python_cmd' no tiene venv instalado"
     read -p "Presioná Enter para salir."
