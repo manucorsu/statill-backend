@@ -19,7 +19,9 @@ router = APIRouter()
 
 
 @router.get("/", response_model=GetAllProductsResponse)
-def get_products(include_anonymized: bool = False, session: Session = Depends(get_db)):
+def get_all_products(
+    include_anonymized: bool = False, session: Session = Depends(get_db)
+):
     """
     Retrieves all products from the database.
     Args:
@@ -66,7 +68,7 @@ def get_product_by_id(
 
 
 @router.get("/store/{id}", response_model=GetAllProductsResponse)
-def get_product_by_store_id(
+def get_products_by_store_id(
     id: int, session: Session = Depends(get_db), include_anonymized: bool = False
 ):
     """

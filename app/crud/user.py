@@ -10,6 +10,7 @@ from .sale import get_sales_by_user_id
 from typing import overload, Literal
 
 from ..security import hash
+from ..mailing import send_verification_code
 
 
 def is_anonymized(user: User):
@@ -150,10 +151,11 @@ def create(user_data: UserCreate, session: Session):
     session.commit()
     session.refresh(user)
 
+    send_verification_code(session, user, type="email")
     return int(user.id)
 
 
-def update(id: int, user_data: UserCreate, session: Session):
+def update(id: int, user_data: UserUpdate, session: Session):
     """
     Updates a user by its ID.
     Args:
@@ -171,13 +173,16 @@ def update(id: int, user_data: UserCreate, session: Session):
         raise HTTPException(400, detail="Invalid birthdate.")
 
     user = get_by_id(id, session)
-    user_data.password = hash(user_data.password)
     updates = user_data.model_dump(exclude_unset=True)
 
     for field, value in updates.items():
         setattr(user, field, value)
-
+    needs_email_verification = str(user.email) == user_data.email
+    if needs_email_verification:
+        user.email_verified = False
     session.commit()
+    if needs_email_verification:
+        send_verification_code(session, user, "email")
 
 
 def delete(id: int, session: Session):
@@ -197,7 +202,7 @@ def delete(id: int, session: Session):
     ):
         raise HTTPException(
             400,
-            f"User must be dissasociated from store {user.store_id} before deleting them.",
+            "User must be dissasociated from their store before deleting them.",
         )
 
     has_sales = get_sales_by_user_id(id, session).__len__() > 0

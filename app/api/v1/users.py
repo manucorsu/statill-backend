@@ -8,8 +8,7 @@ from ...schemas.user import (
     GetAllUsersResponse,
     GetUserResponse,
     UserRead,
-    Token,
-    LoginResponse,
+    UserUpdate,
 )
 from ...dependencies.db import get_db
 
@@ -189,9 +188,13 @@ def __user_to_userread(user: User):
 
 
 @router.put("/{id}", response_model=APIResponse)
-def update_user(id: int, user: UserCreate, db: Session = Depends(get_db)):
+def update_user(id: int, user: UserUpdate, db: Session = Depends(get_db)):
     """
     Updates a user by its ID.
+
+    Important:
+        * if the email is changed, the user will need to verify their new email address.
+        * the password cannot be changed via this endpoint, use reset-password instead.
 
     (Will require auth in the future)
 

@@ -5,7 +5,7 @@ from sqlalchemy.orm import relationship
 from .sale import Sale
 from .review import Review
 from .points import Points
-from .email_verification_code import EmailVerificationCode
+from .verification_code import VerificationCode
 
 
 class GenderEnum(str, enum.Enum):
@@ -16,6 +16,9 @@ class GenderEnum(str, enum.Enum):
 
 class StoreRoleEnum(str, enum.Enum):
     CASHIER = "cashier"
+    CASHIER_PENDING = (
+        "cashier_pending"  # A store owner added them but they haven't accepted yet
+    )
     OWNER = "owner"
 
 
@@ -42,5 +45,5 @@ class User(Base):
     review = relationship("Review", back_populates="user")
     points = relationship("Points", back_populates="user")
     verification_codes = relationship(
-        "EmailVerificationCode", back_populates="user", cascade="all, delete-orphan"
+        "VerificationCode", back_populates="user", cascade="all, delete-orphan"
     )

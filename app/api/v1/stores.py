@@ -9,10 +9,14 @@ from app.schemas.store import (
     GetAllStoresResponse,
     GetStoreResponse,
     StoreUpdate,
+    AddCashier,
 )
-from app.schemas.general import APIResponse
+from app.schemas.general import APIResponse, SuccessfulResponse
 
 from app.crud import store as crud
+
+from .auth import get_current_user
+from ...models.user import User
 
 name = "stores"
 router = APIRouter()
@@ -65,7 +69,9 @@ def get_store_by_id(id: int, db: Session = Depends(get_db)):
 
 
 @router.post("/", response_model=APIResponse, status_code=201)
-def create_store(store: StoreCreate, db: Session = Depends(get_db)):
+def create_store(
+    store: StoreCreate, db: Session = Depends(get_db), owner=Depends(get_current_user)
+):
     """
     Creates a store.
 
@@ -75,7 +81,7 @@ def create_store(store: StoreCreate, db: Session = Depends(get_db)):
         store (StoreCreate): The store data.
         db (Session): The SQLAlchemy session to use for the query.
     """
-    store_id = crud.create(store, db)
+    store_id = crud.create(store, db, owner=owner)
     return APIResponse(
         successful=True,
         data={"id": store_id},
@@ -131,4 +137,29 @@ def delete_store(id: int, db: Session = Depends(get_db)):
         successful=True,
         data=None,
         message=f"Successfully deleted the Store with id {id}.",
+    )
+
+
+@router.post("/cashier", response_model=SuccessfulResponse, status_code=202)
+def add_cashier(
+    cashier_email_address: AddCashier,
+    session: Session = Depends(get_db),
+    owner_user: User = Depends(get_current_user),
+):
+    crud.add_cashier(cashier_email_address.email_address, owner_user, session)
+    return SuccessfulResponse(
+        data=None,
+        message=f"Successfully invited {cashier_email_address} to join the store.",
+    )
+
+
+@router.patch("/cashier/accept", response_model=SuccessfulResponse)
+def accept_cashier_add(
+    code: str,
+    session: Session = Depends(get_db),
+    cashier: User = Depends(get_current_user),
+):
+    crud.accept_cashier_add(code, session, cashier)
+    return SuccessfulResponse(
+        data=None, message="Succesfully accepted the cashier invitation."
     )

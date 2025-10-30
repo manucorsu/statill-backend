@@ -1,4 +1,8 @@
-import datetime
+from __future__ import annotations
+from typing import Literal, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from ...models.store import Store
 
 from ...schemas.user import LoginResponse, Token
 from ...schemas.general import SuccessfulResponse
@@ -7,18 +11,13 @@ from ...dependencies.db import get_db
 
 import app.crud.user as user_crud
 
-from ...security import (
-    verify_password,
-    create_token,
-    decode_token,
-    generate_email_verification_code,
-)
+import app.security as security
+from app.mailing import send_verification_code
 
 from ...models.user import User
-from ...models.email_verification_code import EmailVerificationCode
+from ...models.verification_code import VerificationCode
 
-from ...mailing import send_email
-
+from ...utils import utcnow
 from fastapi import APIRouter, Depends
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.exceptions import HTTPException
@@ -66,7 +65,7 @@ def token(
     """
 
     user = user_crud.get_by_email(form_data.username, session, raise_404=False)
-    if not user or not verify_password(
+    if not user or not security.verify_password(
         plain_password=form_data.password, hashed_password=str(user.password)
     ):
         raise HTTPException(
@@ -75,7 +74,7 @@ def token(
             headers={"WWW-Authenticate": "Bearer"},
         )  # más vague porque lean me dijo que no le diga nada al usuario en dos mil veinticuatro
 
-    token = create_token(subject=user.id)
+    token = security.create_token(subject=user.id)
     return LoginResponse(
         data=Token(token=token),
         message=f"Logging into {user.email} successful: Token is in data",
@@ -102,16 +101,12 @@ def get_current_user(token: str = Depends(oauth2), session: Session = Depends(ge
         - get_db: Database session factory
     """
 
-    payload = decode_token(token)  # raises if invalid
+    payload = security.decode_token(token)  # raises if invalid
     user_id = int(payload.get("sub"))
     user = user_crud.get_by_id(user_id, session)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     return user
-
-
-def __utcnow():
-    return datetime.datetime.now(datetime.timezone.utc)
 
 
 @router.patch("/activate", response_model=SuccessfulResponse)
@@ -121,10 +116,11 @@ def activate(
     user: User = Depends(get_current_user),
 ):
     verification = (
-        session.query(EmailVerificationCode)
+        session.query(VerificationCode)
         .filter(
-            EmailVerificationCode.code == code
-            and EmailVerificationCode.user_id == user.id
+            VerificationCode.code == code
+            and VerificationCode.user_id == user.id
+            and VerificationCode.type == "email"
         )
         .first()
     )
@@ -132,12 +128,10 @@ def activate(
     if not verification:
         raise HTTPException(status_code=400, detail="Invalid or expired code")
 
-    if verification.expires_at < __utcnow():
+    if verification.expires_at < utcnow():
         session.delete(verification)
         session.commit()
         raise HTTPException(status_code=400, detail="Code expired")
-
-    user = user_crud.get_by_id(verification.user_id, session)
 
     user.email_verified = True
     session.delete(verification)
@@ -146,40 +140,9 @@ def activate(
     return SuccessfulResponse(data=None, message="User is now activated.")
 
 
-def send_email_verification_code(session: Session, user: User):
-    if user.email_verified:
-        raise HTTPException(400, "User's email is already verified")
-
-    session.query(EmailVerificationCode).filter(
-        EmailVerificationCode.user_id == user.id
-    ).delete()
-
-    code = generate_email_verification_code()
-    expires_at = __utcnow() + datetime.timedelta(minutes=30)
-
-    verification = EmailVerificationCode(
-        user_id=user.id, code=code, expires_at=expires_at
-    )
-    session.add(verification)
-    session.commit()
-
-    send_email(
-        user,
-        subject="Activá tu cuenta de Statill",
-        htmlBody=f"""
-                <html>
-                <body>
-                    <h1>Statill</h1>
-                    <p>Tu código de activación es {code}</p>
-                </body>
-                </html>
-               """,
-    )  # body es temporal obviamente
-
-
 @router.get("/send-email-verification-code", response_model=SuccessfulResponse)
 def send_email_verification_code_endpoint(
     session: Session = Depends(get_db), user: User = Depends(get_current_user)
 ):
-    send_email_verification_code(session, user)
+    send_verification_code(session, user)
     return SuccessfulResponse(data=None, message="Activation email sent.")
