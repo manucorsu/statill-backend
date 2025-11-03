@@ -72,7 +72,7 @@ def create(user_id: int, review_data: ReviewCreate, session: Session):
     )
     if existing_review:
         raise HTTPException(400, "Users can only make one review per store")
-    
+
     review = Review(
         user_id=user_id,
         **review_data.model_dump(),

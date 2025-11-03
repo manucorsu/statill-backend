@@ -49,12 +49,13 @@ def create(store_data: StoreCreate, session: Session, owner: User):
     Args:
         store_data (StoreCreate): The store data to create.
         session (Session): The SQLAlchemy session to use for the insert.
-        owner (User):
+        owner (User): The user who will own the store.
+
+    Raises:
+        HTTPException(400): If the user already owns a store or if the store hours are invalid.
     Returns:
         int: The ID of the newly created store.
     """
-    from app.crud.user import get_by_id as get_user_by_id, get_all_by_store_id
-
     user = owner
     if user.store_id:
         raise HTTPException(

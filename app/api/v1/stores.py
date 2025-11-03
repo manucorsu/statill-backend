@@ -15,20 +15,19 @@ from app.schemas.general import APIResponse, SuccessfulResponse
 
 from app.crud import store as crud
 
-from .auth import get_current_user
+from .auth import get_current_user_require_active, get_current_user_require_admin
 from ...models.user import User
+
+import app.api.generic_tags as generic_tags
 
 name = "stores"
 router = APIRouter()
 
 
-@router.get("/", response_model=GetAllStoresResponse)
+@router.get("/", response_model=GetAllStoresResponse, tags=[generic_tags.PUBLIC])
 def get_stores(db: Session = Depends(get_db)):
     """
     Retrieves all stores from the database.
-
-    (Will require auth in the future)
-    (Will require admin role in the future)
 
     Args:
         db (Session): The SQLAlchemy session to use for the query.
@@ -42,12 +41,10 @@ def get_stores(db: Session = Depends(get_db)):
     )
 
 
-@router.get("/{id}", response_model=GetStoreResponse)
+@router.get("/{id}", response_model=GetStoreResponse, tags=[generic_tags.PUBLIC])
 def get_store_by_id(id: int, db: Session = Depends(get_db)):
     """
     Retrieves a store by its ID.
-
-    (Will require auth in the future)
 
     Args:
         id (int): The ID of the store to retrieve.
@@ -68,20 +65,30 @@ def get_store_by_id(id: int, db: Session = Depends(get_db)):
     )
 
 
-@router.post("/", response_model=APIResponse, status_code=201)
+@router.post(
+    "/",
+    response_model=APIResponse,
+    status_code=201,
+    tags=[generic_tags.REQUIRES_AUTH, generic_tags.REQUIRES_ACTIVE_USER],
+)
 def create_store(
-    store: StoreCreate, db: Session = Depends(get_db), owner=Depends(get_current_user)
+    store: StoreCreate,
+    db: Session = Depends(get_db),
+    owner_user=Depends(get_current_user_require_active),
 ):
     """
     Creates a store.
 
-    (Will require auth in the future)
+    (Requires auth, requires active user)
 
     Args:
         store (StoreCreate): The store data.
         db (Session): The SQLAlchemy session to use for the query.
+        owner_user (User): The authenticated and active user creating the store.
+    Raises:
+        HTTPException(400): If the user already owns a store or if the store hours are invalid (raised by crud.create)
     """
-    store_id = crud.create(store, db, owner=owner)
+    store_id = crud.create(store, db, owner=owner_user)
     return APIResponse(
         successful=True,
         data={"id": store_id},
@@ -90,11 +97,19 @@ def create_store(
 
 
 @router.put("/{id}", response_model=APIResponse)
-def update_store(id: int, store: StoreUpdate, db: Session = Depends(get_db)):
+def update_store(
+    id: int,
+    store: StoreUpdate,
+    db: Session = Depends(get_db),
+    owner_user: User = Depends(get_current_user_require_admin),
+):
     """
+    # IMPORTANTE:
+    Este endpoint ahora es exclusivo para admins (por requerir store id), por favor usen **`update_my_store`**!
+    #
     Updates a store by its ID.
 
-    (Will require auth in the future)
+    (Requires auth, requires active user, requires admin)
 
     Args:
         id (int): The ID of the store to update.
@@ -115,7 +130,11 @@ def update_store(id: int, store: StoreUpdate, db: Session = Depends(get_db)):
 
 
 @router.delete("/{id}", response_model=APIResponse)
-def delete_store(id: int, db: Session = Depends(get_db)):
+def delete_store(
+    id: int,
+    db: Session = Depends(get_db),
+    owner_user: User = Depends(get_current_user_require_active),
+):
     """
     Deletes a store by its ID.
 
@@ -144,7 +163,7 @@ def delete_store(id: int, db: Session = Depends(get_db)):
 def add_cashier(
     cashier_email_address: AddCashier,
     session: Session = Depends(get_db),
-    owner_user: User = Depends(get_current_user),
+    owner_user: User = Depends(get_current_user_require_active),
 ):
     crud.add_cashier(cashier_email_address.email_address, owner_user, session)
     return SuccessfulResponse(
@@ -157,7 +176,7 @@ def add_cashier(
 def accept_cashier_add(
     code: str,
     session: Session = Depends(get_db),
-    cashier: User = Depends(get_current_user),
+    cashier: User = Depends(get_current_user_require_active),
 ):
     crud.accept_cashier_add(code, session, cashier)
     return SuccessfulResponse(

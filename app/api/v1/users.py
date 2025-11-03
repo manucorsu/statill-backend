@@ -184,6 +184,7 @@ def __user_to_userread(user: User):
         res_area=user.res_area,
         store_id=user.store_id,
         store_role=str(user.store_role.value) if user.store_role else None,
+        email_verified=user.email_verified,
     )
 
 

@@ -83,10 +83,12 @@ def token(
 
 def get_current_user(token: str = Depends(oauth2), session: Session = Depends(get_db)):
     """
+    # IMPORTANT:
+    **In most cases you should use `get_current_user_require_active`.** Only use this if you specifically need to allow inactive users (e.g., for activation)
     Get the current authenticated user based on the provided JWT token.
     Endpoints that require auth `Depends` on this by adding `user: User = Depends(get_current_user)`
     as a Python parameter AFTER `session`
-
+    #
     Args:
         token (str): The JWT token obtained from OAuth2 authentication. Defaults to Depends(oauth2).
         session (Session): The database session. Defaults to Depends(get_db).
@@ -106,6 +108,35 @@ def get_current_user(token: str = Depends(oauth2), session: Session = Depends(ge
     user = user_crud.get_by_id(user_id, session)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
+    return user
+
+
+def get_current_user_require_active(
+    user: User = Depends(get_current_user),
+):
+    """
+    Get the current authenticated and active user.
+    Endpoints that require an active user `Depends` on this by adding
+    `user: User = Depends(get_current_user_require_active)` as a Python parameter AFTER `session`.
+
+    Args:
+        user (User): The authenticated user object obtained from get_current_user.
+    Returns:
+        User: The authenticated and active user object.
+    Raises:
+        HTTPException(403): If the user is not active (email not verified).
+    """
+    if not user.email_verified:
+        raise HTTPException(status_code=403, detail="Forbidden: Inactive user")
+    return user
+
+
+def get_current_user_require_admin(
+    user: User = Depends(get_current_user_require_active),
+):
+
+    if not user.is_admin:
+        raise HTTPException(status_code=403, detail="Forbidden: Admins only")
     return user
 
 
@@ -144,5 +175,30 @@ def activate(
 def send_email_verification_code_endpoint(
     session: Session = Depends(get_db), user: User = Depends(get_current_user)
 ):
-    send_verification_code(session, user)
+    """
+    Send an email verification code to the authenticated user.
+
+    This endpoint triggers sending a verification code to the current user's
+    email address by calling the helper send_verification_code. It is intended
+    to be used as a FastAPI route handler relying on dependency-injected
+    database session and authenticated user.
+
+    Args:
+        session (Session): Database session provided by the get_db dependency.
+        user (User): Authenticated user object provided by the get_current_user dependency.
+
+    Returns:
+        SuccessfulResponse: A response object with message "Activation email sent."
+        and no data payload.
+
+    Side effects:
+        - Sends an email (via send_verification_code).
+        - May create or update verification-related records in the database.
+
+    Raises:
+        HTTPException or other exceptions propagated from send_verification_code
+        on failure to generate or deliver the verification email.
+    """
+
+    send_verification_code(session, user, type="email")
     return SuccessfulResponse(data=None, message="Activation email sent.")

@@ -1,6 +1,10 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 
+if TYPE_CHECKING:
+    from ...models.user import User
+    from ...models.discount import Discount
+
 from fastapi import APIRouter, Depends, HTTPException
 
 from sqlalchemy.orm import Session
@@ -19,6 +23,7 @@ if TYPE_CHECKING:
     from ...models.discount import Discount
 
 from datetime import date
+from .auth import get_current_user_require_admin
 
 name = "discounts"
 router = APIRouter()
@@ -38,11 +43,15 @@ def __discount_to_discountread(discount: Discount):
 
 
 @router.get("/", response_model=GetAllDiscountsResponse)
-def get_all_discounts(session: Session = Depends(get_db)):
+def get_all_discounts(
+    session: Session = Depends(get_db),
+    _: User = Depends(get_current_user_require_admin),
+):
     """
     Retrieves all discount data from the database.
     Args:
         session (Session): The SQLAlchemy session to use for the query.
+        _ (User): The current authenticated admin user. Unused, is only there to enforce admin auth.
 
     Returns:
         GetAllDiscountsResponse: A response containing a list of all orders.

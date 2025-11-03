@@ -39,6 +39,7 @@ class UserRead(BaseModel):
     res_area: Annotated[str, Field(min_length=1, max_length=50, pattern=r"\S")]
     store_id: PositiveInt | None
     store_role: Literal["cashier", "owner"] | None
+    email_verified: bool
 
     class Config:
         from_attributes = True
