@@ -16,12 +16,12 @@ from .api import generic_tags
 warnings.simplefilter("always", DeprecationWarning)
 
 openapi_tags = [
-    {"name": t}
+    {"name": t[0]}
     for t in (
-        generic_tags.PUBLIC,
-        generic_tags.REQUIRES_AUTH,
-        generic_tags.REQUIRES_ACTIVE_USER,
-        generic_tags.REQUIRES_ADMIN,
+        generic_tags.public,
+        generic_tags.requires_auth,
+        generic_tags.requires_active_user,
+        generic_tags.requires_admin,
     )
 ]  # generic tags are added here, router name-based tags are added in api/v1/__init__.py
 # this way the user sees access requirements in the docs first, before the specific module names

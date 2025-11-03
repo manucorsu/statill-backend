@@ -12,7 +12,10 @@ from ...dependencies.db import get_db
 import app.crud.user as user_crud
 
 import app.security as security
+
 from app.mailing import send_verification_code
+
+import app.api.generic_tags as tags
 
 from ...models.user import User
 from ...models.verification_code import VerificationCode
@@ -30,8 +33,8 @@ router = APIRouter()
 oauth2 = OAuth2PasswordBearer(tokenUrl=TOKEN_URL)
 
 
-@router.post("/token", response_model=LoginResponse)
-def token(
+@router.post("/token", response_model=LoginResponse, tags=tags.public)
+def issue_token(
     form_data: OAuth2PasswordRequestForm = Depends(), session: Session = Depends(get_db)
 ):
     """
@@ -134,13 +137,12 @@ def get_current_user_require_active(
 def get_current_user_require_admin(
     user: User = Depends(get_current_user_require_active),
 ):
-
     if not user.is_admin:
         raise HTTPException(status_code=403, detail="Forbidden: Admins only")
     return user
 
 
-@router.patch("/activate", response_model=SuccessfulResponse)
+@router.patch("/activate", response_model=SuccessfulResponse, tags=tags.requires_auth)
 def activate(
     code: str,
     session: Session = Depends(get_db),
@@ -171,7 +173,11 @@ def activate(
     return SuccessfulResponse(data=None, message="User is now activated.")
 
 
-@router.get("/send-email-verification-code", response_model=SuccessfulResponse)
+@router.get(
+    "/send-email-verification-code",
+    response_model=SuccessfulResponse,
+    tags=tags.requires_auth,
+)
 def send_email_verification_code_endpoint(
     session: Session = Depends(get_db), user: User = Depends(get_current_user)
 ):

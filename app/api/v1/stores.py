@@ -18,13 +18,13 @@ from app.crud import store as crud
 from .auth import get_current_user_require_active, get_current_user_require_admin
 from ...models.user import User
 
-import app.api.generic_tags as generic_tags
+import app.api.generic_tags as tags
 
 name = "stores"
 router = APIRouter()
 
 
-@router.get("/", response_model=GetAllStoresResponse, tags=[generic_tags.PUBLIC])
+@router.get("/", response_model=GetAllStoresResponse, tags=tags.public)
 def get_stores(db: Session = Depends(get_db)):
     """
     Retrieves all stores from the database.
@@ -41,15 +41,15 @@ def get_stores(db: Session = Depends(get_db)):
     )
 
 
-@router.get("/{id}", response_model=GetStoreResponse, tags=[generic_tags.PUBLIC])
-def get_store_by_id(id: int, db: Session = Depends(get_db)):
+@router.get("/{id}", response_model=GetStoreResponse, tags=tags.requires_active_user)
+def get_store_by_id(id: int, db: Session = Depends(get_db), _: User = Depends(get_current_user_require_active)):
     """
     Retrieves a store by its ID.
 
     Args:
         id (int): The ID of the store to retrieve.
         db (Session): The SQLAlchemy session to use for the query.
-
+        _ (User): The current authenticated admin user. Unused, is only there to enforce auth and activation.
     Returns:
         GetStoreResponse: A response containing the store with the specified ID.
 
@@ -69,7 +69,7 @@ def get_store_by_id(id: int, db: Session = Depends(get_db)):
     "/",
     response_model=APIResponse,
     status_code=201,
-    tags=[generic_tags.REQUIRES_AUTH, generic_tags.REQUIRES_ACTIVE_USER],
+    tags=tags.requires_active_user,
 )
 def create_store(
     store: StoreCreate,

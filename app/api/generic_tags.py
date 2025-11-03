@@ -1,4 +1,4 @@
-PUBLIC = "#public"
-REQUIRES_AUTH = "#requires_auth"
-REQUIRES_ACTIVE_USER = "#requires_active_user"
-REQUIRES_ADMIN = "#requires_admin"
+public = ["#public"]
+requires_auth = ["#requires_auth"]
+requires_active_user = ["#requires_active_user"]
+requires_admin = ["#requires_admin"]

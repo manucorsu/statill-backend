@@ -23,7 +23,9 @@ if TYPE_CHECKING:
     from ...models.discount import Discount
 
 from datetime import date
-from .auth import get_current_user_require_admin
+from .auth import get_current_user_require_admin, get_current_user_require_active
+from ..generic_tags import requires_admin, requires_active_user
+
 
 name = "discounts"
 router = APIRouter()
@@ -42,7 +44,7 @@ def __discount_to_discountread(discount: Discount):
     )
 
 
-@router.get("/", response_model=GetAllDiscountsResponse)
+@router.get("/", response_model=GetAllDiscountsResponse, tags=requires_admin)
 def get_all_discounts(
     session: Session = Depends(get_db),
     _: User = Depends(get_current_user_require_admin),
@@ -65,8 +67,10 @@ def get_all_discounts(
     )
 
 
-@router.get("/{id}", response_model=GetDiscountResponse)
-def get_discount_by_id(id: int, session=Depends(get_db)):
+@router.get("/{id}", response_model=GetDiscountResponse, tags=requires_active_user)
+def get_discount_by_id(
+    id: int, session=Depends(get_db), _: User = Depends(get_current_user_require_active)
+):
     """
     Retrieves a discount by its ID.
 
@@ -75,6 +79,7 @@ def get_discount_by_id(id: int, session=Depends(get_db)):
     Args:
         id (int): The ID of the discount to retrieve.
         db (Session): The SQLAlchemy session to use for the query.
+        _ (User): The current authenticated admin user. Unused, is only there to enforce auth and activation.
 
     Returns:
         GetDiscountResponse: A response containing the discount with the specified ID.
