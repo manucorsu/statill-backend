@@ -42,7 +42,11 @@ def get_stores(db: Session = Depends(get_db)):
 
 
 @router.get("/{id}", response_model=GetStoreResponse, tags=tags.requires_active_user)
-def get_store_by_id(id: int, db: Session = Depends(get_db), _: User = Depends(get_current_user_require_active)):
+def get_store_by_id(
+    id: int,
+    db: Session = Depends(get_db),
+    _: User = Depends(get_current_user_require_active),
+):
     """
     Retrieves a store by its ID.
 

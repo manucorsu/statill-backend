@@ -11,20 +11,31 @@ from .exceptions import (
 import warnings
 from sqlalchemy.exc import IntegrityError
 
-from .api import generic_tags
+from .api.generic_tags import (
+    public,
+    requires_auth,
+    requires_active_user,
+    requires_admin,
+)
+from fastapi.responses import JSONResponse
 
 warnings.simplefilter("always", DeprecationWarning)
 
 openapi_tags = [
-    {"name": t[0]}
-    for t in (
-        generic_tags.public,
-        generic_tags.requires_auth,
-        generic_tags.requires_active_user,
-        generic_tags.requires_admin,
-    )
-]  # generic tags are added here, router name-based tags are added in api/v1/__init__.py
-# this way the user sees access requirements in the docs first, before the specific module names
+    {"name": public[0], "description": "No se debe enviar ningún token."},
+    {
+        "name": requires_auth[0],
+        "description": "En el header Authorization se debe enviar un token válido (formato: `Bearer <token>`) de un usuario autenticado (`/auth/token`).",
+    },
+    {
+        "name": requires_active_user[0],
+        "description": "En el header Authorization se debe enviar un token válido (formato: `Bearer <token>`) de un usuario autenticado (`/auth/token`) que haya verificado su mail a través de `/auth/verify`.",
+    },
+    {
+        "name": requires_admin[0],
+        "description": "En el header Authorization se debe enviar un token válido (formato: `Bearer <token>`) de un usuario autenticado (`/auth/token`) que haya verificado su mail a través de `/auth/verify` y que además tenga permisos de administrador.",
+    },
+]
 
 
 app = FastAPI(
@@ -52,3 +63,19 @@ app.include_router(api_router, prefix="/api/v1")
 app.add_exception_handler(HTTPException, http_exception_handler)
 app.add_exception_handler(RequestValidationError, validation_exception_handler)
 app.add_exception_handler(IntegrityError, check_violation_handler)
+
+
+@app.middleware("http")
+async def remove_authorize_button_middleware(request, call_next):
+    if request.url.path == "/openapi.json":
+        # Get the OpenAPI schema
+        openapi_schema = app.openapi()
+        # Remove security schemes
+        if (
+            "components" in openapi_schema
+            and "securitySchemes" in openapi_schema["components"]
+        ):
+            del openapi_schema["components"]["securitySchemes"]
+        return JSONResponse(content=openapi_schema)
+    response = await call_next(request)
+    return response
