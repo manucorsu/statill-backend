@@ -29,7 +29,10 @@ def __review_to_reviewread(r: Review):
 
 
 @router.get("/", response_model=GetAllReviewsResponse, tags=requires_admin)
-def get_reviews(session: Session = Depends(get_db), _: User = Depends(get_current_user_require_admin)):
+def get_reviews(
+    session: Session = Depends(get_db),
+    _: User = Depends(get_current_user_require_admin),
+):
     """
     Retrieves all reviews from the database.
     Args:
@@ -121,9 +124,13 @@ def get_reviews_by_user_id(id: int, session: Session = Depends(get_db)):
     )
 
 
-@router.post("/", response_model=APIResponse, status_code=201,tags=requires_active_user)
+@router.post(
+    "/", response_model=APIResponse, status_code=201, tags=requires_active_user
+)
 def create_review(
-    review: ReviewCreate, session: Session = Depends(get_db),user: User=Depends(get_current_user_require_active)
+    review: ReviewCreate,
+    session: Session = Depends(get_db),
+    user: User = Depends(get_current_user_require_active),
 ):
     """
     Creates a review.
@@ -141,7 +148,11 @@ def create_review(
 
 
 @router.delete("/{id}", response_model=APIResponse, tags=requires_active_user)
-def delete_review(id: int, db: Session = Depends(get_db), creator: User = Depends(get_current_user_require_active)):
+def delete_review(
+    id: int,
+    db: Session = Depends(get_db),
+    creator: User = Depends(get_current_user_require_active),
+):
     """
     Deletes a review by its ID.
 
@@ -156,8 +167,13 @@ def delete_review(id: int, db: Session = Depends(get_db), creator: User = Depend
         HTTPException(400): If the provided ID is invalid (less than or equal to 0).
         HTTPException(404): If the review with the specified ID does not exist.
     """
-    if not crud.get_by_id(id, session=db).user_id == creator.id and not creator.is_admin:
-        raise HTTPException(status_code=403, detail="Forbidden: You can only delete your own reviews.")
+    if (
+        not crud.get_by_id(id, session=db).user_id == creator.id
+        and not creator.is_admin
+    ):
+        raise HTTPException(
+            status_code=403, detail="Forbidden: You can only delete your own reviews."
+        )
     crud.delete(id, db)
     return APIResponse(
         successful=True,
