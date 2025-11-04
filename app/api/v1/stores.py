@@ -212,7 +212,12 @@ def delete_own_store(
     )
 
 
-@router.post("/cashier", response_model=SuccessfulResponse, status_code=202, tags=tags.requires_active_user)
+@router.post(
+    "/cashier",
+    response_model=SuccessfulResponse,
+    status_code=202,
+    tags=tags.requires_active_user,
+)
 def add_cashier(
     cashier_email_address: AddCashier,
     session: Session = Depends(get_db),
@@ -226,7 +231,9 @@ def add_cashier(
     )
 
 
-@router.patch("/cashier/accept", response_model=SuccessfulResponse, tags=tags.requires_active_user)
+@router.patch(
+    "/cashier/accept", response_model=SuccessfulResponse, tags=tags.requires_active_user
+)
 def accept_cashier_add(
     code: str,
     session: Session = Depends(get_db),

@@ -1,3 +1,8 @@
+from __future__ import annotations
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from ..models.user import User
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import NoResultFound
@@ -91,7 +96,7 @@ def get_order_products(id: int, session: Session):
     return order.orders_products
 
 
-def create(order_data: OrderCreate, session: Session):
+def create(order_data: OrderCreate, session: Session, user: User) -> int:
     """
     Creates a new order in the database.
     Args:
@@ -128,7 +133,7 @@ def create(order_data: OrderCreate, session: Session):
     try:
         order = Order(
             store_id=order_data.store_id,
-            user_id=order_data.user_id,
+            user_id=user.id,
             payment_method=order_data.payment_method,
             created_at=datetime.now(timezone.utc),
             status=StatusEnum.PENDING,

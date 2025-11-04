@@ -13,29 +13,34 @@ def utcnow():
     return datetime.datetime.now(datetime.timezone.utc)
 
 
-def owns_a_store(user: User) -> bool:
+def owns_a_store(user: User, allow_cashiers: bool = False) -> bool:
     """
     Checks if the user owns a store.
 
     Args:
         user (User): The user to check.
+        allow_cashiers (bool): Whether to consider cashiers as store owners.
     Returns:
         bool: True if the user owns a store, False otherwise.
     """
-    return (user.store_id is not None) and (user.store_role == StoreRoleEnum.OWNER)
+    return (user.store_id is not None) and (
+        user.store_role == StoreRoleEnum.OWNER
+        or (allow_cashiers and user.store_role == StoreRoleEnum.CASHIER)
+    )
 
 
-def owns_a_store_raise(user: User):
+def owns_a_store_raise(user: User, allow_cashiers: bool = False):
     """
     Raises an HTTPException if the user does not own a store.
 
     Args:
         user (User): The user to check.
+        allow_cashiers (bool): Whether to consider cashiers as store owners.
     Raises:
         HTTPException(403): If the user does not own a store.
     """
 
-    if not owns_a_store(user):
+    if not owns_a_store(user, allow_cashiers=allow_cashiers):
         raise HTTPException(status_code=403, detail="User does not own a store.")
 
 
