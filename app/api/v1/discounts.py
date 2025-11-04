@@ -23,7 +23,9 @@ if TYPE_CHECKING:
     from ...models.discount import Discount
 
 from datetime import date
-from .auth import get_current_user_require_admin
+from .auth import get_current_user_require_admin, get_current_user_require_active
+from ..generic_tags import requires_admin, requires_active_user, requires_auth, public
+from ...utils import owns_specified_store_raise
 
 name = "discounts"
 router = APIRouter()
@@ -42,7 +44,7 @@ def __discount_to_discountread(discount: Discount):
     )
 
 
-@router.get("/", response_model=GetAllDiscountsResponse)
+@router.get("/", response_model=GetAllDiscountsResponse, tags=requires_admin)
 def get_all_discounts(
     session: Session = Depends(get_db),
     _: User = Depends(get_current_user_require_admin),
@@ -63,12 +65,36 @@ def get_all_discounts(
     )
 
 
-@router.get("/{id}", response_model=GetDiscountResponse)
+@router.get("/store/{store_id}", response_model=GetAllDiscountsResponse, tags=public)
+def get_all_discounts_from_store(store_id: int, session=Depends(get_db)):
+    """
+    Retrieves all discount data from the database for products belonging to the specified store.
+    Args:
+        store_id (int): The ID of the store whose discounts to retrieve.
+        session (Session): The SQLAlchemy session to use for the query.
+    Returns:
+        GetAllDiscountsResponse: A response containing a list of all discounts for the specified store
+    """
+    import app.crud.product as products_crud
+
+    products = products_crud.get_all_by_store_id(store_id, session)
+    discounts = []
+    for product in products:
+        discount = crud.get_by_product_id(product.id, session, raise_404=False)
+        if discount:
+            discounts.append(__discount_to_discountread(discount))
+
+    return GetAllDiscountsResponse(
+        successful=True,
+        data=discounts,
+        message=f"Successfully retrieved all discounts for store {store_id}.",
+    )
+
+
+@router.get("/{id}", response_model=GetDiscountResponse, tags=public)
 def get_discount_by_id(id: int, session=Depends(get_db)):
     """
     Retrieves a discount by its ID.
-
-
 
     Args:
         id (int): The ID of the discount to retrieve.
@@ -88,7 +114,7 @@ def get_discount_by_id(id: int, session=Depends(get_db)):
     )
 
 
-@router.get("/product/{product_id}")
+@router.get("/product/{product_id}", tags=public)
 def get_discount_by_product_id(product_id: int, session=Depends(get_db)):
     """
     Retrieves the discount for the product with the specified id. If that product does not have an active discount, it raises an `HTTPException(404)`.
@@ -101,7 +127,7 @@ def get_discount_by_product_id(product_id: int, session=Depends(get_db)):
     )
 
 
-@router.get("/product/{product_id}/allownull")
+@router.get("/product/{product_id}/allownull", tags=public)
 def get_discount_by_product_id_allow_null(
     product_id: int, session: Session = Depends(get_db)
 ):
@@ -113,17 +139,29 @@ def get_discount_by_product_id_allow_null(
     )
 
 
-@router.post("/", response_model=APIResponse, status_code=201)
-def create_discount(discount: DiscountCreate, session: Session = Depends(get_db)):
+@router.post(
+    "/", response_model=APIResponse, status_code=201, tags=requires_active_user
+)
+def create_discount(
+    discount: DiscountCreate,
+    session: Session = Depends(get_db),
+    store_owner: User = Depends(get_current_user_require_active),
+):
     """
     Creates a discount.
 
     Args:
         discount (DiscountCreate): The discount data.
         session (Session): The SQLAlchemy session to use for the query.
+        store_owner (User): The current authenticated active user creating the discount.
     Returns:
         (APIResponse) An APIResponse containing the new discount's id.
     """
+    import app.crud.product as products_crud
+
+    owns_specified_store_raise(
+        store_owner, products_crud.get_by_id(discount.product_id, session).store_id
+    )
     # date checks
     try:
         start_date = date.fromisoformat(discount.start_date)
