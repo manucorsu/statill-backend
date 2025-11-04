@@ -7,7 +7,6 @@ from .custom_types import PositiveInt, NonEmptyStr, NonNegativeFloat, Gt0Float
 class PointsRead(BaseModel):
     id: PositiveInt
     store_id: PositiveInt
-    user_id: PositiveInt
     amount: PositiveInt
 
     class Config:
