@@ -33,7 +33,7 @@ openapi_tags = [
     },
     {
         "name": requires_admin[0],
-        "description": "En el header `Authorization` se debe enviar un token válido (formato: `Bearer <token>`) de un usuario autenticado (`/auth/token`) que haya verificado su mail a través de `/auth/activate` y que además tenga permisos de administrador.",
+        "description": "En el header `Authorization` se debe enviar un token válido (formato: `Bearer <token>`) de un usuario autenticado (`/auth/token`) que haya verificado su mail a través de `/auth/activate` y que además tenga permisos de administrador. **NO LOS USEN PARA NADA EN EL FRONT.** (la mayoría son endpoints viejos que fueron reemplazados por nuevas versiones que implementan token o no son necesarios.)",
     },
 ]
 

@@ -68,7 +68,7 @@ def get_by_store_id(id: int, session: Session, allow_anonymized: bool = False):
     """
     from . import store as stores_crud
 
-    stores_crud.get_by_id(id, session)
+    stores_crud.get_by_id(id, session)  # Ensure store exists
     users = session.query(User).filter(User.store_id == id).all()
     return users
 

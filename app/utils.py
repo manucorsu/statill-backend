@@ -37,3 +37,33 @@ def owns_a_store_raise(user: User):
 
     if not owns_a_store(user):
         raise HTTPException(status_code=403, detail="User does not own a store.")
+
+
+def owns_specified_store(user: User, store_id: int) -> bool:
+    """
+    Checks if the user owns the specified store.
+
+    Args:
+        user (User): The user to check.
+        store_id (int): The ID of the store to check.
+    Returns:
+        bool: True if the user owns the specified store, False otherwise.
+    """
+    return (user.store_id == store_id) and (user.store_role == StoreRoleEnum.OWNER)
+
+
+def owns_specified_store_raise(user: User, store_id: int):
+    """
+    Raises an HTTPException if the user does not own the specified store.
+
+    Args:
+        user (User): The user to check.
+        store_id (int): The ID of the store to check.
+    Raises:
+        HTTPException(403): If the user does not own the specified store.
+    """
+
+    if not owns_specified_store(user, store_id):
+        raise HTTPException(
+            status_code=403, detail="User does not own the specified store."
+        )

@@ -73,7 +73,7 @@ def issue_token(
     ):
         raise HTTPException(
             401,
-            detail="Incorrect username or password",
+            detail="Invalid credentials",
             headers={"WWW-Authenticate": "Bearer"},
         )  # más vague porque lean me dijo que no le diga nada al usuario en dos mil veinticuatro
 
@@ -86,12 +86,10 @@ def issue_token(
 
 def get_current_user(token: str = Depends(oauth2), session: Session = Depends(get_db)):
     """
-    # IMPORTANT:
-    **In most cases you should use `get_current_user_require_active`.** Only use this if you specifically need to allow inactive users (e.g., for activation)
-    Get the current authenticated user based on the provided JWT token.
+    Gets the current authenticated user based on the provided JWT token.
     Endpoints that require auth `Depends` on this by adding `user: User = Depends(get_current_user)`
     as a Python parameter AFTER `session`
-    #
+
     Args:
         token (str): The JWT token obtained from OAuth2 authentication. Defaults to Depends(oauth2).
         session (Session): The database session. Defaults to Depends(get_db).
@@ -101,9 +99,7 @@ def get_current_user(token: str = Depends(oauth2), session: Session = Depends(ge
         HTTPException: If the token is invalid or user is not found.
             - 404: User not found
             - 401: Invalid token (raised by decode_token)
-    Dependencies:
-        - oauth2: OAuth2 authentication scheme
-        - get_db: Database session factory
+    NOTE: **In most cases you should use `get_current_user_require_active`.** Only use this if you specifically want to allow inactive users (e.g., for activation)
     """
 
     payload = security.decode_token(token)  # raises if invalid
