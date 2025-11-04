@@ -12,6 +12,7 @@ from . import (
     reviews,
 )
 
+
 router = APIRouter()
 
 routers_to_include = [
@@ -35,13 +36,3 @@ for r_module in routers_to_include:
     assert isinstance(module_name, str)
 
     router.include_router(module_router, prefix=f"/{module_name}", tags=[module_name])
-
-
-@router.get("/docs", response_class=responses.RedirectResponse, status_code=308)
-def get_docs_redirect():
-    return "/docs"
-
-
-@router.get("/redoc", response_class=responses.RedirectResponse, status_code=308)
-def get_redoc_redirect():
-    return "/redoc"

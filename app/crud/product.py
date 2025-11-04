@@ -65,12 +65,13 @@ def get_all_by_store_id(id: int, session: Session, include_anonymized: bool = Fa
     return products.all()
 
 
-def create(product_data: ProductCreate, session: Session):
+def create(product_data: ProductCreate, session: Session, store_id: int):
     """
     Creates a new product in the database.
     Args:
         product_data (ProductCreate): The product data to create.
         session (Session): The SQLAlchemy session to use for the insert.
+        store_id (int): The ID of the store to which the product belongs.
     Returns:
         int: The ID of the newly created product.
     """
@@ -80,11 +81,12 @@ def create(product_data: ProductCreate, session: Session):
         raise HTTPException(400, detail="Invalid product name.")
 
     stores_crud.get_by_id(
-        product_data.store_id, session
+        store_id, session
     )  # Checks that the store exists. Extracting the id from the product_data is temporary and will only stay there until we do login
 
     product = Product(
         **product_data.model_dump(),
+        store_id=store_id,
     )
 
     session.add(product)

@@ -1,3 +1,8 @@
+from __future__ import annotations
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from app.models.user import User
 from datetime import datetime, timezone
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
@@ -59,9 +64,18 @@ def create(sale_data: SaleCreate, session: Session, using_points: bool = False) 
     Returns:
         int: The ID of the newly created sale.
     """
+
+    if using_points and sale_data.user_id is None:
+        raise HTTPException(
+            status_code=400, detail="Anonymous users cannot use points to pay for sales"
+        )
+    import app.crud.user as users_crud
+
+    if sale_data.user_id:
+        users_crud.get_by_id(sale_data.user_id, session)  # raises 404 if not found
     sale = Sale(
-        store_id=sale_data.store_id,  # no hace falta en realidad pero alembic
-        user_id=sale_data.user_id,
+        store_id=sale_data.store_id,  # me di cuenta de que no hace falta pero es mucho quilombo sacarlo :)
+        user_id=sale_data.user_id,  # (can be None)
         payment_method=sale_data.payment_method,
         timestamp=datetime.now(timezone.utc),
     )
@@ -99,3 +113,35 @@ def create(sale_data: SaleCreate, session: Session, using_points: bool = False) 
 
     session.commit()
     return int(sale.id)
+
+
+def get_by_store_id(store_id: int, session: Session):
+    """
+    Retrieves all sales from the database by their store ID.
+    Args:
+        store_id (int): The ID of the store.
+        session (Session): The SQLAlchemy session to use for the query.
+    Returns:
+        list[Sale]: A list for the sales with the store ID.
+    Raises:
+        HTTPException(404): If the store with the specified ID does not exist.
+    """
+    sales = session.query(Sale).filter(Sale.store_id == store_id)
+    return sales.all()
+
+
+def get_all_by_store_owner(store_owner: User, session: Session):
+    """
+    Retrieves all sales for the store owned by the specified user.
+    Args:
+        store_owner (User): The user who owns the store.
+        session (Session): The SQLAlchemy session to use for the query.
+    Returns:
+        list[Sale]: A list of all sales for the store owned by the user.
+    Raises:
+        HTTPException(404): If the store owned by the user does not exist.
+    """
+    import app.crud.store as stores_crud
+
+    store_id = stores_crud.get_by_id(store_owner.store_id, session).id
+    return get_by_store_id(store_id, session)

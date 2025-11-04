@@ -12,7 +12,10 @@ from ...dependencies.db import get_db
 import app.crud.user as user_crud
 
 import app.security as security
+
 from app.mailing import send_verification_code
+
+import app.api.generic_tags as tags
 
 from ...models.user import User
 from ...models.verification_code import VerificationCode
@@ -30,8 +33,8 @@ router = APIRouter()
 oauth2 = OAuth2PasswordBearer(tokenUrl=TOKEN_URL)
 
 
-@router.post("/token", response_model=LoginResponse)
-def token(
+@router.post("/token", response_model=LoginResponse, tags=tags.public)
+def issue_token(
     form_data: OAuth2PasswordRequestForm = Depends(), session: Session = Depends(get_db)
 ):
     """
@@ -70,7 +73,7 @@ def token(
     ):
         raise HTTPException(
             401,
-            detail="Incorrect username or password",
+            detail="Invalid credentials",
             headers={"WWW-Authenticate": "Bearer"},
         )  # más vague porque lean me dijo que no le diga nada al usuario en dos mil veinticuatro
 
@@ -83,7 +86,7 @@ def token(
 
 def get_current_user(token: str = Depends(oauth2), session: Session = Depends(get_db)):
     """
-    Get the current authenticated user based on the provided JWT token.
+    Gets the current authenticated user based on the provided JWT token.
     Endpoints that require auth `Depends` on this by adding `user: User = Depends(get_current_user)`
     as a Python parameter AFTER `session`
 
@@ -96,9 +99,7 @@ def get_current_user(token: str = Depends(oauth2), session: Session = Depends(ge
         HTTPException: If the token is invalid or user is not found.
             - 404: User not found
             - 401: Invalid token (raised by decode_token)
-    Dependencies:
-        - oauth2: OAuth2 authentication scheme
-        - get_db: Database session factory
+    NOTE: **In most cases you should use `get_current_user_require_active`.** Only use this if you specifically want to allow inactive users (e.g., for activation)
     """
 
     payload = security.decode_token(token)  # raises if invalid
@@ -109,7 +110,35 @@ def get_current_user(token: str = Depends(oauth2), session: Session = Depends(ge
     return user
 
 
-@router.patch("/activate", response_model=SuccessfulResponse)
+def get_current_user_require_active(
+    user: User = Depends(get_current_user),
+):
+    """
+    Get the current authenticated and active user.
+    Endpoints that require an active user `Depends` on this by adding
+    `user: User = Depends(get_current_user_require_active)` as a Python parameter AFTER `session`.
+
+    Args:
+        user (User): The authenticated user object obtained from get_current_user.
+    Returns:
+        User: The authenticated and active user object.
+    Raises:
+        HTTPException(403): If the user is not active (email not verified).
+    """
+    if not user.email_verified:
+        raise HTTPException(status_code=403, detail="Forbidden: Inactive user")
+    return user
+
+
+def get_current_user_require_admin(
+    user: User = Depends(get_current_user_require_active),
+):
+    if not user.is_admin:
+        raise HTTPException(status_code=403, detail="Forbidden: Admins only")
+    return user
+
+
+@router.patch("/activate", response_model=SuccessfulResponse, tags=tags.requires_auth)
 def activate(
     code: str,
     session: Session = Depends(get_db),
@@ -140,9 +169,38 @@ def activate(
     return SuccessfulResponse(data=None, message="User is now activated.")
 
 
-@router.get("/send-email-verification-code", response_model=SuccessfulResponse)
+@router.get(
+    "/send-email-verification-code",
+    response_model=SuccessfulResponse,
+    tags=tags.requires_auth,
+)
 def send_email_verification_code_endpoint(
     session: Session = Depends(get_db), user: User = Depends(get_current_user)
 ):
-    send_verification_code(session, user)
+    """
+    Send an email verification code to the authenticated user.
+
+    This endpoint triggers sending a verification code to the current user's
+    email address by calling the helper send_verification_code. It is intended
+    to be used as a FastAPI route handler relying on dependency-injected
+    database session and authenticated user.
+
+    Args:
+        session (Session): Database session provided by the get_db dependency.
+        user (User): Authenticated user object provided by the get_current_user dependency.
+
+    Returns:
+        SuccessfulResponse: A response object with message "Activation email sent."
+        and no data payload.
+
+    Side effects:
+        - Sends an email (via send_verification_code).
+        - May create or update verification-related records in the database.
+
+    Raises:
+        HTTPException or other exceptions propagated from send_verification_code
+        on failure to generate or deliver the verification email.
+    """
+
+    send_verification_code(session, user, type="email")
     return SuccessfulResponse(data=None, message="Activation email sent.")

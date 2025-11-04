@@ -1,3 +1,9 @@
+from __future__ import annotations
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from ...models.user import User
+
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from app.dependencies.db import get_db
@@ -13,6 +19,10 @@ from app.schemas.sale import (
 from ...crud import sale as crud
 from ...models.sale import Sale
 from ...models.products_sales import ProductsSales as ProductsSalesModel
+
+import app.api.generic_tags as tags
+from .auth import get_current_user_require_admin, get_current_user_require_active
+from ...models.user import StoreRoleEnum
 
 name = "sales"
 router = APIRouter()
@@ -35,15 +45,16 @@ def __sale_to_saleread(sale: Sale, products: list[ProductsSalesModel]):
     )
 
 
-@router.get("/", response_model=GetAllSalesResponse)
-def get_sales(db: Session = Depends(get_db)):
+@router.get("/", response_model=GetAllSalesResponse, tags=tags.requires_admin)
+def get_all_sales(
+    db: Session = Depends(get_db), _: User = Depends(get_current_user_require_admin)
+):
     """
     Retrieves all sales from the database.
 
-    (Will require auth in the future)
-    (Will require admin role in the future)
     Args:
         db (Session): The SQLAlchemy session to use for the query.
+        _ (User): The current active admin user. Unused, is only there to enforce admin requirement.
     Returns:
         GetAllSalesResponse: A response containing a list of all sales.
     """
@@ -54,12 +65,10 @@ def get_sales(db: Session = Depends(get_db)):
     )
 
 
-@router.get("/{id}", response_model=GetSaleResponse)
+@router.get("/{id}", response_model=GetSaleResponse, tags=tags.requires_admin)
 def get_sale_by_id(id: int, db: Session = Depends(get_db)):
     """
     Retrieves a sale by its ID.
-
-    (Will require auth in the future)
 
     Args:
         id (int): The ID of the sale to retrieve.
@@ -80,16 +89,46 @@ def get_sale_by_id(id: int, db: Session = Depends(get_db)):
     )
 
 
-@router.post("/", response_model=APIResponse, status_code=201)
-def create_sale(sale: SaleCreate, db: Session = Depends(get_db)):
+@router.get(
+    "/store/my", response_model=GetAllSalesResponse, tags=tags.requires_active_user
+)
+def get_my_store_sales(
+    db: Session = Depends(get_db),
+    store_owner: User = Depends(get_current_user_require_active),
+):
+    """
+    Retrieves all sales for the store owned by the current user.
+
+    Args:
+        db (Session): The SQLAlchemy session to use for the query.
+        store_owner (User): The current authenticated user.
+    Returns:
+        GetAllSalesResponse: A response containing a list of all sales for the admin's store.
+    """
+    sales = crud.get_all_by_store_owner(store_owner, db)
+    result = [__sale_to_saleread(s, crud.get_ps_by_sale(s, db)) for s in sales]
+    return GetAllSalesResponse(
+        successful=True,
+        data=result,
+        message="Successfully retrieved all Sales for your store.",
+    )
+
+
+@router.post(
+    "/", response_model=APIResponse, status_code=201, tags=tags.requires_active_user
+)
+def create_sale(
+    sale: SaleCreate,
+    db: Session = Depends(get_db),
+    cashier: User = Depends(get_current_user_require_active),
+):
     """
     Creates a sale.
-
-    (Will require auth in the future)
 
     Args:
         sale (SaleCreate): The sale data.
         db (Session): The SQLAlchemy session to use for the query.
+        cashier (User): The current authenticated user creating the sale. They must be a store cashier or owner in the store where the sale is being created.
     Raises:
         HTTPException(404): If the store with the specified ID does not exist.
         HTTPException(404): If the user with the specified ID does not exist.
@@ -99,9 +138,17 @@ def create_sale(sale: SaleCreate, db: Session = Depends(get_db)):
     Returns:
         APIResponse: A response containing the ID of the created sale.
     """
+    if (cashier.store_id != sale.store_id) or (
+        cashier.store_role not in [StoreRoleEnum.OWNER, StoreRoleEnum.CASHIER]
+    ):
+        raise HTTPException(
+            status_code=403,
+            detail="You do not have permission to create sales for this store",
+        )
+
     if len(sale.products) == 0:
         raise HTTPException(status_code=400, detail="Sale must have at least 1 product")
-    sale_id = crud.create(sale, db)
+    sale_id = crud.create(sale, db, using_points=False)
     return APIResponse(
         successful=True,
         data={"id": sale_id},

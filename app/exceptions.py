@@ -43,9 +43,8 @@ def check_violation_handler(_: Request, ex: IntegrityError):
         content=APIResponse(
             successful=False,
             data={
-                "violated_constraint": violated_constraint,
                 "error": error_message,
             },
-            message=f"Request violated {violated_constraint} CHECK constraint",
+            message=f"Request violated CHECK constraint",
         ).model_dump(),
     )

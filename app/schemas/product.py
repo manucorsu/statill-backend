@@ -46,7 +46,6 @@ class ProductCreate(BaseModel):
     desc: NonEmptyStr
     barcode: NonEmptyStr | None
     hidden: bool | None = Field(default=False)
-    store_id: PositiveInt  # temp until login
 
     class Config:
         from_attributes = True
