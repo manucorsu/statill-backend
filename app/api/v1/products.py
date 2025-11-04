@@ -116,7 +116,7 @@ def create_product(
     store_owner: User = Depends(get_current_user_require_active),
 ):
     """
-    Creates a product in the authenticated user's store.    
+    Creates a product in the authenticated user's store.
 
     Args:
         product (ProductCreate): The product data.
@@ -127,9 +127,12 @@ def create_product(
     """
     if store_owner.store_role != StoreRoleEnum.OWNER:
         raise HTTPException(
-            status_code=403, detail=f"Invalid store role {store_owner.store_role}: Only store owners can create products."
+            status_code=403,
+            detail=f"Invalid store role {store_owner.store_role}: Only store owners can create products.",
         )
-    product_id = crud.create(product_data=product, session=session, store_id=store_owner.store_id)
+    product_id = crud.create(
+        product_data=product, session=session, store_id=store_owner.store_id
+    )
     return APIResponse(
         successful=True,
         data={"id": product_id},
@@ -138,7 +141,12 @@ def create_product(
 
 
 @router.put("/{id}", response_model=APIResponse, tags=tags.requires_active_user)
-def update_product(id: int, product: ProductUpdate, session: Session = Depends(get_db), store_owner: User = Depends(get_current_user_require_active)):
+def update_product(
+    id: int,
+    product: ProductUpdate,
+    session: Session = Depends(get_db),
+    store_owner: User = Depends(get_current_user_require_active),
+):
     """
     Updates a product by its ID.
 
@@ -158,7 +166,8 @@ def update_product(id: int, product: ProductUpdate, session: Session = Depends(g
     """
     if store_owner.store_role != StoreRoleEnum.OWNER:
         raise HTTPException(
-            status_code=403, detail=f"Invalid store role {store_owner.store_role}: Only store owners can create products."
+            status_code=403,
+            detail=f"Invalid store role {store_owner.store_role}: Only store owners can create products.",
         )
     crud.update(id, product, session)
     return APIResponse(
@@ -167,7 +176,11 @@ def update_product(id: int, product: ProductUpdate, session: Session = Depends(g
 
 
 @router.delete("/{id}", response_model=APIResponse, tags=tags.requires_active_user)
-def delete_product(id: int, session: Session = Depends(get_db), store_owner: User = Depends(get_current_user_require_active)):
+def delete_product(
+    id: int,
+    session: Session = Depends(get_db),
+    store_owner: User = Depends(get_current_user_require_active),
+):
     """
     Deletes a product by its ID.
     If the product is not in any sale, it will be erased from the database.
@@ -186,7 +199,8 @@ def delete_product(id: int, session: Session = Depends(get_db), store_owner: Use
     """
     if store_owner.store_role != StoreRoleEnum.OWNER:
         raise HTTPException(
-            status_code=403, detail=f"Invalid store role {store_owner.store_role}: Only store owners can delete products."
+            status_code=403,
+            detail=f"Invalid store role {store_owner.store_role}: Only store owners can delete products.",
         )
     crud.delete(id, session)
     return APIResponse(

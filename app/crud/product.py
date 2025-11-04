@@ -81,7 +81,7 @@ def create(product_data: ProductCreate, session: Session, store_id: int):
         raise HTTPException(400, detail="Invalid product name.")
 
     stores_crud.get_by_id(
-        store_id,session
+        store_id, session
     )  # Checks that the store exists. Extracting the id from the product_data is temporary and will only stay there until we do login
 
     product = Product(
