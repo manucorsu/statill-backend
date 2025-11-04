@@ -43,11 +43,10 @@ def get_all_stores(db: Session = Depends(get_db)):
     )
 
 
-@router.get("/{id}", response_model=GetStoreResponse, tags=tags.requires_active_user)
+@router.get("/{id}", response_model=GetStoreResponse, tags=tags.public)
 def get_store_by_id(
     id: int,
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user_require_active),
 ):
     """
     Retrieves a store by its ID.
@@ -55,7 +54,6 @@ def get_store_by_id(
     Args:
         id (int): The ID of the store to retrieve.
         db (Session): The SQLAlchemy session to use for the query.
-        _ (User): The current authenticated admin user. Unused, is only there to enforce auth and activation.
     Returns:
         GetStoreResponse: A response containing the store with the specified ID.
 
