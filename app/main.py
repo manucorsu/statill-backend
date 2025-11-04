@@ -45,7 +45,8 @@ app = FastAPI(
     redoc_url="/api/v1/redoc",
     openapi_tags=openapi_tags,
     swagger_ui_parameters={
-        "supportedSubmitMethods": []
+        # "docExpansion": "none",
+        "supportedSubmitMethods": [],
     },  # disables "Try it out" because auth is broken in Swagger UI for some reason
     # (it refuses to send the token and always sends `Authorization: Bearer undefined`?)
 )
