@@ -28,10 +28,9 @@ def __review_to_reviewread(r: Review):
     )
 
 
-@router.get("/", response_model=GetAllReviewsResponse, tags=requires_admin)
-def get_reviews(
+@router.get("/", response_model=GetAllReviewsResponse, tags=public)
+def get_all_reviews(
     session: Session = Depends(get_db),
-    _: User = Depends(get_current_user_require_admin),
 ):
     """
     Retrieves all reviews from the database.
