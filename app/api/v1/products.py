@@ -26,6 +26,8 @@ from ...models.user import StoreRoleEnum
 
 from .auth import get_current_user_require_active
 
+from ...utils import owns_a_store_raise
+
 name = "products"
 router = APIRouter()
 
@@ -125,11 +127,7 @@ def create_product(
     Returns:
         APIResponse: A response containing the ID of the created product.
     """
-    if store_owner.store_role != StoreRoleEnum.OWNER:
-        raise HTTPException(
-            status_code=403,
-            detail=f"Invalid store role {store_owner.store_role}: Only store owners can create products.",
-        )
+    owns_a_store_raise(store_owner)
     product_id = crud.create(
         product_data=product, session=session, store_id=store_owner.store_id
     )
@@ -164,11 +162,7 @@ def update_product(
         HTTPException(404): If the product with the specified ID does not exist.
         HTTPException(403): If the authenticated user is not the owner of the store.
     """
-    if store_owner.store_role != StoreRoleEnum.OWNER:
-        raise HTTPException(
-            status_code=403,
-            detail=f"Invalid store role {store_owner.store_role}: Only store owners can create products.",
-        )
+    owns_a_store_raise(store_owner)
     crud.update(id, product, session)
     return APIResponse(
         successful=True, data=None, message="Successfully updated the Product."
@@ -197,11 +191,7 @@ def delete_product(
         HTTPException(400): If the provided ID is invalid (less than or equal to 0).
         HTTPException(404): If the product with the specified ID does not exist.
     """
-    if store_owner.store_role != StoreRoleEnum.OWNER:
-        raise HTTPException(
-            status_code=403,
-            detail=f"Invalid store role {store_owner.store_role}: Only store owners can delete products.",
-        )
+    owns_a_store_raise(store_owner)
     crud.delete(id, session)
     return APIResponse(
         successful=True,

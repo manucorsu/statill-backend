@@ -51,12 +51,10 @@ def get_all_discounts(
     Retrieves all discount data from the database.
     Args:
         session (Session): The SQLAlchemy session to use for the query.
-        _ (User): The current authenticated admin user. Unused, is only there to enforce admin auth.
+        _ (User): The current authenticated admin user. Unused, is only there to enforce admin requiremebnt.
 
     Returns:
         GetAllDiscountsResponse: A response containing a list of all orders.
-
-
 
     """
     result = [__discount_to_discountread(d) for d in crud.get_all(session)]

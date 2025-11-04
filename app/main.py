@@ -25,15 +25,15 @@ openapi_tags = [
     {"name": public[0], "description": "No se debe enviar ningún token."},
     {
         "name": requires_auth[0],
-        "description": "En el header Authorization se debe enviar un token válido (formato: `Bearer <token>`) de un usuario autenticado (`/auth/token`).",
+        "description": "En el header `Authorization` se debe enviar un token válido (formato: `Bearer <token>`) de un usuario autenticado (`/auth/token`).",
     },
     {
         "name": requires_active_user[0],
-        "description": "En el header Authorization se debe enviar un token válido (formato: `Bearer <token>`) de un usuario autenticado (`/auth/token`) que haya verificado su mail a través de `/auth/activate`.",
+        "description": "En el header `Authorization` se debe enviar un token válido (formato: `Bearer <token>`) de un usuario autenticado (`/auth/token`) que haya verificado su mail a través de `/auth/activate`.",
     },
     {
         "name": requires_admin[0],
-        "description": "En el header Authorization se debe enviar un token válido (formato: `Bearer <token>`) de un usuario autenticado (`/auth/token`) que haya verificado su mail a través de `/auth/activate` y que además tenga permisos de administrador.",
+        "description": "En el header `Authorization` se debe enviar un token válido (formato: `Bearer <token>`) de un usuario autenticado (`/auth/token`) que haya verificado su mail a través de `/auth/activate` y que además tenga permisos de administrador.",
     },
 ]
 
