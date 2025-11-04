@@ -15,6 +15,9 @@ from app.schemas.general import APIResponse
 
 from app.crud import review as crud
 
+from ..generic_tags import *
+from .auth import *
+
 name = "reviews"
 router = APIRouter()
 
@@ -25,13 +28,13 @@ def __review_to_reviewread(r: Review):
     )
 
 
-@router.get("/", response_model=GetAllReviewsResponse)
-def get_reviews(session: Session = Depends(get_db)):
+@router.get("/", response_model=GetAllReviewsResponse, tags=requires_admin)
+def get_reviews(session: Session = Depends(get_db), _: User = Depends(get_current_user_require_admin)):
     """
     Retrieves all reviews from the database.
     Args:
         session (Session): The SQLAlchemy session to use for the query.
-
+        _ (User): The current authenticated admin user. Unused, is only there to enforce admin requirement.
     Returns:
         GetAllReviewsResponse: A response containing a list of all reviews.
     """
@@ -43,12 +46,10 @@ def get_reviews(session: Session = Depends(get_db)):
     )
 
 
-@router.get("/{id}", response_model=GetReviewResponse)
+@router.get("/{id}", response_model=GetReviewResponse, tags=public)
 def get_review_by_id(id: int, session: Session = Depends(get_db)):
     """
     Retrieves a review by its ID.
-
-
 
     Args:
         id (int): The ID of the review to retrieve.
@@ -70,12 +71,10 @@ def get_review_by_id(id: int, session: Session = Depends(get_db)):
     )
 
 
-@router.get("/store/{id}", response_model=GetAllReviewsResponse)
+@router.get("/store/{id}", response_model=GetAllReviewsResponse, tags=public)
 def get_reviews_by_store_id(id: int, session: Session = Depends(get_db)):
     """
     Retrieves a list of reviews by its store ID.
-
-
 
     Args:
         id (int): The ID of the store to retrieve its reviews.
@@ -97,12 +96,10 @@ def get_reviews_by_store_id(id: int, session: Session = Depends(get_db)):
     )
 
 
-@router.get("/user/{id}", response_model=GetAllReviewsResponse)
+@router.get("/user/{id}", response_model=GetAllReviewsResponse, tags=public)
 def get_reviews_by_user_id(id: int, session: Session = Depends(get_db)):
     """
     Retrieves a list of reviews by its user ID.
-
-
 
     Args:
         id (int): The ID of the user to retrieve its reviews.
@@ -124,20 +121,18 @@ def get_reviews_by_user_id(id: int, session: Session = Depends(get_db)):
     )
 
 
-@router.post("/", response_model=APIResponse, status_code=201)
+@router.post("/", response_model=APIResponse, status_code=201,tags=requires_active_user)
 def create_review(
-    user_id: int, review: ReviewCreate, session: Session = Depends(get_db)
+    review: ReviewCreate, session: Session = Depends(get_db),user: User=Depends(get_current_user_require_active)
 ):
     """
     Creates a review.
-
-
 
     Args:
         review (ReviewCreate): The review data.
         session (Session): The SQLAlchemy session to use for the query.
     """
-    review_id = crud.create(user_id, review, session)
+    review_id = crud.create(user.id, review, session)
     return APIResponse(
         successful=True,
         data={"id": review_id},
@@ -145,17 +140,15 @@ def create_review(
     )
 
 
-@router.delete("/{id}", response_model=APIResponse)
-def delete_review(id: int, db: Session = Depends(get_db)):
+@router.delete("/{id}", response_model=APIResponse, tags=requires_active_user)
+def delete_review(id: int, db: Session = Depends(get_db), creator: User = Depends(get_current_user_require_active)):
     """
     Deletes a review by its ID.
-
-
 
     Args:
         id (int): The ID of the review to delete.
         db (Session): The SQLAlchemy session to use for the delete.
-
+        creator (User): The authenticated user object obtained from get_current_user_require_active. They must have created the review (or be an admin)
     Returns:
         APIResponse: A response indicating the success of the delete operation.
 
@@ -163,6 +156,8 @@ def delete_review(id: int, db: Session = Depends(get_db)):
         HTTPException(400): If the provided ID is invalid (less than or equal to 0).
         HTTPException(404): If the review with the specified ID does not exist.
     """
+    if not crud.get_by_id(id, session=db).user_id == creator.id and not creator.is_admin:
+        raise HTTPException(status_code=403, detail="Forbidden: You can only delete your own reviews.")
     crud.delete(id, db)
     return APIResponse(
         successful=True,
