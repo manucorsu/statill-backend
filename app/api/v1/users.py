@@ -30,8 +30,8 @@ def get_all(include_anonymized: bool = False, session: Session = Depends(get_db)
     """
     Retrieves all users from the database.
 
-    (Will require auth in the future)
-    (Will require admin role in the future)
+
+
     Args:
         include_anonymized (bool): Whether to include users anonymized as "Deleted User".
         session (Session): The SQLAlchemy session to use for the query.
@@ -76,7 +76,7 @@ def get_by_id(
     """
     Retrieves a user by their ID.
 
-    (Will require auth in the future)
+
 
     Args:
         id (int): The ID of the user to retrieve.
@@ -107,7 +107,7 @@ def get_by_store_id(
     """
     Retrieves a list of users by their store ID.
 
-    (Will require auth in the future)
+
 
     Args:
         id (int): The ID of the store.
@@ -197,7 +197,7 @@ def update_user(id: int, user: UserUpdate, db: Session = Depends(get_db)):
         * if the email is changed, the user will need to verify their new email address.
         * the password cannot be changed via this endpoint, use reset-password instead.
 
-    (Will require auth in the future)
+
 
     Args:
         id (int): The ID of the user to update.
@@ -222,7 +222,7 @@ def delete_user_by_id(id: int, db: Session = Depends(get_db)):
     """
     Deletes a user by its ID, or anonymizes them if referenced in ProductsSales.
 
-    (Will require auth in the future)
+
 
     Args:
         id (int): The ID of the user to delete.

@@ -48,7 +48,7 @@ def get_review_by_id(id: int, session: Session = Depends(get_db)):
     """
     Retrieves a review by its ID.
 
-    (Will require auth in the future)
+
 
     Args:
         id (int): The ID of the review to retrieve.
@@ -75,7 +75,7 @@ def get_reviews_by_store_id(id: int, session: Session = Depends(get_db)):
     """
     Retrieves a list of reviews by its store ID.
 
-    (Will require auth in the future)
+
 
     Args:
         id (int): The ID of the store to retrieve its reviews.
@@ -102,7 +102,7 @@ def get_reviews_by_user_id(id: int, session: Session = Depends(get_db)):
     """
     Retrieves a list of reviews by its user ID.
 
-    (Will require auth in the future)
+
 
     Args:
         id (int): The ID of the user to retrieve its reviews.
@@ -131,7 +131,7 @@ def create_review(
     """
     Creates a review.
 
-    (Will require auth in the future)
+
 
     Args:
         review (ReviewCreate): The review data.
@@ -150,7 +150,7 @@ def delete_review(id: int, db: Session = Depends(get_db)):
     """
     Deletes a review by its ID.
 
-    (Will require auth in the future)
+
 
     Args:
         id (int): The ID of the review to delete.

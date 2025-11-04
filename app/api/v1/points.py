@@ -22,8 +22,8 @@ def get_all_points(session: Session = Depends(get_db)):
     """
     Returns all points entries from the database.
 
-    (Will require auth in the future)
-    (Will require admin role in the future)
+
+
     Args:
         session (Session): The SQLAlchemy session to use for the query.
     Returns:
@@ -41,7 +41,7 @@ def get_user_points(store_id: int, user_id: int, session: Session = Depends(get_
     """
     Retrieves the points of a user in a specific store.
 
-    (Will require auth in the future)
+
     Args:
         store_id (int): The ID of the store.
         user_id (int): The ID of the user. Goes in body for now and will later be extracted from the token.
@@ -64,7 +64,7 @@ def get_user_points(store_id: int, user_id: int, session: Session = Depends(get_
 def buy_with_points(user_id: int, product_id: int, session: Session = Depends(get_db)):
     """
     Creates a sale where the user buys is buying the product using their points.
-    (Will require auth in the future)
+
 
     Args:
         user_id (int): The ID of the user. Goes in body for now and will later be extracted from the token.
@@ -85,7 +85,7 @@ def get_points_by_store_id(id: int, session: Session = Depends(get_db)):
     """
     Retrieves all points by its store ID.
 
-    (Will require auth in the future)
+
 
     Args:
         id (int): The ID of the store to retrieve its points.

@@ -142,7 +142,7 @@ def delete_store(
     """
     Deletes a store by its ID.
 
-    (Will require auth in the future)
+
 
     Args:
         id (int): The ID of the store to delete.

@@ -45,8 +45,8 @@ def get_all_orders(session: Session = Depends(get_db)):
     Returns:
         GetAllOrdersResponse: A response containing a list of all orders.
 
-    (Will require auth in the future)
-    (Will require admin role in the future)
+
+
     """
     result = crud.get_all(session)
     return GetAllOrdersResponse(
@@ -61,7 +61,7 @@ def get_order_by_id(id: int, db: Session = Depends(get_db)):
     """
     Retrieves an order by its ID.
 
-    (Will require auth in the future)
+
 
     Args:
         **id (int): The ID of the order to retrieve.**
@@ -87,7 +87,7 @@ def get_orders_by_store_id(store_id: int, db: Session = Depends(get_db)):
     """
     Retrieves all orders for a specific store.
 
-    (Will require auth in the future)
+
 
     Args:
         store_id (int): The ID of the store to retrieve orders for.
@@ -109,7 +109,7 @@ def get_orders_by_user_id(user_id: int, db: Session = Depends(get_db)):
     """
     Retrieves all orders for a specific user.
 
-    (Will require auth in the future)
+
 
     Args:
         user_id (int): The ID of the user to retrieve orders for.
@@ -131,7 +131,7 @@ def get_order_products(id: int, db: Session = Depends(get_db)):
     """
     Retrieves all products for a specific order.
 
-    (Will require auth in the future)
+
 
     Args:
         id (int): The ID of the order to retrieve products for.
@@ -153,7 +153,7 @@ def create_order(order: OrderCreate, db: Session = Depends(get_db)):
     """
     Creates an order.
 
-    (Will require auth in the future)
+
 
     Args:
         sale (OrderCreate): The order data.
@@ -172,7 +172,7 @@ def update_order_status(id: int, db: Session = Depends(get_db)):
     """
     Updates the status of an order by its ID.
 
-    (Will require auth in the future)
+
 
     Args:
         id (int): The ID of the order to update.
@@ -200,7 +200,7 @@ def update_order_products(
     """
     Updates the products of an order by its ID.
 
-    (Will require auth in the future)
+
 
     Args:
         id (int): The ID of the order to update.

@@ -40,8 +40,8 @@ def get_sales(db: Session = Depends(get_db)):
     """
     Retrieves all sales from the database.
 
-    (Will require auth in the future)
-    (Will require admin role in the future)
+
+
     Args:
         db (Session): The SQLAlchemy session to use for the query.
     Returns:
@@ -59,7 +59,7 @@ def get_sale_by_id(id: int, db: Session = Depends(get_db)):
     """
     Retrieves a sale by its ID.
 
-    (Will require auth in the future)
+
 
     Args:
         id (int): The ID of the sale to retrieve.
@@ -85,7 +85,7 @@ def create_sale(sale: SaleCreate, db: Session = Depends(get_db)):
     """
     Creates a sale.
 
-    (Will require auth in the future)
+
 
     Args:
         sale (SaleCreate): The sale data.
