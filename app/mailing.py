@@ -49,7 +49,8 @@ verification_email_template = {
         "email": """
                  <html>
                     <h1>Activá tu cuenta de Statill</h1>
-                    <small>{code}</small>
+                    <p>Hacé click <a href="https://statill-v0.vercel.app/confirmacion-codigo>aquí</a> e ingresa el siguiente código para verificar tu cuenta:</p>
+                    <p style="font-size: xxx-large">{code}</p>
                  </html>
                  """,
         "password_reset": """
