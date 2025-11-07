@@ -349,3 +349,12 @@ def delete_current_user(
         data=None,
         message="Successfully deleted your User account.",
     )
+
+@router.get("/{id}/name", tags=tags.public)
+def get_first_names_by_id(id: int, session: Session = Depends(get_db)):
+    result = crud.get_first_names_by_id(id, session)
+    return APIResponse(
+        successful=True,
+        data=result,
+        message=f"Successfully got the first name of user {id}"
+    )

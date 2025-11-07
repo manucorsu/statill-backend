@@ -64,6 +64,7 @@ def create(user_id: int, review_data: ReviewCreate, session: Session):
         review_data.store_id, session
     )  # Checks that the store exists.
 
+    
     users_crud.get_by_id(user_id, session)
     existing_review = (
         session.query(Review)

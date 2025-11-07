@@ -9,7 +9,7 @@ class Review(Base):
     store_id = Column(BigInteger, ForeignKey("stores.id"), nullable=False)
     user_id = Column(BigInteger, ForeignKey("users.id"), nullable=False)
     stars = Column(Integer, nullable=False)
-    desc = Column(String)
+    desc = Column(String(300))
 
     # Relationships
     user = relationship("User", back_populates="review")
