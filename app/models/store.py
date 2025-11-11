@@ -1,5 +1,13 @@
 from app.database.base import Base
-from sqlalchemy import Column, String, BigInteger, Boolean, CheckConstraint, Integer
+from sqlalchemy import (
+    Column,
+    String,
+    BigInteger,
+    Boolean,
+    CheckConstraint,
+    Integer,
+    Double,
+)
 from sqlalchemy.dialects.postgresql import ARRAY, BOOLEAN, TIME
 from sqlalchemy.orm import relationship
 from .order import Order
@@ -11,8 +19,10 @@ class Store(Base):
     name = Column(String(60), nullable=False)
     category = Column(BigInteger, nullable=False)
     address = Column(String, nullable=False)
+    latitude = Column(Double, nullable=False)
+    longitude = Column(Double, nullable=False)
     preorder_enabled = Column(Boolean, nullable=False)
-    ps_value = Column(Integer, nullable=True)  # cuántos $ vale un punto
+    ps_value = Column(Integer, nullable=True)  # cuántos puntos se reciben por $ gastado
     opening_times = Column(ARRAY(TIME(timezone=True)), nullable=False)
     closing_times = Column(ARRAY(TIME(timezone=True)), nullable=False)
     payment_methods = Column(ARRAY(BOOLEAN), nullable=False)

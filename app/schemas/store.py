@@ -9,6 +9,8 @@ class StoreRead(BaseModel):
     id: PositiveInt
     name: Annotated[str, Field(min_length=1, max_length=60, pattern=r"\S")]
     address: NonEmptyStr
+    latitude: float  # | None
+    longitude: float  # | None
     category: UnsignedInt
     preorder_enabled: bool
     ps_value: Optional[
@@ -26,6 +28,8 @@ class StoreRead(BaseModel):
 class StoreCreate(BaseModel):
     name: NonEmptyStr
     address: NonEmptyStr
+    latitude: float  # | None
+    longitude: float  # | None
     category: UnsignedInt
     preorder_enabled: bool
     ps_value: Optional[PositiveInt]
@@ -40,6 +44,8 @@ class StoreCreate(BaseModel):
 class StoreUpdate(BaseModel):
     name: NonEmptyStr
     address: NonEmptyStr
+    latitude: float  # | None
+    longitude: float  # | None
     category: UnsignedInt
     preorder_enabled: bool
     ps_value: Optional[PositiveInt]

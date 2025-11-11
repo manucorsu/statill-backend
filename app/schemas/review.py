@@ -17,7 +17,9 @@ class ReviewRead(BaseModel):
     store_id: PositiveInt
     user_id: PositiveInt
     stars: PositiveInt
-    desc: NonEmptyStr = Annotated[str, Field(min_length=1, max_length=300, pattern=r"\S")]
+    desc: NonEmptyStr = Annotated[
+        str, Field(min_length=1, max_length=300, pattern=r"\S")
+    ]
 
 
 class GetAllReviewsResponse(APIResponse):

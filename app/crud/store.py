@@ -42,7 +42,10 @@ def get_by_id(id: int, session: Session):
         raise HTTPException(status_code=404, detail="Store not found")
     return store
 
+
 ALL_OTCT_NONE = [False for _ in range(7)]
+
+
 def create(store_data: StoreCreate, session: Session, owner: User):
     """
     Creates a new store in the database.
@@ -62,7 +65,9 @@ def create(store_data: StoreCreate, session: Session, owner: User):
             400,
             f"User must be disassociated from store {user.store_id} before associating them to a new one.",
         )
-    if (store_data.opening_times == ALL_OTCT_NONE) or (store_data.closing_times == ALL_OTCT_NONE):
+    if (store_data.opening_times == ALL_OTCT_NONE) or (
+        store_data.closing_times == ALL_OTCT_NONE
+    ):
         raise HTTPException("Stores must be open in at least one day of the week")
     for index, ct in enumerate(store_data.closing_times):
         ot = store_data.opening_times[index]

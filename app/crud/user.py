@@ -221,5 +221,6 @@ def delete(id: int, session: Session):
 
     session.commit()
 
+
 def get_first_names_by_id(id: int, session: Session):
     return str(get_by_id(id, session).first_names)
