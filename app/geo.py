@@ -28,7 +28,7 @@ PROVINCES = {
     "AR-W": "Provincia de Corrientes",
     "AR-X": "Provincia de Córdoba",
     "AR-Y": "Provincia de Jujuy",
-    "AR-Z": "Provincia de Santa Cruz"
+    "AR-Z": "Provincia de Santa Cruz",
 }
 
 
@@ -63,7 +63,9 @@ def __format_address(geoapify_response):
 
     assert len(results) > 0, "No results found."
     candidate = results[0]
-    assert isinstance(candidate,dict),"Geoapify response results must be a list of location matches"
+    assert isinstance(
+        candidate, dict
+    ), "Geoapify response results must be a list of location matches"
     if (
         candidate["city"] != "Buenos Aires"
     ):  # siempre se prioriza CABA, aunque no sea la primera opc
@@ -73,12 +75,15 @@ def __format_address(geoapify_response):
     # Ensure mandatory fields are present
     mandatory_fields = ["street", "postcode", "city", "iso3166_2", "state", "country"]
     for field in mandatory_fields:
-        assert field in candidate and candidate[field], f"Missing mandatory field: {field}"
+        assert (
+            field in candidate and candidate[field]
+        ), f"Missing mandatory field: {field}"
 
     province = candidate["state"]
     try:
         province = PROVINCES[candidate["iso3166_2"]]
-    except KeyError:pass
+    except KeyError:
+        pass
 
     # Build address with optional fields
     parts = [candidate["street"]]
@@ -88,11 +93,11 @@ def __format_address(geoapify_response):
         parts.append(candidate["suburb"])
     if candidate.get("district"):
         parts.append(candidate["district"])
-    
+
     parts.append(f"{candidate['postcode']} {candidate['city']}")
     parts.append(province)
     parts.append(candidate["country"])
-    
+
     formatted_address = ", ".join(parts)
     return (formatted_address, candidate)
 

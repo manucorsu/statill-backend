@@ -22,9 +22,16 @@ def geocode_address(address: str) -> GeocodeAddressResponse:
     """
     try:
         result = geo.geocode_address(address)
-        return GeocodeAddressResponse(data=result, message=f"Successfully retrieved coordinates for address {result.formatted_address}.")
+        return GeocodeAddressResponse(
+            data=result,
+            message=f"Successfully retrieved coordinates for address {result.formatted_address}.",
+        )
     except (AssertionError, KeyError, ConnectionError) as ex:
-        raise HTTPException(400, f"An error occurred on geocoding: ({type(ex)} {ex}). Please verify that your input is correct.")
+        raise HTTPException(
+            400,
+            f"An error occurred on geocoding: ({type(ex)} {ex}). Please verify that your input is correct.",
+        )
+
 
 @router.get("/geocode/reverse")
 def reverse_geocode(latitude: float, longitude: float) -> ReverseGeocodingResponse:
@@ -41,6 +48,12 @@ def reverse_geocode(latitude: float, longitude: float) -> ReverseGeocodingRespon
     """
     try:
         result = geo.reverse_geocode(latitude, longitude)
-        return ReverseGeocodingResponse(data=result, message=f"Successfully retrieved address for coordinates ({latitude}, {longitude}).")
+        return ReverseGeocodingResponse(
+            data=result,
+            message=f"Successfully retrieved address for coordinates ({latitude}, {longitude}).",
+        )
     except (AssertionError, KeyError, ConnectionError) as ex:
-        raise HTTPException(400, f"An error occurred on reverse geocode: ({type(ex)} {ex}). Please verify that your input is correct.")
+        raise HTTPException(
+            400,
+            f"An error occurred on reverse geocode: ({type(ex)} {ex}). Please verify that your input is correct.",
+        )

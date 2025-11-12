@@ -15,9 +15,9 @@ class Address(BaseModel):  # (formatted)
 
 class GeocodeAddressResponse(SuccessfulResponse):
     data: CoordinatesAndFormattedAddress
-    message: str 
+    message: str
 
 
 class ReverseGeocodingResponse(SuccessfulResponse):
     data: Address
-    message: str 
+    message: str
