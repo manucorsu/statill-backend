@@ -154,7 +154,7 @@ def reverse_geocode(latitude: float, longitude: float):
     jsonr = response.json()
     if response.status_code != 200:
         raise ConnectionError(
-            f"Reverse geocoding API request failed with status code {response.status_code} and message:\n{jsonr["error"]}\n{jsonr["message"]}"
+            f"Reverse geocoding API request failed with status code {response.status_code}:\n${jsonr}"
         )
 
     formatted_address, _ = __format_address(jsonr)
