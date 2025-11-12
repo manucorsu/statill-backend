@@ -10,7 +10,7 @@ router = APIRouter()
 
 @router.get("/geocode", tags=public)
 def geocode_address(
-    address: str, 
+    address: str,
 ) -> GeocodeAddressResponse:
     """
     Geocode a given address string to retrieve geographic coordinates and formatted address.
@@ -37,7 +37,8 @@ def geocode_address(
 
 @router.get("/geocode/reverse", tags=public)
 def reverse_geocode(
-    latitude: float, longitude: float, 
+    latitude: float,
+    longitude: float,
 ) -> ReverseGeocodingResponse:
     """
     Perform reverse geocoding to obtain address information from coordinates.

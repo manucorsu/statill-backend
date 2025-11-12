@@ -1,4 +1,4 @@
-from fastapi import APIRouter, responses
+from fastapi import APIRouter
 from . import (
     auth,
     status,
@@ -12,7 +12,6 @@ from . import (
     reviews,
     geo,
 )
-
 
 router = APIRouter()
 

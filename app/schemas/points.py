@@ -23,4 +23,4 @@ class GetAllPointsResponse(SuccessfulResponse):
 
 
 class GetUserPointsResponse(SuccessfulResponse):
-    data: PointsRead
+    data: PointsRead | None

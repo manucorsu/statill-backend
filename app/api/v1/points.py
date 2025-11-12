@@ -62,9 +62,9 @@ def get_user_points(
     Raises:
         HTTPException(404): If the user or store does not exist, or if the user has no points in the store.
     """
-    points = crud.get_user_points(user_id, store_id, session)
+    points = crud.get_user_points(user_id, store_id, session, allow_null=True)
     return GetUserPointsResponse(
-        data=__points_to_pointsread(points),
+        data=__points_to_pointsread(points) if points else None,
         message="Successfully retrieved user's points in the specified store.",
     )
 
