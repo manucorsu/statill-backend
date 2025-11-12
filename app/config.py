@@ -20,17 +20,17 @@ class Settings(BaseSettings):
 
     geoapify_api_key: str = getenv("GEOAPIFY_API_KEY")
 
-    # cloudinary_cloud_name: str = getenv("CLOUDINARY_CLOUD_NAME")
-    # cloudinary_api_key: str = getenv("CLOUDINARY_API_KEY")
-    # cloudinary_api_secret : str = getenv("CLOUDINARY_API_SECRET")
+    cloudinary_cloud_name: str = getenv("CLOUDINARY_CLOUD_NAME")
+    cloudinary_api_key: str = getenv("CLOUDINARY_API_KEY")
+    cloudinary_api_secret: str = getenv("CLOUDINARY_API_SECRET")
 
 
 settings = Settings()
 
 assert settings.jwt_expiry > 1
 
-# cloudinary.config(
-#     cloud_name=settings.cloudinary_cloud_name,
-#     api_key=settings.cloudinary_api_key,
-#     api_secret=settings.cloudinary_api_secret,
-# )
+cloudinary.config(
+    cloud_name=settings.cloudinary_cloud_name,
+    api_key=settings.cloudinary_api_key,
+    api_secret=settings.cloudinary_api_secret,
+)
