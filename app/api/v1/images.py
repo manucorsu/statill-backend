@@ -61,6 +61,52 @@ def upload_image(
     session: Session = Depends(get_db),
     user: User = Depends(get_current_user_require_active),
 ) -> CloudinaryUploadResponse:
+    """
+    Upload an image file for a specific resource (user, store or product) to Cloudinary
+    and return a structured upload response.
+
+    This function:
+    - Resolves the target instance identified by the provided type (`t`) and `id`.
+    - Verifies that the current `user` has permission to upload/replace the image for
+        that instance.
+    - Reads the entire uploaded file from the provided UploadFile and sends its bytes
+        to Cloudinary using cloudinary.uploader.upload.
+    - Uses a deterministic public_id of the form "{t}{id}" (for example, "product203"),
+        which will overwrite any existing asset with the same public_id.
+    - Constructs and returns a CloudinaryUploadResponse containing the public_id,
+        secure URL and format returned by Cloudinary, plus a success message.
+
+    Args:
+            t (Literal["user", "store", "product"]): The resource type to which the image
+                    belongs. Must be one of "user", "store" or "product".
+            id (int): The identifier of the target resource instance.
+            file (UploadFile): The uploaded file object (FastAPI UploadFile). Its
+                    underlying buffer is read completely and uploaded.
+            session (Session): Database session (injected dependency).
+            user (User): Authenticated, active user performing the upload
+                    (injected dependency).
+
+    Returns:
+            CloudinaryUploadResponse: Structured response containing:
+                    - data: CloudinaryUploadData with keys `public_id`, `url` (secure_url) and `format`.
+                    - message: A human-readable success message.
+
+    Raises:
+            ValueError: If `t` is not one of the supported resource types.
+            PermissionError / HTTPException: If the permission check fails (depends on
+                    __check_image_upload_permissions implementation).
+            cloudinary.exceptions.Error or other runtime exceptions: If the Cloudinary
+                    upload fails or the uploaded file cannot be read.
+            Any database-related exceptions raised while resolving the instance.
+
+    Notes:
+            - The function reads the entire file into memory via file.file.read(); for very
+                large files this may be memory-intensive.
+            - Because the public_id is deterministic and based only on `t` and `id`, uploading
+                a new image for the same `t` and `id` will replace the previous Cloudinary asset.
+            - Authentication and DB session are provided via FastAPI dependencies.
+    """
+
     def type_module():
         match (t):
             case "user":
@@ -85,25 +131,6 @@ def upload_image(
         ),
         message="Image upload successful",
     )
-
-
-"""
-    def type_module():
-        match (t):
-            case "user":
-                return uc
-            case "store":
-                return sc
-            case "product":
-                return pc
-            case _:
-                raise ValueError(f"Invalid type {t}")
-
-    instance = type_module().get_by_id(id, session)
-    # __check_image_upload_permissions(
-    #     instance,
-    # )
-"""
 
 
 @router.get("/id/cloudinary/{cloudinary_public_id}", tags=public)
