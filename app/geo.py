@@ -73,13 +73,13 @@ def __format_address(geoapify_response):
             if candidate["city"] == "Buenos Aires":
                 candidate = c
     # Ensure mandatory fields are present
-    mandatory_fields = ["street", "postcode", "city", "iso3166_2", "state", "country"]
+    mandatory_fields = ["street", "postcode", "city", "iso3166_2", "country"]
     for field in mandatory_fields:
         assert (
             field in candidate and candidate[field]
         ), f"Missing mandatory field: {field}"
 
-    province = candidate["state"]
+    province = candidate.get("state") or None
     try:
         province = PROVINCES[candidate["iso3166_2"]]
     except KeyError:
