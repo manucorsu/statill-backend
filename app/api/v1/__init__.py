@@ -11,6 +11,7 @@ from . import (
     points,
     reviews,
     geo,
+    images,
 )
 
 router = APIRouter()
@@ -27,6 +28,7 @@ routers_to_include = [
     points,
     reviews,
     geo,
+    images,
 ]  # list of modules that have a router
 
 for r_module in routers_to_include:

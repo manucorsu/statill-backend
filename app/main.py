@@ -18,8 +18,14 @@ from .api.generic_tags import (
     requires_admin,
 )
 from fastapi.responses import JSONResponse
+import cloudinary
 
 warnings.simplefilter("always", DeprecationWarning)
+cloudinary.config(
+    cloud_name=settings.cloudinary_cloud_name,
+    api_key=settings.cloudinary_api_key,
+    api_secret=settings.cloudinary_api_secret,
+)
 
 openapi_tags = [
     {"name": public[0], "description": "No se debe enviar ningún token."},

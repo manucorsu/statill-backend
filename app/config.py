@@ -1,7 +1,6 @@
 from pydantic_settings import BaseSettings
 from dotenv import load_dotenv
 from os import getenv
-import cloudinary
 
 load_dotenv()
 
@@ -28,9 +27,3 @@ class Settings(BaseSettings):
 settings = Settings()
 
 assert settings.jwt_expiry > 1
-
-cloudinary.config(
-    cloud_name=settings.cloudinary_cloud_name,
-    api_key=settings.cloudinary_api_key,
-    api_secret=settings.cloudinary_api_secret,
-)
