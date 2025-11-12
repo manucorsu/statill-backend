@@ -17,6 +17,8 @@ class Settings(BaseSettings):
     mailgun_api_key: str = getenv("MAILGUN_API_KEY")
     mailgun_email_address: str = getenv("MAILGUN_EMAIL_ADDRESS")
 
+    geoapify_api_key: str = getenv("GEOAPIFY_API_KEY")
+
 
 settings = Settings()
 

@@ -10,6 +10,7 @@ from . import (
     discounts,
     points,
     reviews,
+    geo,
 )
 
 
@@ -26,6 +27,7 @@ routers_to_include = [
     discounts,
     points,
     reviews,
+    geo,
 ]  # list of modules that have a router
 
 for r_module in routers_to_include:
