@@ -10,3 +10,7 @@ class CloudinaryUploadData(BaseModel):
 
 class CloudinaryUploadResponse(SuccessfulResponse):
     data: CloudinaryUploadData
+
+
+class GetCloudinaryURLResponse(SuccessfulResponse):
+    data: HttpUrl

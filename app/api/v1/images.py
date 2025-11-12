@@ -15,7 +15,11 @@ import app.crud.user as uc
 import app.crud.store as sc
 import app.crud.product as pc
 
-from app.schemas.images import CloudinaryUploadData, CloudinaryUploadResponse
+from app.schemas.images import (
+    CloudinaryUploadData,
+    CloudinaryUploadResponse,
+    GetCloudinaryURLResponse,
+)
 
 from ...models.user import User
 from ...models.store import Store
@@ -136,7 +140,10 @@ def upload_image(
 @router.get("/id/cloudinary/{cloudinary_public_id}", tags=public)
 def get_image_by_cloudinary_id(cloudinary_public_id: str):
     url, _ = cloudinary.utils.cloudinary_url(cloudinary_public_id, secure=True)
-    return RedirectResponse(url)
+    return CloudinaryUploadResponse(
+        url=url,
+        message=f"Succesfully retrieved the url for image with cloudinary public id {cloudinary_public_id}",
+    )
 
 
 @router.get("/id/object", tags=public)

@@ -49,20 +49,19 @@ verification_email_template = {
         "email": """
                  <html>
                     <h1>Activá tu cuenta de Statill</h1>
-                    <p>Hacé click <a href="https://statill-v0.vercel.app/confirmacion-codigo">aquí</a> e ingresa el siguiente código para verificar tu cuenta:</p>
-                    <p style="font-size: xxx-large">{code}</p>
+                    <p>Tu código es <b>{code}</b></p>
                  </html>
                  """,
         "password_reset": """
                           <html>
                             <h1>Restablecé tu contraseña de </h1>
-                            <small>{code}</small>
+                    <p>Tu código es <b>{code}</b></p>
                           </html>
                           """,
         "store_add": """
                     <html>
                         <h1>{store_name} quiere agregarte como cajero en Statill"/h1>
-                        <small>{code}</small>
+                    <p>Tu código es <b>{code}</b></p>
                     </html>
                      """,
     },
