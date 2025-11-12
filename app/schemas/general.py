@@ -32,5 +32,4 @@ class SuccessfulResponse(APIResponse):
         message (str): A message providing additional information about the API call.
     """
 
-    # no sé como es que tardamos hasta el once de octubre para que alguien se le occurra esto
     successful: Literal[True] = True

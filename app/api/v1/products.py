@@ -163,6 +163,9 @@ def update_product(
         HTTPException(403): If the authenticated user is not the owner of the store.
     """
     owns_a_store_raise(store_owner)
+    p = crud.get_by_id(id, session, False)
+    if p.store_id != store_owner.store_id:
+        raise HTTPException(403, "You cannot modify this store's products")
     crud.update(id, product, session)
     return APIResponse(
         successful=True, data=None, message="Successfully updated the Product."
