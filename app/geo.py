@@ -133,7 +133,7 @@ def geocode_address(address: str) -> CoordinatesAndFormattedAddress:
     jsonr = response.json()
     if response.status_code != 200:
         raise ConnectionError(
-            f"Geocoding API request failed with status code {response.status_code} and message:\n{jsonr["error"]}\n{jsonr["message"]}"
+            f"Geocoding API request failed with status code {response.status_code}\n{jsonr}"
         )
 
     formatted_address, candidate = __format_address(jsonr)
