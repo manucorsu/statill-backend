@@ -1,15 +1,18 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from fastapi.exceptions import HTTPException
 from ..generic_tags import requires_active_user
 import app.geo as geo
 from ...schemas.geo import GeocodeAddressResponse, ReverseGeocodingResponse
+from .auth import get_current_user_require_active
 
 name = "geo"
 router = APIRouter()
 
 
-@router.get("/geocode")
-def geocode_address(address: str) -> GeocodeAddressResponse:
+@router.get("/geocode", tags=requires_active_user)
+def geocode_address(
+    address: str, _=Depends(get_current_user_require_active)
+) -> GeocodeAddressResponse:
     """
     Geocode a given address string to retrieve geographic coordinates and formatted address.
 
@@ -33,8 +36,10 @@ def geocode_address(address: str) -> GeocodeAddressResponse:
         )
 
 
-@router.get("/geocode/reverse")
-def reverse_geocode(latitude: float, longitude: float) -> ReverseGeocodingResponse:
+@router.get("/geocode/reverse", tags=requires_active_user)
+def reverse_geocode(
+    latitude: float, longitude: float, _=Depends(get_current_user_require_active)
+) -> ReverseGeocodingResponse:
     """
     Perform reverse geocoding to obtain address information from coordinates.
 
