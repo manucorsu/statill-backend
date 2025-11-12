@@ -138,14 +138,16 @@ def upload_image(
 
 
 @router.get("/id/cloudinary/{cloudinary_public_id}", tags=public)
-def get_image_by_cloudinary_id(cloudinary_public_id: str):
+def get_image_by_cloudinary_id(cloudinary_public_id: str) -> GetCloudinaryURLResponse:
     url, _ = cloudinary.utils.cloudinary_url(cloudinary_public_id, secure=True)
-    return CloudinaryUploadResponse(
+    return GetCloudinaryURLResponse(
         url=url,
         message=f"Succesfully retrieved the url for image with cloudinary public id {cloudinary_public_id}",
     )
 
 
 @router.get("/id/object", tags=public)
-def get_image_by_object_id(t: Literal["user", "store", "product"], id: int):
+def get_image_by_object_id(
+    t: Literal["user", "store", "product"], id: int
+) -> GetCloudinaryURLResponse:
     return get_image_by_cloudinary_id(f"{t}{id}")
