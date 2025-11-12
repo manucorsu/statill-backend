@@ -141,7 +141,7 @@ def upload_image(
 def get_image_by_cloudinary_id(cloudinary_public_id: str) -> GetCloudinaryURLResponse:
     url, _ = cloudinary.utils.cloudinary_url(cloudinary_public_id, secure=True)
     return GetCloudinaryURLResponse(
-        url=url,
+        data=url,
         message=f"Succesfully retrieved the url for image with cloudinary public id {cloudinary_public_id}",
     )
 
