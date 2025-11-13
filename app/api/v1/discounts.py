@@ -44,16 +44,14 @@ def __discount_to_discountread(discount: Discount):
     )
 
 
-@router.get("/", response_model=GetAllDiscountsResponse, tags=requires_admin)
+@router.get("/", response_model=GetAllDiscountsResponse, tags=public)
 def get_all_discounts(
     session: Session = Depends(get_db),
-    _: User = Depends(get_current_user_require_admin),
 ):
     """
     Retrieves all discount data from the database.
     Args:
         session (Session): The SQLAlchemy session to use for the query.
-        _ (User): The current authenticated admin user. Unused, is only there to enforce admin requiremebnt.
 
     Returns:
         GetAllDiscountsResponse: A response containing a list of all orders.
