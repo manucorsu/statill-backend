@@ -135,7 +135,7 @@ def get_my_store_orders(
     Returns:
         GetAllOrdersResponse: A response containing a list of all orders for the current user's store.
     """
-    owns_a_store_raise(current_user, session, allow_cashiers=True)
+    owns_a_store_raise(current_user, allow_cashiers=True)
     result = crud.get_all_by_store_id(current_user.store_id, session)
     return GetAllOrdersResponse(
         successful=True,
