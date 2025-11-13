@@ -224,7 +224,7 @@ def get_order_products(
                 status_code=403, detail="Not authorized to access this order."
             )
         # And must be owner or cashier of that store
-        owns_a_store_raise(user, db, allow_cashiers=True)
+        owns_a_store_raise(user, allow_cashiers=True)
     order = crud.get_by_id(id, db)
     products = [ProductOrder(**op.__dict__) for op in order.orders_products]
     return GetOrderProductsResponse(
@@ -282,7 +282,7 @@ def update_order_status(
         HTTPException(404): If the order with the specified ID does not exist.
     """
     order = crud.get_by_id(id, db)
-    owns_a_store_raise(user, db, allow_cashiers=True)
+    owns_a_store_raise(user, allow_cashiers=True)
 
     if getattr(user, "store_id", None) != order.store_id:
         raise HTTPException(
@@ -351,7 +351,7 @@ def cancel_order(
                 status_code=403, detail="Not authorized to access this order."
             )
         # And must be owner or cashier of that store
-        owns_a_store_raise(user, session, allow_cashiers=True)
+        owns_a_store_raise(user, allow_cashiers=True)
     crud.cancel(id, session)
     return APIResponse(
         successful=True, data=None, message="Successfully cancelled the order"
