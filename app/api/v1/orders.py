@@ -44,6 +44,27 @@ def __order_to_orderread(order: Order):
         order.received_at.isoformat() if order.received_at else None
     )
     return OrderRead(**order_as_dict)
+    
+@router.get("/my", response_model=GetAllOrdersResponse, tags=requires_active_user)
+def get_my_orders(
+    session: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user_require_active),
+):
+    """
+    Retrieves all orders for the current authenticated user.
+
+    Args:
+        session (Session): The SQLAlchemy session to use for the query.
+        current_user (User): The current authenticated active user.
+    Returns:
+        GetAllOrdersResponse: A response containing a list of all orders for the current user.
+    """
+    result = crud.get_all_by_user_id(current_user.id, session)
+    return GetAllOrdersResponse(
+        successful=True,
+        data=[__order_to_orderread(o) for o in result],
+        message="Successfully retrieved all orders for the current user.",
+    )
 
 
 @router.get("/", response_model=GetAllOrdersResponse, tags=requires_admin)
@@ -97,29 +118,6 @@ def get_order_by_id(
         data=result,
         message=f"Successfully retrieved the Order with id {result.id}.",
     )
-
-
-@router.get("/my", response_model=GetAllOrdersResponse, tags=requires_active_user)
-def get_my_orders(
-    session: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user_require_active),
-):
-    """
-    Retrieves all orders for the current authenticated user.
-
-    Args:
-        session (Session): The SQLAlchemy session to use for the query.
-        current_user (User): The current authenticated active user.
-    Returns:
-        GetAllOrdersResponse: A response containing a list of all orders for the current user.
-    """
-    result = crud.get_all_by_user_id(current_user.id, session)
-    return GetAllOrdersResponse(
-        successful=True,
-        data=[__order_to_orderread(o) for o in result],
-        message="Successfully retrieved all orders for the current user.",
-    )
-
 
 @router.get("/my/store", response_model=GetAllOrdersResponse, tags=requires_active_user)
 def get_my_store_orders(
