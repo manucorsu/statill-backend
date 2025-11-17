@@ -64,7 +64,6 @@ def create(sale_data: SaleCreate, session: Session, using_points: bool = False) 
     Returns:
         int: The ID of the newly created sale.
     """
-    print(sale_data, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n")
     if using_points and sale_data.user_id is None:
         raise HTTPException(
             status_code=400, detail="Anonymous users cannot use points to pay for sales"
@@ -108,7 +107,11 @@ def create(sale_data: SaleCreate, session: Session, using_points: bool = False) 
     session.refresh(sale)
     from .points import gain_points_from_purchase, points_enabled
 
-    if not using_points and points_enabled(sale.store_id, session):
+    if (
+        not using_points
+        and sale_data.user_id is not None
+        and points_enabled(sale.store_id, session)
+    ):
         gain_points_from_purchase(sale_data.user_id, products_model_instances, session)
 
     session.commit()
