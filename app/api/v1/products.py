@@ -92,7 +92,7 @@ def get_products_by_store_id(
         session (Session): The SQLAlchemy session to use for the query.
 
     Returns:
-        GetProductResponse: A response containing a list of products with the specified store ID.
+        GetAllProductsResponse: A response containing a list of products with the specified store ID.
 
     Raises:
         HTTPException(400): If the provided ID is invalid (less than or equal to 0).

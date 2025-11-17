@@ -105,32 +105,51 @@ def create(order_data: OrderCreate, session: Session, user: User) -> int:
     Returns:
         int: The ID of the newly created order.
     """
-    if len(order_data.products) == 0:
-        raise HTTPException(
-            status_code=400, detail="Order must have at least 1 product"
-        )
+    if not order_data.products:
+        raise HTTPException(400, "Order must have at least 1 product")
 
-    stores_crud.get_by_id(
-        order_data.store_id, session
-    )  # will 404 if the store doesn't exist
+    # Ensure store exists (will 404 internally)
+    stores_crud.get_by_id(order_data.store_id, session)
 
-    for pd in order_data.products:
-        product = products_crud.get_by_id(pd.product_id, session)
-        if pd.quantity > product.quantity:
-            raise HTTPException(
-                status_code=400,
-                detail=f"Not enough {product.name} in stock",
-            )
-        if (
-            products_crud.get_by_id(pd.product_id, session).store_id
-            != order_data.store_id
-        ):
-            raise HTTPException(
-                status_code=400,
-                detail=f"Product with id {pd.product_id} does not belong to this store",
-            )
+    product_ids = [p.product_id for p in order_data.products]
 
     try:
+        # Lock all involved products in a single query
+        stmt = (
+            select(Product)
+            .where(Product.id.in_(product_ids))
+            .with_for_update()
+        )
+        db_products = session.execute(stmt).scalars().all()
+
+        # Build dictionary for fast access
+        product_map = {p.id: p for p in db_products}
+
+        # Validate: all products exist
+        missing = set(product_ids) - set(product_map.keys())
+        if missing:
+            raise HTTPException(
+                404,
+                f"Products not found: {', '.join(map(str, missing))}"
+            )
+
+        # Validate each product BEFORE creating the order
+        for item in order_data.products:
+            product = product_map[item.product_id]
+
+            if product.store_id != order_data.store_id:
+                raise HTTPException(
+                    400,
+                    f"Product {product.id} does not belong to this store"
+                )
+
+            if product.quantity < item.quantity:
+                raise HTTPException(
+                    400,
+                    f"Not enough {product.name} in stock"
+                )
+
+        # Create order first
         order = Order(
             store_id=order_data.store_id,
             user_id=user.id,
@@ -139,46 +158,27 @@ def create(order_data: OrderCreate, session: Session, user: User) -> int:
             status=StatusEnum.PENDING,
         )
         session.add(order)
-        session.flush()
+        session.flush()  # order.id now available
 
-        for product_data in order_data.products:
-            stmt = (
-                select(Product)
-                .where(Product.id == product_data.product_id)
-                .with_for_update()
+        # Create order-product rows
+        for item in order_data.products:
+            session.add(
+                OrdersProducts(
+                    order_id=order.id,
+                    product_id=item.product_id,
+                    quantity=item.quantity,
+                )
             )
-            product = session.execute(stmt).scalars().first()
-            if (
-                product is None
-            ):  # por el quilombito que hice arriba, esta y los dos siguientes checks pueden quedar amarillos
-                raise HTTPException(
-                    status_code=404,
-                    detail=f"Product {product_data.product_id} not found",
-                )
 
-            if product.store_id != order_data.store_id:
-                raise HTTPException(
-                    status_code=400,
-                    detail=f"Product with id {product_data.product_id} does not belong to this store",
-                )
+            # Deduct stock
+            product_map[item.product_id].quantity -= item.quantity
 
-            if product.quantity < product_data.quantity:
-                raise HTTPException(
-                    status_code=400, detail=f"Not enough {product.name} in stock"
-                )
+        session.commit()
+        return int(order.id)
 
-            op = OrdersProducts(
-                order_id=order.id,
-                product_id=product_data.product_id,
-                quantity=product_data.quantity,
-            )
-            session.add(op)
-
-            session.commit()
-            return int(order.id)
-    except Exception as ex:  # Esto está bien que esté rojo
+    except Exception:
         session.rollback()
-        raise ex
+        raise
 
 
 def update_status(id: int, session: Session):
