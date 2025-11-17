@@ -44,7 +44,8 @@ def __order_to_orderread(order: Order):
         order.received_at.isoformat() if order.received_at else None
     )
     return OrderRead(**order_as_dict)
-    
+
+
 @router.get("/my", response_model=GetAllOrdersResponse, tags=requires_active_user)
 def get_my_orders(
     session: Session = Depends(get_db),
@@ -118,6 +119,7 @@ def get_order_by_id(
         data=result,
         message=f"Successfully retrieved the Order with id {result.id}.",
     )
+
 
 @router.get("/my/store", response_model=GetAllOrdersResponse, tags=requires_active_user)
 def get_my_store_orders(

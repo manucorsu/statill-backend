@@ -51,34 +51,6 @@ def get_all_products(
     )
 
 
-@router.get("/{id}", response_model=GetProductResponse, tags=tags.public)
-def get_product_by_id(
-    id: int, allow_anonymized: bool = False, session: Session = Depends(get_db)
-):
-    """
-    Retrieves a product by its ID.
-
-    Args:
-        id (int): The ID of the product to retrieve.
-        allow_anonymized (bool): If set to `False`, a 404 error will be raised if the product with the specified ID is marked as `"Deleted Product"`, just as if the product did not exist in the database. Default is `False`.
-        session (Session): The SQLAlchemy session to use for the query.
-
-    Returns:
-        GetProductResponse: A response containing the product with the specified ID.
-
-    Raises:
-        HTTPException(400): If the provided ID is invalid (less than or equal to 0).
-        HTTPException(404): If the product with the specified ID does not exist.
-    """
-
-    result = crud.get_by_id(id, session, allow_anonymized=allow_anonymized)
-    return GetProductResponse(
-        successful=True,
-        data=result,
-        message=f"Successfully retrieved the Product with id {result.id}.",
-    )
-
-
 @router.get("/store/{id}", response_model=GetAllProductsResponse, tags=tags.public)
 def get_products_by_store_id(
     id: int, session: Session = Depends(get_db), include_anonymized: bool = False
@@ -106,6 +78,34 @@ def get_products_by_store_id(
         successful=True,
         data=result,
         message=f"Successfully retrieved all Products with store id {id}.",
+    )
+
+
+@router.get("/{id}", response_model=GetProductResponse, tags=tags.public)
+def get_product_by_id(
+    id: int, allow_anonymized: bool = False, session: Session = Depends(get_db)
+):
+    """
+    Retrieves a product by its ID.
+
+    Args:
+        id (int): The ID of the product to retrieve.
+        allow_anonymized (bool): If set to `False`, a 404 error will be raised if the product with the specified ID is marked as `"Deleted Product"`, just as if the product did not exist in the database. Default is `False`.
+        session (Session): The SQLAlchemy session to use for the query.
+
+    Returns:
+        GetProductResponse: A response containing the product with the specified ID.
+
+    Raises:
+        HTTPException(400): If the provided ID is invalid (less than or equal to 0).
+        HTTPException(404): If the product with the specified ID does not exist.
+    """
+
+    result = crud.get_by_id(id, session, allow_anonymized=allow_anonymized)
+    return GetProductResponse(
+        successful=True,
+        data=result,
+        message=f"Successfully retrieved the Product with id {result.id}.",
     )
 
 
