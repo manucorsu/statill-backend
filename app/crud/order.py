@@ -115,11 +115,7 @@ def create(order_data: OrderCreate, session: Session, user: User) -> int:
 
     try:
         # Lock all involved products in a single query
-        stmt = (
-            select(Product)
-            .where(Product.id.in_(product_ids))
-            .with_for_update()
-        )
+        stmt = select(Product).where(Product.id.in_(product_ids)).with_for_update()
         db_products = session.execute(stmt).scalars().all()
 
         # Build dictionary for fast access
@@ -129,8 +125,7 @@ def create(order_data: OrderCreate, session: Session, user: User) -> int:
         missing = set(product_ids) - set(product_map.keys())
         if missing:
             raise HTTPException(
-                404,
-                f"Products not found: {', '.join(map(str, missing))}"
+                404, f"Products not found: {', '.join(map(str, missing))}"
             )
 
         # Validate each product BEFORE creating the order
@@ -139,15 +134,11 @@ def create(order_data: OrderCreate, session: Session, user: User) -> int:
 
             if product.store_id != order_data.store_id:
                 raise HTTPException(
-                    400,
-                    f"Product {product.id} does not belong to this store"
+                    400, f"Product {product.id} does not belong to this store"
                 )
 
             if product.quantity < item.quantity:
-                raise HTTPException(
-                    400,
-                    f"Not enough {product.name} in stock"
-                )
+                raise HTTPException(400, f"Not enough {product.name} in stock")
 
         # Create order first
         order = Order(

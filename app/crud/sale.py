@@ -64,14 +64,14 @@ def create(sale_data: SaleCreate, session: Session, using_points: bool = False) 
     Returns:
         int: The ID of the newly created sale.
     """
-
+    print(sale_data, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n")
     if using_points and sale_data.user_id is None:
         raise HTTPException(
             status_code=400, detail="Anonymous users cannot use points to pay for sales"
         )
     import app.crud.user as users_crud
 
-    if sale_data.user_id:
+    if sale_data.user_id != None:
         users_crud.get_by_id(sale_data.user_id, session)  # raises 404 if not found
     sale = Sale(
         store_id=sale_data.store_id,  # me di cuenta de que no hace falta pero es mucho quilombo sacarlo :)
