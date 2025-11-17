@@ -20,6 +20,8 @@ from .api.generic_tags import (
 from fastapi.responses import JSONResponse
 import cloudinary
 
+from app.models.product import Product
+
 warnings.simplefilter("always", DeprecationWarning)
 cloudinary.config(
     cloud_name=settings.cloudinary_cloud_name,
