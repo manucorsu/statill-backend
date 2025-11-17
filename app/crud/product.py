@@ -57,7 +57,7 @@ def get_all_by_store_id(id: int, session: Session, include_anonymized: bool = Fa
     Raises:
         HTTPException(404): If the store with the specified ID does not exist.
     """
-    products = session.query(Product).filter(Product.store_id == id).all()
+    products = session.query(Product).filter(Product.store_id == id)
 
     if not include_anonymized:
         products = products.filter(Product.name != "Deleted Product")
