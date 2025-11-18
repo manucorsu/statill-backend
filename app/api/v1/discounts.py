@@ -88,6 +88,29 @@ def get_all_discounts_from_store(store_id: int, session=Depends(get_db)):
         message=f"Successfully retrieved all discounts for store {store_id}.",
     )
 
+@router.get("/product/{product_id}/allownull", tags=public)
+def get_discount_by_product_id_allow_null(
+    product_id: int, session: Session = Depends(get_db)
+):
+    discount = crud.get_by_product_id(product_id, session, False)
+    return APIResponse(
+        successful=True,
+        data=__discount_to_discountread(discount) if discount else None,
+        message=f"Successfully retrieved the discount for product {product_id}",
+    )
+
+@router.get("/product/{product_id}", tags=public)
+def get_discount_by_product_id(product_id: int, session=Depends(get_db)):
+    """
+    Retrieves the discount for the product with the specified id. If that product does not have an active discount, it raises an `HTTPException(404)`.
+    """
+    discount = crud.get_by_product_id(product_id, session, True)
+    return GetDiscountResponse(
+        successful=True,
+        data=__discount_to_discountread(discount),
+        message=f"Successfully retrieved the discount for product {product_id}",
+    )
+
 
 @router.get("/{id}", response_model=GetDiscountResponse, tags=public)
 def get_discount_by_id(id: int, session=Depends(get_db)):
@@ -110,32 +133,6 @@ def get_discount_by_id(id: int, session=Depends(get_db)):
         data=__discount_to_discountread(discount),
         message=f"Successfully retrieved the discount with id {discount.id}",
     )
-
-
-@router.get("/product/{product_id}", tags=public)
-def get_discount_by_product_id(product_id: int, session=Depends(get_db)):
-    """
-    Retrieves the discount for the product with the specified id. If that product does not have an active discount, it raises an `HTTPException(404)`.
-    """
-    discount = crud.get_by_product_id(product_id, session, True)
-    return GetDiscountResponse(
-        successful=True,
-        data=__discount_to_discountread(discount),
-        message=f"Successfully retrieved the discount for product {product_id}",
-    )
-
-
-@router.get("/product/{product_id}/allownull", tags=public)
-def get_discount_by_product_id_allow_null(
-    product_id: int, session: Session = Depends(get_db)
-):
-    discount = crud.get_by_product_id(product_id, session, False)
-    return APIResponse(
-        successful=True,
-        data=__discount_to_discountread(discount) if discount else None,
-        message=f"Successfully retrieved the discount for product {product_id}",
-    )
-
 
 @router.post(
     "/", response_model=APIResponse, status_code=201, tags=requires_active_user
